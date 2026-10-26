@@ -1,0 +1,3070 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="estilos.css?v=12">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+  <title>Localización General del Proyecto - Bloque Garcero C (SIG)</title>
+  
+  <!-- Leaflet CSS para el Mapa Interactivo -->
+  <link rel="stylesheet" href="lib/leaflet/leaflet.css" />
+  <!-- Leaflet Geocoder CSS -->
+  <link rel="stylesheet" href="lib/geocoder/Control.Geocoder.css" />
+  <!-- Google Fonts & Iconos Lucide -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="lib/lucide/lucide.min.js"></script>
+  <script src="sync_data.js"></script>
+  <!-- JSZip para empaquetar carpetas .gdb desde el navegador -->
+  <script src="lib/jszip/jszip.min.js"></script>
+
+  <!-- Resaltado del polígono base AD Garcero C: borde con brillo, siempre visible por encima de los demás -->
+  <style>
+    .kmz-base-resaltado path,
+    .kmz-base-resaltado {
+      filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.55)) drop-shadow(0 0 1px rgba(0, 0, 0, 0.9));
+    }
+
+    /* ============ PRESENTACIÓN ANLA (pestaña Mapa) ============ */
+    /* Botones del encabezado: panel de capas + menú secundario de datos */
+    .btn-anla-panel, .btn-admin-menu {
+      display: flex; align-items: center; gap: 6px; padding: 8px 14px;
+      border-radius: 6px; font-size: 0.8rem; font-weight: 600; cursor: pointer;
+      background: var(--bg-card); color: var(--text-main);
+      border: 1px solid var(--border-color); transition: background 0.2s, transform 0.2s;
+    }
+    .btn-anla-panel { border-color: rgba(0,176,80,0.55); color: #b8f0cd; }
+    .btn-admin-menu { border-color: rgba(169,217,254,0.5); color: #d7ecff; }
+    .btn-anla-panel:hover, .btn-admin-menu:hover { background: var(--bg-card-hover); transform: translateY(-1px); }
+    .btn-anla-panel svg, .btn-admin-menu svg { width: 15px; height: 15px; }
+
+    /* Menú secundario: carga, descarga y administración */
+    .admin-menu {
+      position: absolute; top: 66px; right: 24px; width: 390px;
+      max-width: calc(100% - 32px); max-height: calc(100vh - 150px); overflow-y: auto;
+      z-index: 700; padding: 10px 12px 14px;
+      background: rgba(15,20,29,0.95);
+      backdrop-filter: var(--glass-backdrop); -webkit-backdrop-filter: var(--glass-backdrop);
+      border: 1px solid var(--accent-cyan); border-radius: 12px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+    }
+    .admin-menu-head { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.82rem; margin-bottom: 4px; }
+    .admin-menu-head button {
+      margin-left: auto; background: none; border: none; color: var(--text-muted);
+      cursor: pointer; padding: 3px; border-radius: 6px; display: flex;
+    }
+    .admin-menu-head button:hover { color: #fff; background: rgba(255,255,255,0.12); }
+    .admin-menu-section-title {
+      font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-muted); font-weight: 600; margin: 12px 0 7px;
+      border-top: 1px solid var(--border-color); padding-top: 9px;
+    }
+    .admin-menu .import-buttons { display: flex; flex-direction: column; gap: 6px; }
+    .admin-menu .import-buttons button { width: 100%; justify-content: flex-start; }
+    .admin-menu .gdb-local-panel {
+      position: static; width: 100%; max-height: 320px; margin-top: 10px; right: auto; top: auto;
+    }
+    .admin-menu-note {
+      font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;
+      margin-top: 12px; border-top: 1px solid var(--border-color); padding-top: 9px;
+    }
+
+    /* Panel flotante de la presentación */
+    .anla-panel {
+      position: absolute; top: 12px; left: 12px; z-index: 450; width: 340px;
+      max-width: calc(100% - 24px);
+      background: rgba(15,20,29,0.9);
+      backdrop-filter: var(--glass-backdrop); -webkit-backdrop-filter: var(--glass-backdrop);
+      border: 1px solid var(--border-color); border-radius: 12px;
+      box-shadow: var(--glass-shadow); color: var(--text-main); font-size: 0.9rem;
+      overflow: hidden;
+    }
+    .anla-panel.anla-oculto { display: none; }
+    .anla-head {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      padding: 10px 12px; border-bottom: 1px solid var(--border-color);
+      background: rgba(9,12,16,0.5);
+    }
+    .anla-head-title { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 0.82rem; }
+    .anla-head-title svg { width: 16px; height: 16px; color: var(--accent-green); }
+    .anla-head-actions { display: flex; gap: 2px; }
+    .anla-head-actions button {
+      background: transparent; border: none; color: var(--text-muted); cursor: pointer;
+      padding: 4px; border-radius: 6px; display: flex; transition: all 0.15s;
+    }
+    .anla-head-actions button:hover { color: #fff; background: rgba(255,255,255,0.12); }
+    .anla-head-actions svg { width: 14px; height: 14px; }
+    .anla-body { max-height: calc(100vh - 210px); overflow-y: auto; padding: 10px 12px 12px; }
+    .anla-body::-webkit-scrollbar { width: 6px; }
+    .anla-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.16); border-radius: 4px; }
+    .anla-panel.anla-colapsado .anla-body { display: none; }
+    .anla-status {
+      display: flex; align-items: center; gap: 7px; font-size: 0.85rem;
+      color: var(--text-muted); padding: 4px 2px 8px;
+    }
+    .anla-status.anla-error { color: #ffb4b4; }
+    .anla-grupo { margin-bottom: 10px; }
+    .anla-grupo-title {
+      font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-muted); font-weight: 700; margin: 6px 0 6px 2px;
+    }
+    .anla-row {
+      border: 1px solid var(--border-color); border-radius: 9px;
+      padding: 7px 9px 6px; margin-bottom: 6px; background: rgba(22,29,42,0.55);
+    }
+    .anla-row-head { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+    .anla-row-head input[type="checkbox"] { accent-color: var(--accent-green); flex-shrink: 0; }
+    .anla-swatch {
+      width: 16px; height: 12px; border-radius: 3px; flex-shrink: 0;
+      border: 2px solid; opacity: 0.95;
+    }
+    .anla-row-name { flex: 1; min-width: 0; font-weight: 600; font-size: 0.85rem; line-height: 1.25; }
+    .anla-row-name em { font-style: normal; color: var(--text-muted); font-weight: 500; }
+    .anla-row-tools { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+    .anla-op-label { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .anla-row-tools input[type="range"] {
+      flex: 1; min-width: 0; height: 14px; accent-color: var(--accent-blue); cursor: pointer;
+    }
+    .anla-zoom {
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border-color);
+      color: var(--text-muted); border-radius: 6px; padding: 3px 5px;
+      cursor: pointer; display: flex; transition: all 0.15s;
+    }
+    .anla-zoom:hover { color: #fff; background: rgba(141,180,226,0.2); }
+    .anla-zoom svg { width: 12px; height: 12px; }
+    .anla-legend { margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 8px; }
+    .anla-legend summary { cursor: pointer; font-size: 0.85rem; color: var(--text-muted); font-weight: 600; }
+    .anla-leg-row { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; margin: 7px 2px 0; }
+    .anla-leg-line { width: 22px; height: 0; border-top-width: 3px; border-top-style: solid; border-radius: 2px; flex-shrink: 0; }
+    .anla-leg-note { font-size: 0.85rem; color: var(--text-muted); margin: 8px 2px 0; line-height: 1.45; }
+    .anla-nombres {
+      display: flex; align-items: center; gap: 7px; margin-top: 10px;
+      font-size: 0.85rem; color: var(--text-main); cursor: pointer;
+    }
+    .anla-nombres input { accent-color: var(--accent-green); }
+    .anla-foot {
+      margin-top: 10px; border-top: 1px solid var(--border-color); padding-top: 8px;
+      font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;
+    }
+    .anla-foot .anla-aviso { color: var(--accent-amber); }
+
+    /* Etiquetas del mapa (nombres) */
+    .leaflet-tooltip.anla-label {
+      background: rgba(9,12,16,0.85); border: 1px solid var(--border-color);
+      color: var(--text-main); font-size: 0.85rem; font-weight: 600;
+      padding: 2px 6px; border-radius: 4px; box-shadow: none; white-space: nowrap;
+    }
+    .leaflet-tooltip.anla-label::before { display: none; }
+    .anla-proyecto path, .anla-proyecto {
+      filter: drop-shadow(0 0 2px rgba(255,255,255,0.6)) drop-shadow(0 0 1px rgba(0,0,0,0.9));
+    }
+
+    /* Estadísticas del panel lateral */
+    .anla-stats { padding: 10px 12px 4px; }
+    .anla-stats-title {
+      display: flex; align-items: center; gap: 6px; font-size: 0.85rem;
+      text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-muted);
+      font-weight: 700; margin-bottom: 9px;
+    }
+    .anla-stats-title svg { width: 13px; height: 13px; }
+    .anla-stat { margin-bottom: 9px; }
+    .anla-stat-top {
+      display: flex; justify-content: space-between; align-items: baseline; gap: 10px;
+      font-size: 0.85rem; color: var(--text-muted);
+    }
+    .anla-stat-val { color: var(--text-main); font-weight: 700; font-size: 0.85rem; text-align: right; }
+    .anla-stat-bar {
+      height: 6px; border-radius: 4px; background: rgba(255,255,255,0.1);
+      overflow: hidden; margin-top: 4px;
+    }
+    .anla-stat-bar span { display: block; height: 100%; border-radius: 4px; }
+    .anla-stats-nota { font-size: 0.85rem; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+
+    /* Selector de capa cuando un punto pertenece a varias a la vez */
+    .leaflet-popup.anla-chooser-popup .leaflet-popup-content-wrapper {
+      background: rgba(15,20,29,0.96); color: var(--text-main);
+      border: 1px solid var(--border-color); border-radius: 10px;
+    }
+    .leaflet-popup.anla-chooser-popup .leaflet-popup-tip { background: rgba(15,20,29,0.96); }
+    .leaflet-popup.anla-chooser-popup .leaflet-popup-content { margin: 10px 12px; }
+    .anla-chooser-title {
+      font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.6px;
+      color: var(--text-muted); font-weight: 700; margin-bottom: 7px;
+    }
+    .anla-chooser-item {
+      display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border-color);
+      border-radius: 8px; padding: 6px 8px; margin-bottom: 5px;
+      color: var(--text-main); cursor: pointer; transition: all 0.15s;
+    }
+    .anla-chooser-item:hover { background: rgba(141,180,226,0.16); border-color: var(--accent-blue); }
+    .anla-chooser-txt { display: flex; flex-direction: column; min-width: 0; }
+    .anla-chooser-txt b { font-size: 0.85rem; font-weight: 700; }
+    .anla-chooser-txt em { font-style: normal; font-size: 0.85rem; color: var(--text-muted); }
+  </style>
+
+  </head>
+<body data-page="p1">
+
+  <!-- BARRA LATERAL (SIDEBAR) -->
+  <aside class="sidebar">
+    <div class="brand-logo">
+      <img src="assets/perenco-dark.webp" alt="Perenco" class="brand-logo-img">
+    </div>
+    <ul class="nav-list">
+       <a href="index.html" class="nav-item active">
+        <i data-lucide="map"></i>
+        <span>Mapa</span>
+      </a>
+      <a href="index2.html" class="nav-item">
+        <i data-lucide="layers"></i>
+        <span>Estrategias</span>
+      </a>
+      <a href="index3.html" class="nav-item">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Uso y Ap.</span>
+      </a>
+      <a href="index4.html" class="nav-item">
+        <i data-lucide="user-check"></i>
+        <span>Caracteriz.</span>
+      </a>
+      <a href="index5.html" class="nav-item">
+        <i data-lucide="git-fork"></i>
+        <span>Zonific.</span>
+      </a>
+      <a href="index6.html#tab-evaluacion" class="nav-item">
+        <i data-lucide="activity"></i>
+        <span>Eval. Imptos</span>
+      </a>
+      <a href="index6.html#tab-pma" class="nav-item">
+        <i data-lucide="shield-alert"></i>
+        <span>PMA &amp; PSM</span>
+      </a>
+      <a href="index6.html#tab-compensaciones" class="nav-item">
+        <i data-lucide="coins"></i>
+        <span>1% y Comp.</span>
+      </a>
+      <li class="nav-item" data-geo-ia style="margin-top: auto; margin-bottom: 20px; color: var(--accent-blue);" title="Abrir el asistente Geo-IA aquí mismo (se cierra con la X o con Esc)">
+        <i data-lucide="sparkles"></i>
+        <span>Geo-IA</span>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-wrapper">
+    
+    <!-- ENCABEZADO CON FILTROS Y BOTONES SHP/KMZ -->
+    <header class="top-header">
+      <div class="header-title">
+        <h1>Estudio de Impacto Ambiental para la modificación de la licencia ambiental del Área de Desarrollo Garcero C</h1>
+        <p>Estudio de Impacto Ambiental (EIA) • Perenco Colombia Limited • Casanare</p>
+      </div>
+
+      <div class="filters-container">
+        <button class="btn-anla-panel" id="btn-panel-anla" title="Mostrar / ocultar el panel de capas de la presentación">
+          <i data-lucide="layers"></i> Capas de la presentación
+        </button>
+        <button class="btn-admin-menu" id="btn-admin-menu" title="Carga, descarga y administración de archivos geográficos">
+          <i data-lucide="folder-cog"></i> Datos y administración
+        </button>
+
+        <!-- MENÚ SECUNDARIO: carga, descarga y administración de archivos geográficos -->
+        <div id="admin-menu" class="admin-menu" style="display:none;">
+          <div class="admin-menu-head">
+            <i data-lucide="folder-cog" style="width:15px;height:15px;"></i>
+            <span>Carga, descarga y administración</span>
+            <button id="btn-close-admin" title="Cerrar"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+          </div>
+
+          <div class="admin-menu-section-title">Cargar archivos geográficos</div>
+          <div class="import-buttons">
+            <input type="file" id="file-gis" accept=".zip,.kmz,.kml" style="display: none;" onchange="importarCapasGIS(event)">
+            <button class="btn-import-shp" onclick="document.getElementById('file-gis').click()">
+              <i data-lucide="file-plus" style="width:16px;height:16px;"></i> SHP / KMZ / KML
+            </button>
+
+            <input type="file" id="file-gdb" webkitdirectory multiple style="display: none;" onchange="importarCarpetaGDB(event)">
+            <button class="btn-import-gdb" onclick="document.getElementById('file-gdb').click()" title="Selecciona una carpeta .gdb desde tu disco">
+              <i data-lucide="database" style="width:16px;height:16px;"></i> Subir carpeta .gdb
+            </button>
+
+            <button class="btn-import-gdb" onclick="listarGDBLocales()" title="Carga directa de geodatabases detectadas en el servidor" style="background: linear-gradient(135deg, #A9D9FE, #00B050); color: #000;">
+              <i data-lucide="hard-drive" style="width:16px;height:16px;"></i> GDB locales
+            </button>
+
+            <button class="btn-import-gdb" onclick="listarKMZLocales()" title="Capas temáticas EIA (KMZ locales en el servidor, con categorías en color y anotación video/imagen)" style="background: linear-gradient(135deg, #E26B0A, #FF0000); color: #fff;">
+              <i data-lucide="layers" style="width:16px;height:16px;"></i> KMZ EIA
+            </button>
+          </div>
+
+          <div class="admin-menu-section-title">Descargar</div>
+          <div class="import-buttons">
+            <button class="btn-import-shp" id="btn-export-anla" title="Descarga las capas de la presentación (AD Garcero C, áreas de influencia y unidades territoriales) con sus estadísticas">
+              <i data-lucide="download" style="width:16px;height:16px;"></i> Presentación ANLA (GeoJSON)
+            </button>
+            <button class="btn-import-shp" id="btn-export-kmz" title="Descarga las capas KMZ cargadas manualmente">
+              <i data-lucide="download" style="width:16px;height:16px;"></i> Capas KMZ cargadas (GeoJSON)
+            </button>
+          </div>
+
+          <!-- Panel desplegable de capas locales (GDB + KMZ EIA) detectadas por el servidor -->
+          <div id="gdb-local-panel" class="gdb-local-panel" style="display:none;">
+            <div class="gdb-local-header">
+              <i data-lucide="folder-search" style="width:16px;height:16px;"></i>
+              <span>Capas locales (GDB + KMZ EIA)</span>
+              <button onclick="document.getElementById('gdb-local-panel').style.display='none'" style="background:none;border:none;color:var(--text-muted);cursor:pointer;padding:2px;">
+                <i data-lucide="x" style="width:14px;height:14px;"></i>
+              </button>
+            </div>
+            <div style="padding:8px 10px;display:flex;gap:6px;border-bottom:1px solid var(--border-color,#2a3);">
+              <input id="gdb-path-input" type="text" placeholder="Pega la ruta de la carpeta .gdb (ej. D:\DATOS\GDB_EIA_GARCERO_C.gdb)" onkeydown="if(event.key==='Enter'){cargarGDBRuta();}" style="flex:1;min-width:0;background:#0b1220;border:1px solid var(--border-color,#2a3);color:#e2e8f0;border-radius:6px;padding:6px 8px;font-size:0.85rem;">
+              <button onclick="cargarGDBRuta()" style="background:linear-gradient(135deg,#A9D9FE,#00B050);color:#000;border:none;border-radius:6px;padding:6px 12px;font-size:0.85rem;font-weight:600;cursor:pointer;white-space:nowrap;">
+                Cargar ruta
+              </button>
+            </div>
+            <div class="gdb-local-section-titulo">Geodatabases (GDB EIA)</div>
+            <div id="gdb-local-list" class="gdb-local-list">
+              <span style="color:var(--text-muted);font-size:0.85rem;">Pulsa «GDB locales» para buscarlas automáticamente…</span>
+            </div>
+            <div class="gdb-local-section-titulo">Capas temáticas EIA (KMZ locales)</div>
+            <div id="gdb-kmz-list" class="gdb-local-list">
+              <span style="color:var(--text-muted);font-size:0.85rem;">Pulsa «GDB locales» para detectar los KMZ EIA…</span>
+            </div>
+            <div style="padding:8px 10px;color:var(--text-muted);font-size:0.85rem;border-top:1px solid var(--border-color,#2a3);display:block;">
+              La primera carga puede tardar 1-2 min (lee 90+ capas). Luego queda en caché y es instantánea. Para capas que NO están en esta lista, usa los botones «SHP / KMZ / KML» o «Subir carpeta .gdb» y busca el archivo en tus carpetas.
+            </div>
+          </div>
+
+          <div id="kmz-local-panel" class="gdb-local-panel" style="display:none;">
+            <div class="gdb-local-header">
+              <i data-lucide="layers" style="width:15px;height:15px;"></i>
+              <span>Capas temáticas EIA (KMZ locales)</span>
+            </div>
+            <div id="kmz-local-list" class="gdb-local-list">
+              <span style="color:var(--text-muted);font-size:0.85rem;">Pulsa «KMZ EIA» para detectarlos automáticamente en el servidor…</span>
+            </div>
+            <div style="padding:8px 10px;color:var(--text-muted);font-size:0.85rem;border-top:1px solid var(--border-color,#2a3);">
+              Al cargar una capa se colorea por categoría y puedes apagar/prender sus categorías con la leyenda. Cada categoría admite anotación con video, imagen y explicación breve (se guarda en tu navegador).
+            </div>
+          </div>
+
+          <div class="admin-menu-note">
+            La vista principal queda limitada a la presentación ANLA: Área de Desarrollo Garcero C,
+            áreas de influencia físico-biótica y socioeconómica, y unidades territoriales mayores y menores.
+            Las áreas de influencia intermedias por componente quedan fuera para evitar ambigüedades.
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="map-container">
+      <div id="map"></div>
+
+      <!-- PANEL DE LA PRESENTACIÓN ANLA: capas del proyecto por temas, transparencia y leyenda -->
+      <div id="anla-panel" class="anla-panel">
+        <div class="anla-head">
+          <div class="anla-head-title">
+            <i data-lucide="layers-3"></i> <span>Presentación ANLA</span>
+          </div>
+          <div class="anla-head-actions">
+            <button id="anla-reset" title="Restablecer capas y transparencias"><i data-lucide="rotate-ccw"></i></button>
+            <button id="anla-collapse" title="Colapsar / expandir panel"><i data-lucide="chevron-up"></i></button>
+          </div>
+        </div>
+        <div class="anla-body" id="anla-body">
+          <div class="anla-status" id="anla-status">
+            <i data-lucide="loader-2" class="spin" style="width:14px;height:14px;"></i> Cargando capas del proyecto…
+          </div>
+          <div id="anla-grupos"></div>
+
+          <details class="anla-legend">
+            <summary>¿Cómo se lee el mapa?</summary>
+            <div class="anla-leg-row"><span class="anla-leg-line" style="border-color:#FF2D2D;border-width:3px;"></span> Área de Desarrollo (bloque) Garcero C</div>
+            <div class="anla-leg-row"><span class="anla-leg-line" style="border-color:#007A38;border-style:dashed;border-width:3px;"></span> Área de influencia físico-biótica</div>
+            <div class="anla-leg-row"><span class="anla-leg-line" style="border-color:#2B6CB0;border-style:dotted;border-width:3px;"></span> Área de influencia socioeconómica</div>
+            <div class="anla-leg-row"><span class="anla-leg-line" style="border-color:#B45309;border-style:dashed;border-width:2px;"></span> Municipios (unidades mayores)</div>
+            <div class="anla-leg-row"><span class="anla-leg-line" style="border-color:#6D28D9;border-style:dotted;border-width:2px;"></span> Veredas y resguardos (unidades menores)</div>
+            <div class="anla-leg-note">La transparencia de cada capa se ajusta con el deslizador de su fila. Al hacer clic en una entidad se abren sus datos y estadísticas.</div>
+          </details>
+
+          <label class="anla-nombres">
+            <input type="checkbox" id="anla-nombres"> Mostrar nombres en el mapa
+          </label>
+
+          <div class="anla-foot" id="anla-foot"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PANEL LATERAL DE ATRIBUTOS KMZ (estilo Geodocs) -->
+    <div id="kmz-attribute-panel"></div>
+
+    <!-- BARRA DE RESUMEN INFERIOR -->
+    <footer class="bottom-bar">
+      <div class="metrics-group">
+        <div class="metric-item">
+          <span>Área Total:</span>
+          <strong id="val-area">19.872,68 ha</strong>
+        </div>
+        <div class="metric-item">
+          <span>Municipios:</span>
+          <strong id="val-mun">2</strong>
+        </div>
+        <div class="metric-item">
+          <span>Veredas / UTM:</span>
+          <strong id="val-ver">13</strong>
+        </div>
+        <div class="metric-item">
+          <span>Componentes:</span>
+          <strong id="val-com">6</strong>
+        </div>
+      </div>
+      <div class="crs-tag">
+        MAGNA-SIRGAS / Origen Único Nacional
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="lib/leaflet/leaflet.js"></script>
+  <!-- Leaflet Geocoder JS -->
+  <script src="lib/geocoder/Control.Geocoder.js"></script>
+
+  <script>
+    // Inicializar Iconos Lucide (si falla, no debe impedir cargar el mapa)
+    try { lucide.createIcons(); } catch (e) { console.warn("lucide:", e); }
+
+    // 2. INICIALIZACIÓN DEL MAPA EN CASANARE (Orocué / San Luis de Palenque)
+    // Centro del polígono OFICIAL del AD Garcero C (-71.50, 5.03), verificado con EPSG:9377
+    const centerCoords = [5.03, -71.50];
+    const GIS_TILES_MAXZOOM = 18;
+    const map = L.map('map', { zoomControl: false, preferCanvas: true }).setView(centerCoords, 12);
+    L.control.zoom({ position: 'topright' }).addTo(map);
+    try { L.Control.geocoder({ defaultMarkGeocode: true, placeholder: "Buscar ubicación en Casanare..." }).addTo(map); }
+    catch (e) { console.warn("geocoder:", e); }
+    map.invalidateSize();
+    window.addEventListener('resize', () => map.invalidateSize());
+
+    // Mapa base Satelital de Alta Resolución
+    const satelliteBaseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      maxZoom: 19
+    }).addTo(map);
+
+    const referenceLabels = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Labels &copy; Esri',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Video del proyecto: helpers (URL editable en pantalla)
+    function parseVideoUrl(url) {
+      if (!url) return '';
+      let regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      let match = url.match(regExp);
+      if (match && match[2].length == 11) return 'https://www.youtube.com/embed/' + match[2];
+      return url;
+    }
+
+    function crearVideoHTML(url) {
+      const embed = parseVideoUrl(url || '');
+      if (!embed) return '';
+      if (/youtube|youtu\.be/.test(embed)) {
+        return `<iframe src="${embed}" title="Video del proyecto" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      }
+      return `<video src="${embed}" controls preload="metadata"></video>`;
+    }
+
+    function descargarGeoJSON() {
+      // Exporta los datos REALES de los KMZ cargados (areaProyecto, areaInfluencia, coberturaTierra...)
+      const recoger = function(capa, nombre, out) {
+        if (!capa) return;
+        if (capa.feature) {
+          const f = capa.feature;
+          const p = Object.assign({}, f.properties || {}, { _capaKMZ: nombre });
+          out.push({ type: 'Feature', properties: p, geometry: f.geometry });
+          return;
+        }
+        if (capa.eachLayer) capa.eachLayer(function(hijo) { recoger(hijo, nombre, out); });
+      };
+      const features = [];
+      Object.keys(_kmzRegistry).forEach(function(key) {
+        const reg = _kmzRegistry[key];
+        if (!reg || !reg.group) return;
+        recoger(reg.group, reg.nombre, features);
+      });
+
+      const geojson = { type: 'FeatureCollection', features: features };
+      const blob = new Blob([JSON.stringify(geojson, null, 2)], { type: 'application/geo+json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'garcero-c_capas_kmz_wgs84.geojson';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // ==========================================
+    // IMPORTACIÓN DE CAPAS GIS (SHP/zIP, KMZ, KML y .gdb en .zip)
+    // La conversión y la reproyección a WGS84 las hace server.py (/api/gis/convert)
+    // ==========================================
+    const capasImportadas = L.layerGroup().addTo(map);
+
+    const _LABEL = {
+      NOMBRE: 'Nombre', MDANMNombr: 'Nombre', name: 'Nombre',
+      PROYECTO: 'Proyecto', OPERADOR: 'Operador',
+      EXPEDIENTE: 'Expediente', NUM_ACT_AD: 'N° acto adm.', FEC_ACT_AD: 'Fecha acto', ART_ACT_AD: 'Art. acto',
+      MUNICIPIO: 'Municipio', VEREDA: 'Vereda', DEPTO: 'Departamento',
+      NOM_PREDIO: 'Predio', ID_PREDIO: 'ID predio', NOM_PROPIE: 'Propietario', MAT_INMOB: 'Matrícula',
+      MDANMCateg: 'Categoría', MDANMCodig: 'Código', MDANMNorma: 'Norma', MDANMArea: 'Área (ha)',
+      PROFUND_M: 'Profundidad (m)', COTA: 'Cota (msnm)', DIAMETR_IN: 'Diámetro (m)',
+      CAUD_AMB: 'Caudal ambiental', CAR: 'Caudal', T_CAUDAL: 'Tipo de caudal', CAP_BOMB: 'Capacidad bombeo',
+      HORAS_DIA: 'Horas/día', DIAS_MES: 'Días/mes', SIST_ABAST: 'Sist. abastecimiento',
+      SITIO: 'Sitio', MET_EXPLOT: 'Método explotación', MEDICION: 'Medición', OBSERV: 'Observaciones',
+      ZH: 'Zona hidrográfica', SZH: 'Subzona hidrográfica', N_MIC_CUE: 'Microcuenca',
+      COOR_ESTE: 'Este', COOR_NORTE: 'Norte', AREA_HA: 'Área (ha)',
+      NOMENCLAT: 'Nomenclatura', ESC_VIS: 'Escala visual', FRAGI_VISU: 'Fragmentación visual'
+    };
+    const _OMITIR = new Set([
+      '_capa', 'GDB_GID', 'gid', 'OBJECTID', 'FID', 'Id', 'ID',
+      'Shape_Area', 'Shape_Length', 'SHAPE_Area', 'SHAPE_Length',
+      'Override', 'RuleID', 'AREA_HA', 'CALID_VISU', 'CORR_CROM', 'DES_INTEG', 'EL_DISC',
+      'ESC_VIS', 'FRAGI_VISU', 'INTEG_ESCE', 'N_INTERES', 'TA_DISC', 'N_MIC_CUE',
+      'AH', 'C_NV_SUB', 'C_MIC_CUE', 'D_U_APR_1', 'D_U_APR_2', 'D_U_APR_3', 'D_U_APR_4',
+      'U_APROV_1', 'U_APROV_2', 'U_APROV_3', 'U_APROV_4', 'D_USO_TOT',
+      'MES_ANO', 'ID_CAPT_PT', 'NOM_C_AG', 'N_NV_SUB', 'TIP_FU_SUP', 'OF_H_D_CAP', 'OF_H_T_CAP'
+    ]);
+    const _PRIORIDAD = ['NOMBRE', 'MDANMNombr', 'name', 'PROYECTO', 'OPERADOR', 'EXPEDIENTE',
+      'MUNICIPIO', 'VEREDA', 'DEPTO', 'MDANMCateg', 'NOM_PREDIO', 'NOM_PROPIE',
+      'MDANMNorma', 'MDANMCodig', 'PROFUND_M', 'COTA', 'SITIO'];
+
+    function _etiqueta(k) {
+      if (_LABEL[k]) return _LABEL[k];
+      const legible = k.replace(/_+/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+      return legible;
+    }
+
+    function _popupHTML(p, capa, badge, accentColor) {
+      const claves = Object.keys(p).filter(k => k.charAt(0) !== '_' && !_OMITIR.has(k));
+      const titulo = p.NOMBRE || p.MDANMNombr || p.name || p.NOM_PREDIO || p.nombre || p.CODIGO || p.codigo || '';
+      const accent = accentColor || '#8DB4E2';
+      const coord = p.lat !== undefined && p.lng !== undefined
+        ? `<div class="popup-coords">${Number(p.lat).toFixed(5)}, ${Number(p.lng).toFixed(5)}</div>` : '';
+      const tituloFinal = titulo || capa;
+      const ordenadas = claves.slice().sort(function(a, b) {
+        const ia = _PRIORIDAD.indexOf(a); const ib = _PRIORIDAD.indexOf(b);
+        if (ia === -1 && ib === -1) return claves.indexOf(a) - claves.indexOf(b);
+        if (ia === -1) return 1;
+        if (ib === -1) return -1;
+        return ia - ib;
+      });
+      const visibles = ordenadas.slice(0, 5);
+      const resto = ordenadas.slice(5);
+      const grid = items => items.map(k => `<div class="fk">${_etiqueta(k)}</div><div class="fv">${p[k]}</div>`).join('');
+      const tabla = visibles.length ? `<div class="popup-fila-grid">${grid(visibles)}</div>` : '';
+      const extras = resto.length
+        ? `<div class="popup-all"><summary>${resto.length} dato${resto.length > 1 ? 's' : ''} más</summary><div class="popup-fila-grid">${grid(resto)}</div></div>`
+        : '';
+      return `<div class="popup-card">
+                <div class="popup-accent" style="background:${accent}"></div>
+                <div class="popup-content">
+                  <span class="popup-badge badge-blue">${capa}</span>
+                  <h3 class="popup-title">${tituloFinal}</h3>
+                  ${tabla || '<p class="popup-desc">Sin atributos</p>'}
+                  ${extras}
+                  ${coord}
+                </div>
+              </div>`;
+    }
+
+    // Capa base GDB en tiles raster (tipo "Google Maps"). El navegador solo pide PNGs;
+    // la geometría queda en server.py. El popup se resuelve con /api/gis/identify.
+    let capaTilesGDBActiva = null;
+    let capaPuntosGDB = null;
+
+    function agregarCapasTilesGDB(data) {
+      const gdb_id = data.gdb_id;
+      if (!gdb_id || !data.ok) return;
+
+      if (capaTilesGDBActiva) { map.removeLayer(capaTilesGDBActiva); capaTilesGDBActiva = null; }
+      if (capaPuntosGDB) { map.removeLayer(capaPuntosGDB); capaPuntosGDB = null; }
+      const prevLeg = document.getElementById('gdb-legend');
+      if (prevLeg) prevLeg.remove();
+      capasImportadas.clearLayers();
+
+      const aviso = document.createElement('div');
+      aviso.className = 'import-aviso';
+      aviso.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i> Preparando mapa y puntos…';
+      document.body.appendChild(aviso);
+      lucide.createIcons();
+
+      capaTilesGDBActiva = L.tileLayer('/api/gis/tiles/' + gdb_id + '/{z}/{x}/{y}.png', {
+        maxZoom: GIS_TILES_MAXZOOM,
+        maxNativeZoom: GIS_TILES_MAXZOOM,
+        opacity: 0.94,
+        zIndex: 100
+      });
+      capaTilesGDBActiva.once('tileload', function () {
+        _quitarAvisosImportacion();
+      });
+      capaTilesGDBActiva.addTo(map);
+
+      if (data.extent && data.extent.length === 4) {
+        map.fitBounds([[data.extent[1], data.extent[0]], [data.extent[3], data.extent[2]]]);
+      }
+
+      map.off('click', _onClickGDBIdentify);
+      map.on('click', _onClickGDBIdentify);
+      window._gdbActivaId = gdb_id;
+      window._leyendaMapa = {};
+
+      Promise.all([
+        fetch('/api/gis/leyenda/' + gdb_id).then(function(r) { return r.json(); }),
+        fetch('/api/gis/puntos/' + gdb_id).then(function(r) { return r.json(); })
+      ]).then(function(results) {
+        const leg = results[0];
+        const pts = results[1];
+        if (leg.ok && leg.capas) {
+          leg.capas.forEach(function(c) { window._leyendaMapa[c.layer] = c; window._leyendaMapa[c.capa] = c; });
+          _construirLeyenda(gdb_id, leg.capas, pts.ok ? pts.geojson : null);
+        }
+        if (pts.ok && pts.geojson && pts.geojson.features && pts.geojson.features.length > 0) {
+          _cargarPuntosOverlay(pts.geojson);
+        }
+        const totalFeats = leg.ok ? leg.capas.reduce(function(s,c){return s+c.count;},0) : 0;
+        mostrarToast(leg.capas.length + ' capas · ' + totalFeats + ' elementos · clic para atributos', 'ok');
+      }).catch(function() {
+        mostrarToast('Mapa base listo. Haz clic para identificar.', 'ok');
+      });
+    }
+
+    function _construirLeyenda(gdb_id, capas, geoPuntos) {
+      const el = document.createElement('div');
+      el.className = 'gdb-legend';
+      el.id = 'gdb-legend';
+
+      const sec = function(titulo, items, tipo) {
+        if (!items.length) return '';
+        let h = '<div class="legend-section"><div class="legend-section-title">' + titulo + '</div>';
+        items.forEach(function(c) {
+          const sym = tipo === 'punto'
+            ? '<div class="legend-swatch point" style="background:' + c.point + '"></div>'
+            : tipo === 'linea'
+              ? '<div class="legend-swatch line" style="background:' + (c.edge||c.point) + '"></div>'
+              : '<div class="legend-swatch" style="background:' + c.fill + ';border-color:' + (c.edge||c.point) + '"></div>';
+          h += '<div class="legend-row">' + sym + '<span class="lname">' + c.layer + '</span><span class="lcount">' + c.count + '</span></div>';
+        });
+        return h + '</div>';
+      };
+
+      let body = '<div class="legend-title">Capas cargadas</div>';
+      body += sec('Áreas / Polígonos', capas.filter(function(c){return c.tipo==='area';}), 'area');
+      body += sec('Líneas', capas.filter(function(c){return c.tipo==='linea';}), 'linea');
+      body += sec('Puntos', capas.filter(function(c){return c.tipo==='punto';}), 'punto');
+      if (geoPuntos && geoPuntos.count > 0) {
+        body += '<div class="legend-toggle"><input type="checkbox" id="gdb-toggle-puntos" checked onchange="window._togglePuntosOverlay(this.checked)"><label for="gdb-toggle-puntos">Puntos interactivos (' + geoPuntos.count + ')</label></div>';
+      }
+      const tot = capas.reduce(function(s,c){return s+c.count;},0);
+      body += '<div style="font-size:0.85rem;color:var(--text-muted);margin-top:6px;text-align:right;border-top:1px solid var(--border-color);padding-top:5px;">' + tot.toLocaleString() + ' entidades</div>';
+
+      const btn = '<div class="gdb-legend-btn" id="gdb-legend-btn">' +
+        '<i data-lucide="layers" style="width:14px;height:14px;flex-shrink:0;"></i>' +
+        '<span class="gdb-legend-label">Leyenda</span>' +
+        '<i data-lucide="chevron-down" class="gdb-legend-chevron" style="width:14px;height:14px;flex-shrink:0;"></i>' +
+        '</div>';
+
+      el.innerHTML = btn + '<div class="gdb-legend-body">' + body + '</div>';
+      document.getElementById('map').appendChild(el);
+      lucide.createIcons();
+      _iniciarLeyendaDrag(el);
+    }
+
+    function _iniciarLeyendaDrag(el, posInicial, storeKey) {
+      const mapEl = document.getElementById('map');
+      const store = storeKey || '_gdbPos';
+      let btn = el.querySelector('.gdb-legend-btn');
+      const modoLista = !btn;
+      if (!btn) btn = el.querySelector('.legend-toolbar');
+      if (!btn) return;
+
+      if (window[store] && Object.keys(window[store]).length) {
+        el.style.left = window[store].x + 'px';
+        el.style.top = window[store].y + 'px';
+      } else if (posInicial && typeof posInicial.x === 'number') {
+        el.style.left = posInicial.x + 'px';
+        el.style.top = posInicial.y + 'px';
+      } else {
+        const mapRect = mapEl.getBoundingClientRect();
+        const w = el.offsetWidth || 200;
+        const h = el.offsetHeight || 56;
+        el.style.left = (mapRect.width - w - 14) + 'px';
+        el.style.top = (mapRect.height - h - 60) + 'px';
+      }
+      el.style.right = 'auto';
+      el.style.bottom = 'auto';
+
+      let dragging = false;
+      let moved = false;
+      let startX = 0, startY = 0, inicioX = 0, inicioY = 0;
+
+      btn.addEventListener('pointerdown', function(e) {
+        e.stopPropagation();
+        if (el.classList.contains('gdb-abierta')) return;
+        if (e.target.closest && e.target.closest('.legend-collapse')) return;
+        // No iniciar arrastre desde controles (checkboxes, botones, enlaces…)
+        if (e.target.closest && e.target.closest('button, input, a, label')) return;
+        dragging = true;
+        moved = false;
+        startX = e.clientX;
+        startY = e.clientY;
+        const r = el.getBoundingClientRect();
+        inicioX = r.left;
+        inicioY = r.top;
+        btn.setPointerCapture(e.pointerId);
+      });
+
+      btn.addEventListener('pointermove', function(e) {
+        if (!dragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        if (Math.abs(dx) + Math.abs(dy) > 4) moved = true;
+        if (!moved) return;
+        const mapRect = mapEl.getBoundingClientRect();
+        let nx = inicioX + dx - mapRect.left;
+        let ny = inicioY + dy - mapRect.top;
+        nx = Math.max(4, Math.min(nx, mapRect.width - el.offsetWidth - 4));
+        ny = Math.max(4, Math.min(ny, mapRect.height - el.offsetHeight - 4));
+        el.style.left = nx + 'px';
+        el.style.top = ny + 'px';
+        el.classList.add('gdb-dragging');
+      });
+
+      function finArrastre() {
+        if (!dragging) return;
+        dragging = false;
+        el.classList.remove('gdb-dragging');
+        window[store] = { x: parseInt(el.style.left, 10) || 0, y: parseInt(el.style.top, 10) || 0 };
+        if (moved) {
+          setTimeout(function() { moved = false; }, 0);
+        }
+      }
+
+      btn.addEventListener('pointerup', finArrastre);
+      btn.addEventListener('pointercancel', finArrastre);
+
+      btn.addEventListener('click', function(e) {
+        if (modoLista) return; // el toolbar solo arrastra; sus botones manejan sus propios eventos
+        e.stopPropagation();
+        if (moved) { moved = false; return; }
+        el.classList.toggle('gdb-abierta');
+        lucide.createIcons();
+      });
+    }
+
+    function _cargarPuntosOverlay(geojson) {
+      capaPuntosGDB = L.geoJSON(geojson, {
+        pointToLayer: function(feature, latlng) {
+          const capa = feature.properties._capa || '';
+          const entry = window._leyendaMapa[capa] || {};
+          const col = entry.point || entry.fill || '#FF0000';
+          return L.circleMarker(latlng, {
+            radius: 5, fillColor: col, fillOpacity: 0.92,
+            color: '#0b1220', weight: 1.2, opacity: 0.7
+          });
+        },
+        onEachFeature: function(feature, layer) {
+          const p = feature.properties;
+          const capa = p._capa || 'Punto';
+          const layerName = capa.split(' / ').pop();
+          const entry = window._leyendaMapa[capa] || {};
+          const accent = entry.point || '#FF0000';
+          const props = Object.assign({}, p, { lat: feature.geometry.coordinates[1], lng: feature.geometry.coordinates[0] });
+          layer.bindPopup(function() { return _popupHTML(props, layerName, 'badge-blue', accent); });
+          layer.bindTooltip(layerName + ' — ' + (p.NOMBRE || p.PROYECTO || p.OPERADOR || p.MDANMNombr || ''), { direction: 'top', offset: [0, -6] });
+        }
+      });
+      capaPuntosGDB.addTo(map);
+    }
+
+    window._togglePuntosOverlay = function(checked) {
+      if (!capaPuntosGDB) return;
+      if (checked) capaPuntosGDB.addTo(map);
+      else map.removeLayer(capaPuntosGDB);
+    };
+
+    function _onClickGDBIdentify(ev) {
+      const gdb_id = window._gdbActivaId;
+      if (!gdb_id) return;
+      const latlng = ev.latlng;
+      fetch('/api/gis/identify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ gdb_id: gdb_id, lat: latlng.lat, lng: latlng.lng, z: map.getZoom() })
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(r) {
+          if (!r.ok) { mostrarToast(r.error || 'Sin datos en este punto.', 'warn'); return; }
+          const props = r.propiedades || {};
+          const capa = r.layer || r.capa || 'GDB';
+          const entry = window._leyendaMapa[capa] || window._leyendaMapa[r.capa] || {};
+          const accent = entry.fill || entry.edge || entry.point || '#8DB4E2';
+          props.lat = latlng.lat;
+          props.lng = latlng.lng;
+          L.popup().setLatLng(latlng).setContent(_popupHTML(props, capa, 'badge-blue', accent)).openOn(map);
+        })
+        .catch(function(err) { console.error('Error identify:', err); mostrarToast('Error al consultar.', 'error'); });
+    }
+
+    function capaImportada(data) {
+      if (!data.ok) {
+        mostrarToast(data.error || 'No se pudo procesar la capa.', 'error');
+        return;
+      }
+      const badges = { shapefile: 'badge-cyan', kmz: 'badge-orange', kml: 'badge-orange', gdb: 'badge-blue' };
+      const capa = data.capa || 'Capa importada';
+      const badge = badges[data.tipo] || 'badge-blue';
+      const feats = (data.geojson && data.geojson.features) || [];
+
+      // KMZ/KML subidos: capa propia con color distinto y entrada en la lista «KMZ cargados»
+      const esKMZ = data.tipo === 'kmz' || data.tipo === 'kml';
+      const colorKMZ = esKMZ ? _KMZ_PALETA[_kmzColorIdx++ % _KMZ_PALETA.length] : null;
+
+      const geoLayer = L.geoJSON(null, {
+        style: esKMZ
+          ? { color: '#0b1220', weight: 1.5, fillColor: colorKMZ, fillOpacity: 0.55 }
+          : { color: '#8DB4E2', weight: 2, fillColor: '#8DB4E2', fillOpacity: 0.3 },
+        onEachFeature: function (feature, lyr) {
+          if (!feature.properties) return;
+          const p = feature.properties;
+          lyr.bindPopup(function () { return _popupHTML(p, capa, badge); });
+        }
+      });
+
+      if (esKMZ) {
+        const key = 'kmz_' + (++_kmzSeq);
+        const group = L.layerGroup().addTo(map);
+        group.addLayer(geoLayer);
+        _kmzRegistry[key] = { key: key, nombre: capa, color: colorKMZ, cuenta: feats.length, group: group, visible: true, origen: 'subido', grupos: {} };
+      } else {
+        capasImportadas.addLayer(geoLayer);
+      }
+
+      if (feats.length === 0) {
+        mostrarToast('No se encontraron geometrías para dibujar.', 'warn');
+        if (esKMZ) _actualizarListaKMZ();
+        return;
+      }
+
+      const CHUNK = 250;
+      const total = feats.length;
+
+      function finalizarCarga() {
+        console.log('Capa importada:', capa, '|', total, 'features |', data.segundos + 's');
+        let resumen = data.capas && data.capas.length
+          ? 'de ' + data.capas.length + ' capa' + (data.capas.length !== 1 ? 's' : '') + ': ' + data.capas.slice(0, 6).join(', ')
+          : capa;
+        mostrarToast(
+          (data.truncado ? 'La capa es muy grande: se dibujaron solo los primeros ' + total + ' elementos. ' : '') +
+          'Cargadas ' + total + ' entidades ' + resumen,
+          data.truncado ? 'warn' : 'ok'
+        );
+        if (total <= 20000) {
+          try {
+            const bounds = geoLayer.getBounds();
+            if (bounds.isValid()) map.fitBounds(bounds);
+          } catch (e) {}
+        } else {
+          console.log('Zoom automático omitido: capa con ' + total + ' features');
+        }
+        if (esKMZ) _actualizarListaKMZ();
+      }
+
+      if (total <= CHUNK) {
+        geoLayer.addData({ type: 'FeatureCollection', features: feats });
+        finalizarCarga();
+        return;
+      }
+
+      _quitarAvisosImportacion();
+      const progreso = document.createElement('div');
+      progreso.className = 'import-aviso';
+      progreso.style.borderColor = 'var(--accent-amber)';
+      document.body.appendChild(progreso);
+
+      let idx = 0;
+      function paso() {
+        const fin = Math.min(idx + CHUNK, total);
+        geoLayer.addData({ type: 'FeatureCollection', features: feats.slice(idx, fin) });
+        idx = fin;
+        progreso.textContent = 'Dibujando ' + idx + '/' + total + ' elementos…';
+        if (idx < total) {
+          requestAnimationFrame(paso);
+        } else {
+          if (progreso.parentNode) progreso.parentNode.removeChild(progreso);
+          finalizarCarga();
+        }
+      }
+      requestAnimationFrame(paso);
+    }
+
+    function _quitarAvisosImportacion() {
+      document.querySelectorAll('.import-aviso').forEach(function(n) { n.remove(); });
+    }
+
+    function mostrarToast(texto, tipo) {
+      const aviso = document.createElement('div');
+      aviso.className = 'import-toast';
+      aviso.style.borderColor = tipo === 'error' ? 'var(--accent-red)' : tipo === 'warn' ? 'var(--accent-amber)' : 'var(--accent-green)';
+      aviso.textContent = texto;
+      document.body.appendChild(aviso);
+      setTimeout(() => {
+        if (aviso.parentNode) aviso.parentNode.removeChild(aviso);
+      }, 6000);
+    }
+
+    function importarCapasGIS(event) {
+      const file = event.target.files[0];
+      event.target.value = '';
+      if (!file) return;
+
+      const aviso = document.createElement('div');
+      aviso.className = 'import-aviso';
+      aviso.textContent = 'Procesando ' + file.name + '...';
+      document.body.appendChild(aviso);
+
+      fetch('/api/gis/convert?nombre=' + encodeURIComponent(file.name), {
+        method: 'POST',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file
+      })
+      .then(res => res.json())
+      .then(capaImportada)
+      .catch(err => {
+        console.error('Error al importar capa GIS:', err);
+        alert('No se pudo conectar con el servidor de conversión. Ejecuta iniciar.bat y abre http://localhost:8000');
+      })
+      .finally(() => {
+        _quitarAvisosImportacion();
+      });
+    }
+
+    window._toggleLegendColapsada = function() {
+      const card = document.querySelector('.map-legend');
+      if (!card) return;
+      card.classList.toggle('map-legend-colapsada');
+      lucide.createIcons();
+    };
+
+    function quitarCapaImportada() {
+      capasImportadas.clearLayers();
+      if (capaTilesGDBActiva) {
+        map.removeLayer(capaTilesGDBActiva);
+        capaTilesGDBActiva = null;
+      }
+      if (capaPuntosGDB) {
+        map.removeLayer(capaPuntosGDB);
+        capaPuntosGDB = null;
+      }
+      const leg = document.getElementById('gdb-legend');
+      if (leg) leg.remove();
+      map.off('click', _onClickGDBIdentify);
+      window._gdbActivaId = null;
+      window._leyendaMapa = {};
+      console.log('Capa importada eliminada.');
+    }
+
+    // ==========================================
+    // IMPORTACIÓN DE CARPETA .gdb (webkitdirectory)
+    // El navegador selecciona la carpeta completa, JSZip la empaqueta como .zip,
+    // y el servidor la procesa igual que un SHP.zip (ya detecta .gdb dentro de ZIPs).
+    // ==========================================
+    function importarCarpetaGDB(event) {
+      const files = event.target.files;
+      event.target.value = '';
+      if (!files || files.length === 0) return;
+
+      const aviso = document.createElement('div');
+      aviso.className = 'import-aviso';
+      aviso.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i> Empaquetando carpeta .gdb con JSZip...';
+      document.body.appendChild(aviso);
+      lucide.createIcons();
+
+      const zip = new JSZip();
+      let archivosAgregados = 0;
+      const carpetasVistas = new Set();
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const path = file.webkitRelativePath || file.name;
+        const partes = path.split('/');
+        if (partes.length > 1) {
+          carpetasVistas.add(partes[0]);
+        }
+        zip.file(path, file);
+        archivosAgregados++;
+      }
+
+      const nombreCarpeta = carpetasVistas.size === 1
+        ? Array.from(carpetasVistas)[0]
+        : 'capa_gdb';
+
+      aviso.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i> Comprimiendo ' + archivosAgregados + ' archivos de ' + nombreCarpeta + '...';
+      lucide.createIcons();
+
+      zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 6 } })
+        .then(function(blob) {
+          const nombreZip = nombreCarpeta.endsWith('.gdb')
+            ? nombreCarpeta + '.zip'
+            : nombreCarpeta + '.gdb.zip';
+
+          aviso.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i> Enviando ' + nombreZip + ' al servidor...';
+          lucide.createIcons();
+
+          return fetch('/api/gis/convert?nombre=' + encodeURIComponent(nombreZip), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/zip' },
+            body: blob
+          });
+        })
+        .then(function(res) { return res.json(); })
+        .then(capaImportada)
+        .catch(function(err) {
+          console.error('Error al importar GDB:', err);
+          alert('No se pudo procesar la carpeta .gdb. Verifica que no esté corrupta.');
+        })
+        .finally(function() {
+          _quitarAvisosImportacion();
+        });
+    }
+
+    // ==========================================
+    // GDB LOCALES - Descubrimiento y carga directa desde el servidor
+    // El backend barre RUTAS_GDB (config/gis_paths.txt) buscando *.gdb
+    // y las sirve vía /api/gis/listar_gdb  +  /api/gis/loadpath
+    // ==========================================
+    function listarGDBLocales() {
+      const panel = document.getElementById('gdb-local-panel');
+      const lista = document.getElementById('gdb-local-list');
+      const kmzLista = document.getElementById('gdb-kmz-list');
+
+      if (panel.style.display === 'block') {
+        panel.style.display = 'none';
+        return;
+      }
+
+      panel.style.display = 'block';
+      lista.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">Buscando geodatabases en el servidor...</span>';
+      kmzLista.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">Buscando capas KMZ EIA en el servidor...</span>';
+      lucide.createIcons();
+
+      fetch('/api/gis/listar_gdb')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (!data.ok || !data.gdb || data.gdb.length === 0) {
+            lista.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">No se encontraron geodatabases en las rutas configuradas.<br>Escribe su ruta en el campo de arriba (funciona en cualquier disco/PC), o agrega rutas en <code>config/gis_paths.txt</code> o copia la carpeta .gdb dentro de <code>config/gdb/</code>.</span>';
+          } else {
+            let html = '';
+            data.gdb.forEach(function(gdb) {
+              const capas = gdb.capas || 0;
+              const nombreCorto = gdb.nombre.replace('.gdb', '');
+              html += '<div class="gdb-local-item" onclick="cargarGDBLocal(\'' + gdb.ruta.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\', this)" title="' + gdb.ruta + '">'
+                + '<div class="gdb-local-item-icon"><i data-lucide="database" style="width:18px;height:18px;"></i></div>'
+                + '<div class="gdb-local-item-info">'
+                + '<div class="gdb-local-item-name">' + nombreCorto + '</div>'
+                + '<div class="gdb-local-item-meta">' + capas + ' capa' + (capas !== 1 ? 's' : '') + ' • ' + gdb.carpeta + '</div>'
+                + '</div>'
+                + '<div class="gdb-local-item-arrow"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></div>'
+                + '</div>';
+            });
+            lista.innerHTML = html;
+          }
+          lucide.createIcons();
+        })
+        .catch(function(err) {
+          console.error('Error al listar GDBs:', err);
+          lista.innerHTML = '<span style="color:var(--accent-red);font-size:0.85rem;">Error de conexión con el servidor.</span>';
+        });
+
+      // Sección KMZ EIA dentro del mismo panel: las capas temáticas locales
+      // (las mismas que auto-desplegaba la versión anterior) se listan aquí
+      // y se aplican SOLO cuando el usuario hace clic en una de ellas.
+      fetch('/api/gis/listar_kmz')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (!data.ok || !data.kmz || data.kmz.length === 0) {
+            kmzLista.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">No se encontraron KMZ EIA en las rutas configuradas.<br>Revisa <code>config/gis_kmz_paths.txt</code> o coloca los .kmz dentro de <code>config/kmz/</code>.</span>';
+          } else {
+            let html = '';
+            data.kmz.forEach(function(kmz) {
+              const campos = (kmz.campos || []).map(function(c) { return c.nombre || c.campo || ''; }).filter(Boolean);
+              html += '<div class="gdb-local-item" onclick="cargarKMZLocal(\'' + kmz.ruta.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\', this)" title="' + kmz.ruta + '">'
+                + '<div class="gdb-local-item-icon"><i data-lucide="layers" style="width:18px;height:18px;"></i></div>'
+                + '<div class="gdb-local-item-info">'
+                + '<div class="gdb-local-item-name">' + (kmz.nombre_display || kmz.nombre || 'KMZ EIA') + '</div>'
+                + '<div class="gdb-local-item-meta">' + kmz.bytes + ' · ' + kmz.features + ' entidades · ' + campos.join(' / ') + '</div>'
+                + '</div>'
+                + '<div class="gdb-local-item-arrow"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></div>'
+                + '</div>';
+            });
+            kmzLista.innerHTML = html;
+          }
+          lucide.createIcons();
+        })
+        .catch(function(err) {
+          console.error('Error al listar KMZ EIA:', err);
+          kmzLista.innerHTML = '<span style="color:var(--accent-red);font-size:0.85rem;">Error de conexión con el servidor.</span>';
+        });
+    }
+
+    function cargarGDBRuta() {
+      const input = document.getElementById('gdb-path-input');
+      const ruta = (input.value || '').trim().replace(/["']/g, '');
+      if (!ruta) {
+        mostrarToast('Escribe la ruta de la carpeta .gdb primero.', 'warn');
+        return;
+      }
+      cargarGDBLocal(ruta, null);
+    }
+
+    function cargarGDBLocal(ruta, elemento) {
+      if (elemento) {
+        elemento.classList.add('loading');
+        elemento.innerHTML = '<div class="gdb-local-item-icon spinning"><i data-lucide="loader-2" style="width:18px;height:18px;"></i></div>'
+          + '<div class="gdb-local-item-info"><div class="gdb-local-item-name">Cargando...</div>'
+          + '<div class="gdb-local-item-meta">Leyendo capas (la 1ª vez tarda ~1-2 min)</div></div>';
+        lucide.createIcons();
+      }
+
+      const aviso = document.createElement('div');
+      aviso.className = 'import-aviso';
+      aviso.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i> Cargando geodatabase desde el servidor...';
+      document.body.appendChild(aviso);
+      lucide.createIcons();
+
+      fetch('/api/gis/loadpath', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ruta: ruta })
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (elemento) elemento.remove();
+          if (data && data.ok && data.tipo === 'gdb' && data.gdb_id) {
+            agregarCapasTilesGDB(data);
+          } else {
+            capaImportada(data);
+          }
+        })
+        .catch(function(err) {
+          console.error('Error al cargar GDB local:', err);
+          if (elemento) {
+            elemento.classList.remove('loading');
+            listarGDBLocales();
+          }
+          mostrarToast('No se pudo cargar la geodatabase. Verifica la ruta y que el servidor esté corriendo.', 'error');
+        })
+        .finally(function() {
+          _quitarAvisosImportacion();
+        });
+    }
+
+    // =============================== CAPA KMZ EIA LOCALES (FUNCIONES CLIENTE) ===============
+    // Reutiliza: _popupHTML, parseVideoUrl, crearVideoHTML, mostrarToast, lucide.
+    // Categorías en color + leyenda con checkboxes (prender/apagar por categoría y subcategoría)
+    // + modal de anotación (video, imagen con gráficas, explicación breve) guardado en localStorage.
+      let capaKMZActiva = null;
+    let _kmzGruposLeyenda = {};
+    const _KMZ_PALETA = ['#8DB4E2', '#00B050', '#FFAA00', '#E26B0A', '#CC99FF', '#61C200', '#FF0000', '#A9D9FE', '#38A800', '#FFFF00', '#489C00', '#5B9BD5', '#747474', '#4472C4', '#ED7D31', '#70AD47'];
+
+    // Categorías del KMZ AreaInfluencia que se OMITEN (sus polígonos no se dibujan
+    // ni aparecen en la leyenda): «Medio Físico» y «Medio Biótico» ya quedan
+    // cubiertos por «Medio Físicobiótico» y «Medio Socioeconómico», y «Componente»
+    // agrupa las áreas de influencia intermedias (Flora, Fauna, Paisaje…) que se
+    // retiran de esta vista para evitar ambigüedades en la presentación ANLA.
+    const _CATEGORIAS_KMZ_OMITIR = ['medio fisico', 'medio biotico', 'componente'];
+
+    // Paleta secuencial para el campo COMPONENTE (Flora, Fauna, Suelos…):
+    // del rojo oscuro al naranja claro, para diferenciar bien cada componente.
+    const _RAMPA_COMPONENTE = [
+      '#7F1D1D', '#9E2B25', '#B93A2A', '#CF4A2E', '#E05C33',
+      '#EC6F3A', '#F58344', '#FA9950', '#FDB05F', '#FFC878'
+    ];
+
+    // Devuelve { valorComponente: color } estable: ordena los componentes
+    // (sin tildes, alfabético) y asigna la rampa rojo->naranja en ese orden.
+    function _mapaColoresComponente(valores) {
+      const mapa = {};
+      const orden = (valores || []).slice().sort(function(a, b) {
+        return _normalizaStr(a).localeCompare(_normalizaStr(b));
+      });
+      orden.forEach(function(v, i) {
+        mapa[v] = _RAMPA_COMPONENTE[i % _RAMPA_COMPONENTE.length];
+      });
+      return mapa;
+    }
+    // Registro central de KMZ cargados (desde cualquier vía): key -> { nombre, color, cuenta, group, visible, origen, grupos }
+    const _kmzRegistry = {};
+    let _kmzSeq = 0;
+    let _kmzColorIdx = 0;
+    let _kmzBaseKey = null;
+
+    // (La auto-carga de KMZ al abrir el mapa se retiró: las capas KMZ EIA se
+    // listan con el botón «KMZ EIA» y se aplican SOLO cuando el usuario hace
+    // clic en una de ellas desde el panel de locales.)
+
+    // Overrides obligatorios del campo de categoría por KMZ EIA (la auto-det
+    // vacía solo con 1 valor en AreaProyecto, y en AreaInfluencia debe agrupar
+    // por AREA_INFL «Medio» con COMPONENTE como subcategoría).
+    const _OVERRIDES_CATEGORIA = {
+      'AreaProyecto': { campoCat: 'NOMENCLAT', campoSub: null },
+      'AreaInfluencia': { campoCat: 'AREA_INFL', campoSub: 'COMPONENTE' },
+      'CoberturaTierra': { campoCat: 'N1_COBERT', campoSub: null }
+    };
+
+    function _ajustarCampoCategoriaKMZ(nombre, campoCat, campoSub) {
+      const base = _normalizaStr(nombre);
+      let override = null;
+      if (base.indexOf('areaproyecto') !== -1) override = _OVERRIDES_CATEGORIA['AreaProyecto'];
+      else if (base.indexOf('areainfluencia') !== -1) override = _OVERRIDES_CATEGORIA['AreaInfluencia'];
+      else if (base.indexOf('coberturatierra') !== -1) override = _OVERRIDES_CATEGORIA['CoberturaTierra'];
+      if (!override) return { campoCat: campoCat, campoSub: campoSub };
+      return {
+        campoCat: override.campoCat || campoCat,
+        campoSub: (override.campoSub === null || override.campoSub === undefined) ? campoSub : override.campoSub
+      };
+    }
+
+    function listarKMZLocales() {
+      const panel = document.getElementById('kmz-local-panel');
+      const lista = document.getElementById('kmz-local-list');
+
+      if (panel.style.display === 'block') { panel.style.display = 'none'; return; }
+      panel.style.display = 'block';
+      lista.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">Buscando KMZ EIA en el servidor…</span>';
+      lucide.createIcons();
+
+      fetch('/api/gis/listar_kmz')
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          if (!data.ok || !data.kmz || data.kmz.length === 0) {
+            lista.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem;">No se encontraron KMZ EIA en las rutas configuradas.<br>Revisa <code>config/gis_kmz_paths.txt</code> o coloca los .kmz dentro de <code>config/kmz/</code>.</span>';
+            return;
+          }
+          let html = '';
+          data.kmz.forEach(function(kmz) {
+            const campos = (kmz.campos || []).map(function(c) { return c.nombre || c.campo || ''; }).filter(Boolean);
+            html += '<div class="gdb-local-item" onclick="cargarKMZLocal(\'' + kmz.ruta.replace(/\\/g, '\\\\').replace(/'/g, "\\'") + '\', this)" title="' + kmz.ruta + '">'
+              + '<div class="gdb-local-item-icon"><i data-lucide="layers" style="width:18px;height:18px;"></i></div>'
+              + '<div class="gdb-local-item-info">'
+              + '<div class="gdb-local-item-name">' + (kmz.nombre_display || kmz.nombre || 'KMZ EIA') + '</div>'
+              + '<div class="gdb-local-item-meta">' + kmz.bytes + ' · ' + kmz.features + ' entidades · ' + campos.join(' / ') + '</div>'
+              + '</div>'
+              + '<div class="gdb-local-item-arrow"><i data-lucide="chevron-right" style="width:14px;height:14px;"></i></div>'
+              + '</div>';
+          });
+          lista.innerHTML = html;
+          lucide.createIcons();
+        })
+        .catch(function(err) {
+          console.error('Error al listar KMZ EIA:', err);
+          lista.innerHTML = '<span style="color:var(--accent-red);font-size:0.85rem;">Error de conexión con el servidor.</span>';
+        });
+    }
+
+    function cargarKMZLocal(ruta, elemento) {
+      if (elemento) {
+        elemento.classList.add('loading');
+        elemento.innerHTML = '<div class="gdb-local-item-icon spinning"><i data-lucide="loader-2" style="width:18px;height:18px;"></i></div>'
+          + '<div class="gdb-local-item-info"><div class="gdb-local-item-name">Leyendo…</div>'
+          + '<div class="gdb-local-item-meta">Preparando geometrías y categorías (la 1ª vez puede tardar)</div></div>';
+        lucide.createIcons();
+      }
+      const aviso = document.createElement('div');
+      aviso.className = 'import-aviso';
+      aviso.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i> Cargando KMZ EIA desde el servidor…';
+      document.body.appendChild(aviso);
+      lucide.createIcons();
+
+      // Devuelve la promesa para que la restauración de la vista pueda esperar
+      // a que TODAS las capas queden cargadas antes de reaplicar sus estados.
+      return fetch('/api/gis/loadkmz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ruta: ruta })
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(resp) { capaImportadaKMZ(resp, ruta); })
+        .catch(function(err) {
+          console.error('Error al cargar KMZ:', err);
+          _quitarAvisosImportacion();
+          mostrarToast('No se pudo cargar el KMZ.', 'error');
+        })
+        .finally(function() {
+          _quitarAvisosImportacion();
+        });
+    }
+
+    function capaImportadaKMZ(data, ruta) {
+      if (!data.ok) {
+        mostrarToast(data.error || 'No se pudo procesar el KMZ.', 'error');
+        return;
+      }
+      const nombre = data.capa || data.nombre_display || data.nombre || 'KMZ EIA';
+      const feats = (data.geojson && data.geojson.features) || [];
+      const campos = data.campos || [];
+      if (feats.length === 0) { mostrarToast('El KMZ no contiene geometrías para dibujar.', 'warn'); return; }
+
+      // 1) Elegir campo de categoría (el servidor marca campo_categoria y campo_subcategoria)
+      let campoCat = data.campo_categoria || '';
+      let campoSub = data.campo_subcategoria || '';
+      if (!campoCat && campos.length) campoCat = campos[0].nombre || campos[0].campo;
+      if (!campoSub && campos.length > 1) campoSub = campos[1].nombre || campos[1].campo;
+
+      // 1.1) Override obligatorio por KMZ EIA (AreaProyecto/AreaInfluencia/CoberturaTierra)
+      const camposAjustados = _ajustarCampoCategoriaKMZ(nombre, campoCat, campoSub);
+      campoCat = camposAjustados.campoCat;
+      campoSub = camposAjustados.campoSub;
+
+      // 2) Agrupar features por valor del campo categoría (y subcategoría si existe)
+      const grupos = {};   // valorCategoria -> { count, sub: { valorSub: count }, feats: [] }
+      feats.forEach(function(f) {
+        const p = f.properties || {};
+        const vCat = (p[campoCat] != null && p[campoCat] !== '') ? String(p[campoCat]).trim() : '(sin categoría)';
+        if (!grupos[vCat]) grupos[vCat] = { count: 0, sub: {}, feats: [] };
+        grupos[vCat].count++;
+        grupos[vCat].feats.push(f);
+        if (campoSub) {
+          const vSub = (p[campoSub] != null && p[campoSub] !== '') ? String(p[campoSub]).trim() : '(sin subcategoría)';
+          grupos[vCat].sub[vSub] = (grupos[vCat].sub[vSub] || 0) + 1;
+        }
+      });
+
+      // 2.1) Omitir categorías redundantes: «Medio Físico» y «Medio Biótico»
+      //      (ya se muestran agrupadas como «Medio Físicobiótico» y
+      //      «Medio Socioeconómico»). No se dibujan ni salen en la leyenda.
+      Object.keys(grupos).forEach(function(vCat) {
+        if (_CATEGORIAS_KMZ_OMITIR.indexOf(_normalizaStr(vCat)) !== -1) delete grupos[vCat];
+      });
+
+      // 3) Capa propia del KMZ (nueva) con su color base para la lista
+      const key = 'kmz_' + (++_kmzSeq);
+      const colorBase = _KMZ_PALETA[_kmzColorIdx++ % _KMZ_PALETA.length];
+      const group = L.featureGroup().addTo(map);
+      if (capaKMZActiva === null) capaKMZActiva = group;
+
+      // 3.1) El PRIMER KMZ es la base: se dibuja abajo y los demás encima de él
+      //  (se refuerza por nombre: AreaProyecto es la base de referencia)
+      const esNombreBase = /areaproyecto|area\s*(de\s*)?proyecto|area\s*del\s*proyecto/i.test(nombre);
+      let esBase = esNombreBase;
+      if (esBase) _kmzBaseKey = key;
+
+      // 4) Dibujar la capa. Si el campo subcategoría aporta varios valores
+      //    (p. ej. COMPONENTE: Flora, Fauna, Hidrología…) se crea UNA subcapa
+      //    por valor, para poder prender/apagar cada componente por separado;
+      //    si no, se crea una sola capa por categoría.
+      const claves = Object.keys(grupos);
+      const gruposLeyenda = {};
+
+      // Colores por COMPONENTE (Flora, Fauna, Suelos…): rampa rojo oscuro ->
+      // naranja claro aplicada al campo subcategoría COMPONENTE, estable para
+      // todas las categorías del KMZ (mismo color por componente en cada una).
+      const esCampoComponente = _normalizaStr(campoSub) === 'componente';
+      let coloresComponente = {};
+      if (esCampoComponente) {
+        const valoresComp = [];
+        claves.forEach(function(c) {
+          Object.keys(grupos[c].sub || {}).forEach(function(s) {
+            // Los valores vacíos («(sin subcategoría)») no son componentes reales:
+            // no consumen un color de la rampa (esos usan el color de su categoría).
+            if (s === '(sin subcategoría)' || s === '(sin categoría)') return;
+            if (valoresComp.indexOf(s) === -1) valoresComp.push(s);
+          });
+        });
+        coloresComponente = _mapaColoresComponente(valoresComp);
+      }
+
+      // Fábrica de capas: misma pintura, popup, tooltip y clic para categorías y subcategorías
+      function _crearCapaCatKMZ(listaFeats, color, cat, vSub) {
+        return L.geoJSON({ type: 'FeatureCollection', features: listaFeats }, {
+          style: esBase
+            ? { color: '#000000', weight: 3, fillColor: color, fillOpacity: 0 }
+            : { color: '#0b1220', weight: 1, fillColor: color, fillOpacity: 0.55 },
+          onEachFeature: function(feature, lyr) {
+            const p = feature.properties || {};
+            const props = Object.assign({}, p, { _capaKMZ: nombre, _campoKMZ: campoCat, _valorKMZ: cat });
+            lyr.bindPopup(function() { return _popupHTML(props, nombre, 'badge-blue', color); });
+            const etqSub = vSub || (campoSub && p[campoSub] != null ? String(p[campoSub]).trim() : null);
+            if (etqSub) lyr.bindTooltip((nombre.length > 22 ? nombre.slice(0, 22) + '…' : nombre) + ' · ' + cat.slice(0, 18) + (etqSub ? ' / ' + etqSub.slice(0, 12) : ''), { direction: 'top', offset: [0, -6] });
+            // Abrir panel lateral de atributos al hacer clic en la entidad
+            lyr.on('click', function(e) {
+              L.DomEvent.stopPropagation(e);
+              _renderPanelAtributos(feature, nombre, color, { cat: cat, sub: etqSub });
+            });
+          }
+        });
+      }
+
+      claves.forEach(function(cat, i) {
+        var semColor = _obtenerColorSemantico(nombre, cat);
+        const color = semColor || _KMZ_PALETA[i % _KMZ_PALETA.length];
+        const grp = grupos[cat];
+        const usarSubs = !!campoSub && Object.keys(grp.sub).length > 1;
+        const contenedor = L.featureGroup();   // caja de la categoría (permite apagarla entera)
+        const subCapas = {};                 // valorSub -> L.geoJSON (para prender/apagar fino)
+        const subConteo = {};                // valorSub -> nº entidades
+        if (usarSubs) {
+          const porSub = {};
+          grp.feats.forEach(function(f) {
+            const p = f.properties || {};
+            const vSub = (p[campoSub] != null && p[campoSub] !== '') ? String(p[campoSub]).trim() : '(sin subcategoría)';
+            (porSub[vSub] = porSub[vSub] || []).push(f);
+          });
+          Object.keys(porSub).forEach(function(s) {
+            const colorSub = esCampoComponente ? (coloresComponente[s] || color) : color;
+            const capaSub = _crearCapaCatKMZ(porSub[s], colorSub, cat, s);
+            subCapas[s] = capaSub;
+            subConteo[s] = porSub[s].length;
+            contenedor.addLayer(capaSub);
+          });
+        } else {
+          const capaCat = _crearCapaCatKMZ(grp.feats, color, cat, null);
+          subCapas['__todas__'] = capaCat;
+          subConteo['__todas__'] = grp.count;
+          contenedor.addLayer(capaCat);
+        }
+        contenedor.addTo(group);
+        gruposLeyenda[cat] = {
+          color: color, count: grp.count, sub: subConteo, oculto: false,
+          layer: contenedor, subLayers: subCapas, subOcultos: {}, usarSubs: usarSubs
+        };
+      });
+
+      // 5) Registrar en la lista de KMZ cargados (mantiene visibilidad y estados de categorías)
+      _kmzRegistry[key] = { key: key, nombre: nombre, color: colorBase, cuenta: feats.length, group: group, visible: true, origen: 'eia', grupos: gruposLeyenda, campoCat: campoCat, campoSub: campoSub, ruta: ruta || '', coloresComponente: coloresComponente };
+
+      // 5.1) Si es la capa base (AD Garcero C / AreaProyecto) se añade un contorno
+      //      NO interactivo que siempre queda por encima: resalta el polígono sin
+      //      robar los clics de las capas temáticas (el relleno queda al fondo).
+      if (esBase) {
+        const geojsonBase = { type: 'FeatureCollection', features: feats };
+        const contorno = L.layerGroup([
+          L.geoJSON(geojsonBase, { style: { color: 'rgba(255,255,255,0.9)', weight: 6, opacity: 0.35, fill: false, interactive: false } }),
+          L.geoJSON(geojsonBase, { style: { color: '#000000', weight: 2.2, opacity: 0.95, fill: false, interactive: false } })
+        ]).addTo(map);
+        _kmzRegistry[key].outline = contorno;
+      }
+
+      // 6) Ajustar vista + 7) Leyenda KMZ con checkboxes por categoría + modal de anotación
+      //    (durante la restauración de la vista NO se hace zoom ni se avisa: el
+      //     mapa recupera la posición guardada al final del proceso)
+      if (!_restaurandoVista) {
+        const bounds = group.getBounds();
+        if (bounds.isValid()) map.fitBounds(bounds);
+      }
+      // Ventanilla única: leyenda de capas KMZ EIA (prender/apagar categorías, anotar…)
+      _construirLeyendaGrupo();
+
+      // Orden por tamaño: los grandes abajo, los pequeños arriba
+      _reapilarKMZ();
+
+      _quitarAvisosImportacion();
+      if (!_restaurandoVista) {
+        mostrarToast(nombre + ' :: ' + claves.length + ' categoría' + (claves.length !== 1 ? 's' : '') + ' · ' + feats.length + ' entidades · usa la leyenda «Capas KMZ EIA» para prender/apagar y clic en el mapa para ver atributos', 'ok');
+      }
+      _guardarVistaKMZ();
+    }
+    window.capaImportadaKMZ = capaImportadaKMZ;
+
+    // ----- VENTANILLA ÚNICA (carga manual de KMZ) -----
+    // Leyenda minimalista: cada KMZ, cada categoría y cada subcategoría
+    // (p. ej. COMPONENTE: Flora, Fauna, Hidrología…) se prende/apaga por separado;
+    // «i» despliega la descripción de la capa y su anotación guardada.
+    function _construirLeyendaGrupo() {
+      const elId = 'kmz-legend-grupo';
+      const prev = document.getElementById(elId);
+      if (prev) prev.remove();
+
+      const claves = Object.keys(_kmzRegistry);
+      if (claves.length === 0) return;
+
+      // Ordenar por tamaño de mayor a menor (los grandes primero en la lista)
+      const ordenAds = claves.map(function(k) {
+        let area = 0;
+        try {
+          const b = _kmzRegistry[k].group && _kmzRegistry[k].group.getBounds();
+          if (b && b.isValid()) area = Math.abs((b.getNorth() - b.getSouth()) * (b.getEast() - b.getWest()));
+        } catch (e) {}
+        return { key: k, area: area };
+      }).sort(function(a, b) { return b.area - a.area; });
+      const clavesOrdenadas = ordenAds.map(function(x) { return x.key; });
+
+      let totalFeats = 0;
+      claves.forEach(function(k) { totalFeats += _kmzRegistry[k].cuenta || 0; });
+
+      const el = document.createElement('div');
+      el.className = 'map-legend kmz-legend';
+      el.id = elId;
+      el.style.cssText = 'position:absolute;z-index:900;left:14px;top:110px;width:308px;max-height:74vh;display:flex;flex-direction:column;overflow:hidden;';
+
+      let body = '<div class="legend-toolbar">'
+        + '<span class="legend-title"><i data-lucide="layers"></i>Capas KMZ EIA</span>'
+        + '<span class="kmz-legend-total" title="Entidades en el mapa">' + totalFeats.toLocaleString() + '</span>'
+        + '<button class="kmz-icon-btn" data-act="toggle-all" title="Prender / apagar todas las capas"><i data-lucide="power"></i></button>'
+        + '<button class="kmz-icon-btn" data-act="collapse" title="Colapsar leyenda"><i data-lucide="chevron-down"></i></button>'
+        + '</div>';
+      body += '<div class="map-legend-body kmz-legend-body">';
+
+      clavesOrdenadas.forEach(function(key) {
+        const reg = _kmzRegistry[key];
+        if (!reg) return;
+        const cats = Object.keys(reg.grupos || {});
+
+        body += '<section class="kmz-file" data-key="' + _escAttr(key) + '">';
+
+        // Fila de archivo: prender/apagar todo + zoom + descripción + quitar
+        body += '<div class="kmz-file-head">'
+          + '<input type="checkbox" class="kmz-file-toggle"' + (reg.visible ? ' checked' : '') + ' title="Prender / apagar toda la capa" style="accent-color:' + reg.color + ';">'
+          + '<span class="kmz-dot" style="background:' + reg.color + ';"></span>'
+          + '<span class="kmz-file-name" title="' + _escAttr(reg.nombre) + '">' + _escHTML(reg.nombre) + '</span>'
+          + '<span class="kmz-count">' + (reg.cuenta || 0) + '</span>'
+          + '<span class="kmz-actions">'
+          + '<button class="kmz-icon-btn" data-act="zoom" title="Zoom a esta capa"><i data-lucide="maximize-2"></i></button>'
+          + '<button class="kmz-icon-btn" data-act="info" title="¿Qué es esta capa?"><i data-lucide="info"></i></button>'
+          + '<button class="kmz-icon-btn kmz-danger" data-act="remove" title="Quitar esta capa del mapa"><i data-lucide="x"></i></button>'
+          + '</span></div>';
+        body += '<div class="kmz-desc" hidden></div>';
+
+        if (cats.length) {
+          body += '<div class="kmz-cats">';
+          cats.forEach(function(cat, ci) {
+            const g = reg.grupos[cat];
+            if (!g || g.count === 0) return;
+            const accent = _obtenerColorSemantico(reg.nombre, cat) || g.color;
+            body += '<div class="kmz-cat-block" data-ci="' + ci + '">';
+            body += '<div class="kmz-cat-row">'
+              + '<input type="checkbox" class="kmz-cat-toggle"' + (!g.oculto ? ' checked' : '') + ' title="Prender / apagar esta categoría" style="accent-color:' + accent + ';">'
+              + '<span class="kmz-dot kmz-dot-sq" style="background:' + accent + ';"></span>'
+              + '<span class="kmz-cat-name" title="' + _escAttr(cat) + '">' + _escHTML(cat) + '</span>'
+              + '<span class="kmz-count">' + g.count + '</span>'
+              + '<button class="kmz-icon-btn kmz-info-btn" data-act="info" title="¿Qué es?"><i data-lucide="info"></i></button>'
+              + '<button class="kmz-icon-btn" data-act="note" data-cat="' + _escAttr(cat) + '" title="Anotar (video, imagen y nota)"><i data-lucide="video"></i></button>'
+              + '</div>';
+            // Subcategorías reales: cada una se prende/apaga por separado
+            const subs = Object.keys(g.subLayers || {});
+            if (g.usarSubs && subs.length > 1) {
+              const esComp = _normalizaStr(reg.campoSub) === 'componente';
+              const mapaComp = reg.coloresComponente || {};
+              body += '<div class="kmz-subs">';
+              subs.forEach(function(s, si) {
+                if (s === '__todas__') return;
+                const descSub = _kmzDescripcion(reg.nombre, s);
+                // Cada COMPONENTE lleva su color propio (rampa rojo oscuro ->
+                // naranja claro); las demás subcategorías heredan el color de
+                // su categoría.
+                const colorSub = (esComp && mapaComp[s]) ? mapaComp[s] : accent;
+                body += '<div class="kmz-sub-row" data-si="' + si + '">'
+                  + '<input type="checkbox" class="kmz-sub-toggle"' + (!(g.subOcultos && g.subOcultos[s]) ? ' checked' : '') + ' title="Prender / apagar esta capa" style="accent-color:' + colorSub + ';">'
+                  + '<span class="kmz-dot kmz-dot-sq" style="background:' + colorSub + ';width:9px;height:9px;"></span>'
+                  + '<span class="kmz-sub-name"' + (descSub ? ' title="' + _escAttr(descSub) + '"' : '') + '>' + _escHTML(s) + '</span>'
+                  + '<span class="kmz-count">' + ((g.sub && g.sub[s]) || 0) + '</span>'
+                  + '</div>';
+              });
+              body += '</div>';
+            }
+            body += '<div class="kmz-desc" hidden></div>';
+            body += '</div>';
+          });
+          body += '</div>';
+        } else {
+          body += '<div class="kmz-void">' + (reg.cuenta || 0) + ' entidades dibujadas</div>';
+        }
+        body += '</section>';
+      });
+
+      // Pie: Descargar (GeoJSON) + Quitar todo
+      body += '<div class="kmz-legend-footer">'
+        + '<button data-act="download" title="Descargar todas las capas KMZ en un GeoJSON (WGS84)"><i data-lucide="download"></i>Descargar</button>'
+        + '<button data-act="remove-all" class="kmz-danger" title="Quitar todas las capas KMZ"><i data-lucide="trash-2"></i>Quitar todo</button>'
+        + '</div>';
+      body += '</div>';
+
+      el.innerHTML = body;
+      const mapaCont = document.querySelector('.map-container');
+      (mapaCont || document.getElementById('map')).appendChild(el);
+      lucide.createIcons();
+      _iniciarLeyendaDrag(el, { x: 14, y: 110 }, 'kmzGrupoPos');
+      _kmzLeyendaEventos(el);
+    }
+
+    window._construirLeyendaGrupo = _construirLeyendaGrupo;
+
+    // Eventos de la leyenda unificada (delegación: sirve para cualquier KMZ cargado después)
+    function _kmzLeyendaEventos(el) {
+      function toggleDesc(btn) {
+        const sec = btn.closest('.kmz-file');
+        const reg = sec && _kmzRegistry[sec.dataset.key];
+        if (!reg) return;
+        let descEl, cat = null;
+        if (btn.classList.contains('kmz-info-btn')) {
+          const block = btn.closest('.kmz-cat-block');
+          if (!block) return;
+          const ci = parseInt(block.dataset.ci, 10);
+          cat = Object.keys(reg.grupos || {})[ci];
+          descEl = block.querySelector('.kmz-desc');
+        } else {
+          descEl = sec.querySelector('.kmz-desc');
+        }
+        if (!descEl) return;
+        if (!descEl.hidden) { descEl.hidden = true; return; }
+        descEl.innerHTML = _kmzDescHTML(reg, cat || null);
+        descEl.hidden = false;
+        lucide.createIcons();
+      }
+
+      el.addEventListener('click', function(e) {
+        const nameEl = e.target.closest('.kmz-file-name, .kmz-cat-name, .kmz-sub-name');
+        if (nameEl) {
+          // Clic en el nombre = prender/apagar (casilla pequeña, mejor puntería)
+          const sec2 = nameEl.closest('.kmz-file');
+          const key2 = sec2 && sec2.dataset.key;
+          const reg2 = key2 && _kmzRegistry[key2];
+          if (!reg2 || !sec2) return;
+          if (nameEl.classList.contains('kmz-file-name')) {
+            const cb2 = sec2.querySelector('.kmz-file-toggle');
+            if (cb2) cb2.click();
+            return;
+          }
+          const block2 = nameEl.closest('.kmz-cat-block');
+          const ci2 = block2 ? parseInt(block2.dataset.ci, 10) : null;
+          const cat2 = (ci2 != null) ? Object.keys(reg2.grupos || {})[ci2] : null;
+          if (!cat2) return;
+          if (nameEl.classList.contains('kmz-cat-name')) {
+            const c2 = block2.querySelector('.kmz-cat-toggle');
+            if (c2) c2.click();
+            return;
+          }
+          const row2 = nameEl.closest('.kmz-sub-row');
+          const si2 = row2 ? parseInt(row2.dataset.si, 10) : null;
+          const sub2 = (si2 != null) ? Object.keys(reg2.grupos[cat2].subLayers || {})[si2] : null;
+          if (sub2) {
+            const s2 = row2.querySelector('.kmz-sub-toggle');
+            if (s2) s2.click();
+          }
+          return;
+        }
+        const btn = e.target.closest('[data-act]');
+        if (!btn) return;
+        e.stopPropagation();
+        const act = btn.dataset.act;
+        if (act === 'collapse') { _kmzGrupoColapsar(); return; }
+        if (act === 'download') { descargarGeoJSON(); return; }
+        if (act === 'remove-all') { _kmzGrupoQuitarTodos(); return; }
+        const sec = btn.closest('.kmz-file');
+        const key = sec && sec.dataset.key;
+        const reg = key && _kmzRegistry[key];
+        if (act === 'toggle-all') {
+          const anyVisible = Object.keys(_kmzRegistry).some(function(k) { return _kmzRegistry[k].visible; });
+          Object.keys(_kmzRegistry).forEach(function(k) { _toggleKMZArchivo(k, !anyVisible); });
+          return;
+        }
+        if (!reg) return;
+        if (act === 'remove') { _kmzGrupoQuitar(key); return; }
+        if (act === 'note') { _kmzAbrirAnotacion(btn.dataset.cat); return; }
+        if (act === 'info') { toggleDesc(btn); return; }
+        if (act === 'zoom') {
+          if (reg.group && reg.visible) {
+            const b = reg.group.getBounds();
+            if (b && b.isValid()) map.fitBounds(b, { padding: [40, 40] });
+          }
+          return;
+        }
+      });
+
+      el.addEventListener('change', function(e) {
+        const t = e.target;
+        const sec = t.closest('.kmz-file');
+        if (!sec) return;
+        const key = sec.dataset.key;
+        const reg = _kmzRegistry[key];
+        if (!reg) return;
+        if (t.classList.contains('kmz-file-toggle')) { _toggleKMZArchivo(key, t.checked); return; }
+        const block = t.closest('.kmz-cat-block');
+        if (!block) return;
+        const ci = parseInt(block.dataset.ci, 10);
+        const cat = Object.keys(reg.grupos || {})[ci];
+        if (!cat) return;
+        if (t.classList.contains('kmz-cat-toggle')) { _toggleKMZCat(key, cat, t.checked); return; }
+        if (t.classList.contains('kmz-sub-toggle')) {
+          const row = t.closest('.kmz-sub-row');
+          if (!row) return;
+          const si = parseInt(row.dataset.si, 10);
+          const sub = Object.keys(reg.grupos[cat].subLayers || {})[si];
+          if (sub) _toggleKMZSub(key, cat, sub, t.checked);
+        }
+      });
+    }
+
+    // Contenido del desplegable «i»: descripción del catálogo + anotación guardada
+    function _kmzDescHTML(reg, cat) {
+      const partes = [];
+      const d = _kmzDescripcion(reg.nombre, cat);
+      let anot = null;
+      try { anot = (typeof _kmzLeerAnot === 'function') ? _kmzLeerAnot(cat || reg.nombre) : null; } catch (e) {}
+      if (!d && !(anot && anot.nota)) {
+        partes.push('<div class="kmz-desc-vacio">Sin descripción registrada todavía.</div>');
+      }
+      if (d) partes.push('<div>' + _escHTML(d) + '</div>');
+      if (anot && anot.nota) partes.push('<div class="kmz-desc-nota">' + _escHTML(anot.nota) + '</div>');
+      const media = [];
+      if (anot && anot.imagen) media.push('<img src="' + _escAttr(anot.imagen) + '" alt="Imagen de la anotación">');
+      if (anot && anot.video) media.push('<span class="kmz-desc-medio">Video disponible</span>');
+      if (media.length) partes.push('<div class="kmz-desc-media">' + media.join('') + '</div>');
+      partes.push('<button class="kmz-desc-anotar" data-act="note" data-cat="' + _escAttr(cat || reg.nombre) + '"><i data-lucide="video"></i>' + (anot ? 'Editar anotación' : 'Añadir anotación') + '</button>');
+      return partes.join('');
+    }
+
+    function _kmzGrupoColapsar() {
+      const el = document.getElementById('kmz-legend-grupo');
+      if (!el) return;
+      const body = el.querySelector('.map-legend-body');
+      if (!body) return;
+      const cerrada = body.style.display === 'none';
+      body.style.display = cerrada ? 'block' : 'none';
+      el.classList.toggle('kmz-colapsada', !cerrada);
+      const panel = el.querySelector('.legend-toolbar');
+      if (panel) lucide.createIcons();
+    }
+
+    function _kmzGrupoQuitarMKZ(key) {
+      const reg = _kmzRegistry[key];
+      if (!reg) return;
+      if (map.hasLayer(reg.group)) map.removeLayer(reg.group);
+      if (reg.outline && map.hasLayer(reg.outline)) map.removeLayer(reg.outline);
+      const leg = document.getElementById('kmz-legend-elm-' + key);
+      if (leg) leg.remove();
+      if (capaKMZActiva === reg.group) capaKMZActiva = null;
+      delete _kmzRegistry[key];
+    }
+
+    function _kmzGrupoQuitar(key) {
+      _kmzGrupoQuitarMKZ(key);
+      if (Object.keys(_kmzRegistry).length === 0) {
+        const g = document.getElementById('kmz-legend-grupo');
+        if (g) g.remove();
+      } else {
+        _construirLeyendaGrupo();
+        _reapilarKMZ();
+      }
+      mostrarToast('KMZ eliminado de la lista.', 'ok');
+    }
+
+    function _kmzGrupoQuitarTodos() {
+      Object.keys(_kmzRegistry).slice().forEach(function(key) { _kmzGrupoQuitarMKZ(key); });
+      const g = document.getElementById('kmz-legend-grupo');
+      if (g) g.remove();
+      const lp = document.getElementById('kmz-layer-panel');
+      if (lp) lp.remove();
+      mostrarToast('Todas las capas KMZ EIA eliminadas.', 'ok');
+    }
+
+    window._kmzGrupoColapsar = _kmzGrupoColapsar;
+    window._kmzGrupoQuitar = _kmzGrupoQuitar;
+    window._kmzGrupoQuitarTodos = _kmzGrupoQuitarTodos;
+
+    function _guardarKMZLocal(nombre) {
+      try { localStorage.setItem('kmz_eia_activa', nombre); } catch (e) {}
+    }
+
+    // Leyenda por archivo: quedó unificada en «_construirLeyendaGrupo» (ventanilla única).
+    function _construirLeyendaKMZ() { _construirLeyendaGrupo(); }
+
+    // Prender/apagar una CATEGORÍA completa (respeta las subcategorías apagadas)
+    function _toggleKMZCat(key, cat, checked) {
+      const reg = _kmzRegistry[key];
+      if (!reg || !reg.grupos) return;
+      const g = reg.grupos[cat];
+      if (!g) return;
+      g.oculto = !checked;
+      if (g.layer) {
+        if (checked) {
+          if (!map.hasLayer(g.layer)) map.addLayer(g.layer);
+        } else {
+          if (map.hasLayer(g.layer)) map.removeLayer(g.layer);
+        }
+      }
+      _kmzSyncLeyenda(key);
+      _reapilarKMZ();
+      _guardarVistaKMZ();
+      mostrarToast('Categoría «' + cat + '» ' + (checked ? 'visible' : 'oculta'), checked ? 'ok' : 'warn');
+    }
+
+    // Prender/apagar una SUBCATEGORÍA (p. ej. un componente: Flora, Fauna, Suelos…)
+    function _toggleKMZSub(key, cat, sub, checked) {
+      const reg = _kmzRegistry[key];
+      const g = reg && reg.grupos && reg.grupos[cat];
+      const capa = g && g.subLayers && g.subLayers[sub];
+      if (!capa) return;
+      g.subOcultos = g.subOcultos || {};
+      g.subOcultos[sub] = !checked;
+      if (g.layer) {
+        if (checked) g.layer.addLayer(capa);
+        else if (g.layer.hasLayer(capa)) g.layer.removeLayer(capa);
+      }
+      // Si se enciende una subcategoría con la categoría (o el archivo) apagado, se enciende
+      if (checked && g.oculto) {
+        g.oculto = false;
+        if (reg.visible && g.layer && !map.hasLayer(g.layer)) map.addLayer(g.layer);
+      }
+      _kmzSyncLeyenda(key);
+      _reapilarKMZ();
+      _guardarVistaKMZ();
+    }
+
+    // Sincroniza los checkboxes de la leyenda con el estado real de capas/subcapas
+    function _kmzSyncLeyenda(key) {
+      const reg = _kmzRegistry[key];
+      const sec = document.querySelector('.kmz-file[data-key="' + key + '"]');
+      if (!reg || !sec) return;
+      const fileCb = sec.querySelector('.kmz-file-toggle');
+      if (fileCb) fileCb.checked = !!reg.visible;
+      const cats = Object.keys(reg.grupos || {});
+      sec.querySelectorAll('.kmz-cat-block').forEach(function(block) {
+        const ci = parseInt(block.dataset.ci, 10);
+        const g = reg.grupos && reg.grupos[cats[ci]];
+        if (!g) return;
+        const cb = block.querySelector('.kmz-cat-toggle');
+        if (cb) cb.checked = !g.oculto;
+        const subs = Object.keys(g.subLayers || {});
+        block.querySelectorAll('.kmz-sub-row').forEach(function(row) {
+          const si = parseInt(row.dataset.si, 10);
+          const sub = subs[si];
+          const rcb = row.querySelector('.kmz-sub-toggle');
+          if (rcb && sub) rcb.checked = !(g.subOcultos && g.subOcultos[sub]);
+        });
+      });
+    }
+
+    // Aplica a la caja de la categoría qué subcapas deben estar dentro (las ocultas se sacan)
+    function _kmzSyncSubsEnMapa(g) {
+      if (!g || !g.subLayers || !g.layer) return;
+      Object.keys(g.subLayers).forEach(function(s) {
+        const capa = g.subLayers[s];
+        const oculto = !!(g.subOcultos && g.subOcultos[s]);
+        if (oculto) { if (g.layer.hasLayer(capa)) g.layer.removeLayer(capa); }
+        else if (!g.layer.hasLayer(capa)) g.layer.addLayer(capa);
+      });
+    }
+
+    // Re-apila los KMZ cargados por TAMAÑO: los grandes abajo, los pequeños arriba
+    // (los archivos más extensos no deben tapar a los que están por debajo). La capa
+    // base queda al fondo para no bloquear los clics; su contorno no interactivo
+    // (reg.outline) es el que siempre se dibuja encima.
+    function _traerAlFrenteCapa(capa) {
+      if (!capa) return;
+      try {
+        if (typeof capa.bringToFront === 'function' && !capa.eachLayer) { capa.bringToFront(); return; }
+        if (capa.eachLayer) {
+          capa.eachLayer(function(hijo) {
+            if (hijo.bringToFront && !hijo.eachLayer) hijo.bringToFront();
+            else if (hijo.eachLayer) _traerAlFrenteCapa(hijo);
+          });
+        }
+      } catch (e) {}
+    }
+
+    function _reapilarKMZ() {
+      const orden = Object.keys(_kmzRegistry).map(function(k) {
+        let area = 0;
+        try {
+          const b = _kmzRegistry[k].group && _kmzRegistry[k].group.getBounds();
+          if (b && b.isValid()) area = Math.abs((b.getNorth() - b.getSouth()) * (b.getEast() - b.getWest()));
+        } catch (e) {}
+        return { key: k, area: area };
+      }).sort(function(a, b) { return b.area - a.area; }); // de mayor a menor
+
+      // 1) Capas normales: grandes abajo, pequeñas arriba. La base interactiva
+      //    se salta (queda al fondo: el relleno es invisible y no debe capturar clics).
+      orden.forEach(function(it) {
+        if (it.key === _kmzBaseKey) return;
+        const reg = _kmzRegistry[it.key];
+        if (reg && reg.visible) _traerAlFrenteCapa(reg.group);
+      });
+
+      // 2) Contornos NO interactivos (capa base): siempre visibles por encima de todo.
+      Object.keys(_kmzRegistry).forEach(function(k) {
+        const reg = _kmzRegistry[k];
+        if (reg.outline && reg.visible) _traerAlFrenteCapa(reg.outline);
+      });
+    }
+
+    function _kmzLeyendaColapsar(key) {
+      const el = document.getElementById('kmz-legend-elm-' + key);
+      if (!el) return;
+      const body = el.querySelector('.map-legend-body');
+      if (!body) return;
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    }
+
+    window._toggleKMZCat = _toggleKMZCat;
+    window._toggleKMZSub = _toggleKMZSub;
+
+    // (La lista «KMZ cargados» y la leyenda por archivo quedaron unificadas en
+    //  la ventanilla única: _construirLeyendaGrupo. _actualizarListaKMZ es un alias.)
+
+    function _toggleKMZArchivo(key, checked) {
+      const reg = _kmzRegistry[key];
+      if (!reg) return;
+      reg.visible = !!checked;
+      if (checked) {
+        if (!map.hasLayer(reg.group)) map.addLayer(reg.group);
+        if (reg.outline && !map.hasLayer(reg.outline)) map.addLayer(reg.outline);
+        // Reactivar respetando categorías y subcategorías que quedaron apagadas
+        if (reg.grupos) {
+          Object.keys(reg.grupos).forEach(function(cat) {
+            const g = reg.grupos[cat];
+            if (g.oculto && g.layer && map.hasLayer(g.layer)) map.removeLayer(g.layer);
+            _kmzSyncSubsEnMapa(g);
+          });
+        }
+      } else {
+        if (map.hasLayer(reg.group)) map.removeLayer(reg.group);
+        if (reg.outline && map.hasLayer(reg.outline)) map.removeLayer(reg.outline);
+      }
+      // Mantener la pila por TAMAÑO: grandes abajo, pequeños arriba
+      _reapilarKMZ();
+      _kmzSyncLeyenda(key);
+      _guardarVistaKMZ();
+    }
+
+    function _quitarKMZDefinitivo(key) {
+      const reg = _kmzRegistry[key];
+      if (!reg) return;
+      if (map.hasLayer(reg.group)) map.removeLayer(reg.group);
+      if (reg.outline && map.hasLayer(reg.outline)) map.removeLayer(reg.outline);
+      const leg = document.getElementById('kmz-legend-elm-' + key);
+      if (leg) leg.remove();
+      if (capaKMZActiva === reg.group) capaKMZActiva = null;
+      delete _kmzRegistry[key];
+      _construirLeyendaGrupo();
+      _reapilarKMZ();
+      _guardarVistaKMZ();
+      mostrarToast('KMZ «' + reg.nombre + '» eliminado de la lista.', 'ok');
+    }
+
+    function _kmzListaColapsar() {
+      const el = document.getElementById('kmz-list-legend');
+      if (!el) return;
+      const body = el.querySelector('.map-legend-body');
+      if (!body) return;
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    }
+
+    window._actualizarListaKMZ = _actualizarListaKMZ;
+    window._toggleKMZArchivo = _toggleKMZArchivo;
+    window._quitarKMZDefinitivo = _quitarKMZDefinitivo;
+    window._kmzListaColapsar = _kmzListaColapsar;
+
+    // ----- MODAL DE ANOTACIÓN POR CATEGORÍA (video + imagen con gráficas + explicación breve) -----
+    let _kmzAnotCache = {};
+    function _kmzLeerAnot(cat) {
+      const serverMap = window._kmzAnotaciones || null;
+      if (serverMap && serverMap[cat]) return serverMap[cat];
+      try {
+        const raw = localStorage.getItem('kmz_eia_anot_' + cat);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+    function _kmzGuardarAnot() {
+      const datos = { video: _kmzAnotCache.video, imagen: _kmzAnotCache.imagen, nota: _kmzAnotCache.nota };
+      try { localStorage.setItem('kmz_eia_anot_' + _kmzAnotCache.cat, JSON.stringify(datos)); } catch (e) {}
+      if (window._kmzAnotaciones) window._kmzAnotaciones[_kmzAnotCache.cat] = datos;
+      guardarEstadoServidor({ kmz_anotaciones: { [_kmzAnotCache.cat]: datos } });
+      mostrarToast('Anotación guardada para «' + _kmzAnotCache.cat + '».', 'ok');
+    }
+
+    // Carga portable de anotaciones KMZ: el servidor (data/estado_app.json) manda;
+    // si no hay aun, se migran las anotaciones del navegador al servidor.
+    async function inicializarAnotacionesKMZ() {
+      const server = await cargarEstadoServidor();
+      const localMap = recolectarPrefijoLocalStorage('kmz_eia_anot_');
+
+      let merged = localMap;
+      if (server && server.kmz_anotaciones && typeof server.kmz_anotaciones === 'object') {
+        merged = Object.assign({}, localMap, server.kmz_anotaciones);
+      }
+      window._kmzAnotaciones = merged;
+
+      const faltan = Object.keys(localMap).filter(function(k) {
+        return !(server && server.kmz_anotaciones && server.kmz_anotaciones[k]);
+      });
+      if (faltan.length) {
+        const parche = {};
+        faltan.forEach(function(k) { parche[k] = localMap[k]; });
+        guardarEstadoServidor({ kmz_anotaciones: parche });
+      }
+    }
+
+    inicializarAnotacionesKMZ();
+
+    function _kmzAbrirAnotacion(cat) {
+      const prev = document.querySelector('.kmz-anot-modal');
+      if (prev) prev.remove();
+      const prevData = _kmzLeerAnot(cat) || {};
+      _kmzAnotCache = { cat: cat, video: prevData.video || '', imagen: prevData.imagen || '', nota: prevData.nota || '' };
+
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay kmz-anot-modal';
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(2,8,23,.78);z-index:4000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);';
+      overlay.innerHTML =
+        '<div class="detail-modal" style="width:min(660px,94vw);max-height:92vh;overflow:auto;background:#0b1220;border:1px solid var(--border-color,#2a3);border-radius:14px;box-shadow:0 20px 60px rgba(0,0,0,.55);">'
+        + '<div class="detail-header" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border-color,#2a3);">'
+        + '<span style="font-weight:700;font-size:0.9rem;">Anotación EIA de «' + cat + '»</span>'
+        + '<button onclick="this.closest(\'.kmz-anot-modal\').remove()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;"><i data-lucide="x" style="width:16px;height:16px;"></i></button>'
+        + '</div>'
+        + '<div style="padding:14px 16px;display:flex;flex-direction:column;gap:14px;">'
+
+        // VIDEO
+        + '<div class="detail-section">'
+        + '<div class="detail-section-title" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;"><i data-lucide="video" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i>Video explicativo (YouTube o MP4)</div>'
+        + '<input type="text" id="kmz-video-input" placeholder="Pega la URL del video (YouTube, Vimeo o .mp4)…" value="' + (_kmzAnotCache.video || '').replace(/"/g, '&quot;') + '" style="width:100%;background:#0b1220;border:1px solid var(--border-color,#2a3);color:#e2e8f0;border-radius:6px;padding:7px 9px;font-size:0.85rem;">'
+        + '<div id="kmz-video-prev" style="margin-top:8px;">' + (_kmzAnotCache.video ? crearVideoHTML(_kmzAnotCache.video) : '') + '</div>'
+        + '</div>'
+
+        // IMAGEN con gráficas
+        + '<div class="detail-section">'
+        + '<div class="detail-section-title" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;"><i data-lucide="image" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i>Imagen con gráficas (sube desde tu disco)</div>'
+        + '<div style="display:flex;gap:8px;align-items:center;">'
+        + '<input id="kmz-imagen-input" type="file" accept="image/*" onchange="_subirImagenKMZ(event)" style="display:none;">'
+        + '<button onclick="document.getElementById(\'kmz-imagen-input\').click()" style="background:linear-gradient(135deg,#A9D9FE,#00B050);color:#000;border:none;border-radius:6px;padding:7px 12px;font-size:0.85rem;font-weight:600;cursor:pointer;">Subir imagen</button>'
+        + (_kmzAnotCache.imagen ? '<span style="font-size:0.85rem;color:var(--text-muted);"><i data-lucide="image-down" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:4px;"></i>Imagen guardada</span>' : '')
+        + '</div>'
+        + '<div id="kmz-imagen-prev" style="margin-top:8px;">' + (_kmzAnotCache.imagen ? '<img src="' + _kmzAnotCache.imagen + '" style="max-width:100%;max-height:220px;border-radius:8px;display:block;">' : '') + '</div>'
+        + '</div>'
+
+        // EXPLICACIÓN BREVE
+        + '<div class="detail-section">'
+        + '<div class="detail-section-title" style="font-size:0.85rem;color:var(--text-muted);margin-bottom:6px;"><i data-lucide="file-text" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i>Explicación breve y directa</div>'
+        + '<textarea id="kmz-nota-input" rows="3" placeholder="¿Qué representa, cuál es su alcance y por qué es relevante? (breve, directo)…" style="width:100%;background:#0b1220;border:1px solid var(--border-color,#2a3);color:#e2e8f0;border-radius:6px;padding:7px 9px;font-size:0.9rem;resize:vertical;">' + (_kmzAnotCache.nota || '') + '</textarea>'
+        + '</div>'
+
+        + '<div style="display:flex;justify-content:flex-end;gap:8px;padding-top:4px;">'
+        + '<button onclick="this.closest(\'.kmz-anot-modal\').remove()" style="background:none;border:1px solid var(--border-color,#2a3);color:var(--text-muted);border-radius:6px;padding:7px 14px;font-size:0.85rem;cursor:pointer;">Cancelar</button>'
+        + '<button onclick="_kmzGuardarAnot()" style="background:linear-gradient(135deg,#E26B0A,#FF0000);color:#fff;border:none;border-radius:6px;padding:7px 18px;font-size:0.85rem;font-weight:700;cursor:pointer;"><i data-lucide="save" style="width:14px;height:14px;display:inline;vertical-align:middle;margin-right:6px;"></i>Guardar anotación</button>'
+        + '</div>'
+        + '</div></div>';
+
+      document.body.appendChild(overlay);
+      lucide.createIcons();
+
+      // Actualizar preview de video en vivo
+      const vidInput = document.getElementById('kmz-video-input');
+      vidInput.addEventListener('input', function() {
+        _kmzAnotCache.video = vidInput.value.trim();
+        document.getElementById('kmz-video-prev').innerHTML = _kmzAnotCache.video ? crearVideoHTML(_kmzAnotCache.video) : '';
+        lucide.createIcons();
+      });
+      const notaInput = document.getElementById('kmz-nota-input');
+      notaInput.addEventListener('input', function() { _kmzAnotCache.nota = notaInput.value; });
+      window._kmzAnotCache = _kmzAnotCache;
+    }
+
+    function _subirImagenKMZ(event) {
+      const file = event.target.files[0];
+      event.target.value = '';
+      if (!file) return;
+      const nombre = 'img_' + Date.now() + '_' + (file.name || 'archivo').replace(/[^a-zA-Z0-9._-]/g, '_');
+      fetch('/api/upload?nombre=' + encodeURIComponent(nombre), {
+        method: 'POST',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file
+      })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          const url = (data && (data.ruta || data.url)) || '';
+          if (!url) { mostrarToast('No se pudo subir la imagen.', 'error'); return; }
+          _kmzAnotCache.imagen = url;
+          document.getElementById('kmz-imagen-prev').innerHTML = '<img src="' + url + '" style="max-width:100%;max-height:220px;border-radius:8px;display:block;">';
+          mostrarToast('Imagen subida. Pulsa «Guardar anotación».', 'ok');
+          lucide.createIcons();
+        })
+        .catch(function(err) { console.error(err); mostrarToast('Error al subir la imagen.', 'error'); });
+    }
+
+    // Exposición global
+    window.listarKMZLocales = listarKMZLocales;
+    window.cargarKMZLocal = cargarKMZLocal;
+    window._kmzAbrirAnotacion = _kmzAbrirAnotacion;
+    window._kmzGuardarAnot = _kmzGuardarAnot;
+    window._subirImagenKMZ = _subirImagenKMZ;
+    window._toggleKMZCat = _toggleKMZCat;
+    window._toggleKMZSub = _toggleKMZSub;
+    window._kmzLeyendaColapsar = _kmzLeyendaColapsar;
+    window._actualizarListaKMZ = _actualizarListaKMZ;
+    window._toggleKMZArchivo = _toggleKMZArchivo;
+    window._quitarKMZDefinitivo = _quitarKMZDefinitivo;
+    window._kmzListaColapsar = _kmzListaColapsar;
+
+    // ==========================================
+    // KMZ EIA: LEYENDA INTEGRADA + PANEL DE ATRIBUTOS
+    // (las capas se aplican manualmente desde la lista «KMZ EIA»)
+    // ==========================================
+
+    // Colores semánticos por KMZ: cada categoría tiene un color con significado
+    var _KMZ_COLORES_SEMANTICOS = {
+      'ZonificacionAmbiental': {
+        'Sensibilidad Ambiental Muy Alta': '#FF0000',
+        'Sensibilidad Ambiental Alta': '#FFAA00',
+        'Sensibilidad Ambiental Moderada': '#FFFF00',
+        'Sensibilidad Ambiental Baja': '#61C200',
+        'Sensibilidad Ambiental Muy Baja': '#489C00'
+      },
+      'ZonificacionManejo': {
+        'Área de Exclusión': '#FF0000',
+        'Area de Exclusión': '#FF0000',
+        'Área de Intervención con Restricción Media': '#FFFF00',
+        'Area de Intervención con Restricción Media': '#FFFF00',
+        'Área de Intervención': '#38A800',
+        'Area de Intervención': '#38A800'
+      },
+      'CoberturaTierra': {
+        'Bosques y Áreas Seminaturales': '#38A800',
+        'Territorios Agrícolas': '#FFFF00',
+        'Superficies de Agua': '#5B9BD5',
+        'Territorios Artificializados': '#CC99FF',
+        'Áreas Húmedas': '#A9D9FE'
+      },
+      'AreaProyecto': {
+        'AD Garcero C': '#00B050'
+      },
+      'AreaInfluencia': {
+        'Medio Físicobiótico': '#00B050',
+        'Medio Físicobiótico / Físico-Biótico': '#00B050',
+        'Medio Socioeconómico': '#FFAA00',
+        'Medio Biótico': '#8DB4E2',
+        'Medio Físico': '#CC99FF',
+        'Componente': '#E26B0A'
+      }
+    };
+
+    function _normalizaStr(s) {
+      try {
+        return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      } catch (e) {
+        return String(s || '').toLowerCase();
+      }
+    }
+
+    function _obtenerColorSemantico(nombreKMZ, categoria) {
+      var mapa = _KMZ_COLORES_SEMANTICOS[nombreKMZ];
+      if (!mapa) return null;
+      if (mapa[categoria]) return mapa[categoria];
+      var target = _normalizaStr(categoria);
+      var claves = Object.keys(mapa);
+      for (var i = 0; i < claves.length; i++) {
+        if (_normalizaStr(claves[i]) === target) return mapa[claves[i]];
+      }
+      return null;
+    }
+
+    // ---------- Descripciones de las capas KMZ (leyenda «i» y panel de atributos) ----------
+    // Breve y directo: qué es cada capa / categoría y para qué sirve en el EIA.
+    var _KMZ_DESCRIPCIONES = {
+      'AreaProyecto': {
+        '_default': 'Delimitación oficial del Área de Desarrollo Garcero C (Orocué y San Luis de Palenque, Casanare). Polígono base del proyecto: 19.872,68 ha.',
+        'AD Garcero C': 'Polígono oficial del Área de Desarrollo Garcero C: 19.872,68 ha vigentes tras la actualización de coordenadas (Res. 0409 de 2007).'
+      },
+      'AreaInfluencia': {
+        '_default': 'Áreas de influencia del proyecto y polígonos de caracterización de los medios abiótico, biótico y socioeconómico.',
+        'Medio Físico': 'Área de influencia del medio físico: geología, geomorfología, suelos, hidrología e hidrogeología.',
+        'Medio Biótico': 'Área de influencia del medio biótico: ecosistemas, flora, fauna y conectividad ecológica.',
+        'Medio Físicobiótico': 'Área de influencia que integra los medios físico y biótico (unidades de análisis conjuntas).',
+        'Medio Socioeconómico': 'Área de Influencia Socioeconómica (AIS): 13 unidades territoriales menores de Orocué y San Luis de Palenque.',
+        'Componente': 'Polígonos de caracterización por componente temático del EIA; cada figura delimita el ámbito estudiado para ese componente. Prenda/apague cada uno con su casilla.',
+        'Atmósfera': 'Caracterización de atmósfera: clima, calidad del aire, ruido ambiental e isófonas.',
+        'Ecosistemas Acuáticos': 'Ecosistemas acuáticos lóticos y lénticos (caños, ríos, lagunas) y su caracterización hidrobiológica.',
+        'Fauna': 'Caracterización de fauna silvestre: mamíferos, aves y herpetofauna; hábitats y corredores.',
+        'Flora': 'Inventario de flora: parcelas de muestreo, especies registradas, veda y aprovechamiento forestal.',
+        'Fragmentación y conectividad': 'Análisis de fragmentación de coberturas y conectividad ecológica del paisaje.',
+        'Geomorfología': 'Unidades geomorfológicas y formas del terreno del área de estudio.',
+        'Hidrogeología': 'Unidades acuíferas, sentido de flujo, pozos y vulnerabilidad del agua subterránea.',
+        'Hidrología': 'Red de drenaje, cuencas, caudales, usos y calidad del agua superficial.',
+        'Paisaje': 'Unidades de paisaje: calidad y fragilidad visual del entorno.',
+        'Suelos': 'Unidades de suelos, capacidad de uso y estabilidad geotécnica.'
+      },
+      'CoberturaTierra': {
+        '_default': 'Coberturas de la tierra del área del proyecto, metodología Corine Land Cover (CLC).',
+        'Bosques y Áreas Seminaturales': 'Bosques naturales, vegetación secundaria y áreas seminaturales (CLC nivel 1).',
+        'Territorios Agrícolas': 'Pastos y cultivos transitorios y permanentes (uso agropecuario).',
+        'Superficies de Agua': 'Cuerpos de agua continentales: ríos, caños, lagunas y ciénagas.',
+        'Territorios Artificializados': 'Zonas urbanizadas, industriales/comerciales y de extracción.',
+        'Áreas Húmedas': 'Humedales interiores y vegetación acuática asociada.',
+        'Bosques': 'Bosques naturales densos y fragmentados (CLC 3.1).',
+        'Pastos': 'Pastos limpios, enmalezados y arbolados destinados a ganadería.',
+        'Cultivos transitorios': 'Cultivos de ciclo corto (arroz, maíz, plátano y otros).',
+        'Cultivos permanentes': 'Cultivos de ciclo largo (palma, frutales y otros).',
+        'Áreas abiertas, sin o con poca vegetación': 'Suelos desnudos, arenas y afloramientos con poca o ninguna vegetación.',
+        'Áreas con vegetación herbácea y/o arbustiva': 'Pastizales naturales, arbustales y vegetación secundaria en recuperación.',
+        'Zonas urbanizadas': 'Tejido urbano continuo y discontinuo.',
+        'Zonas industriales o comerciales y redes de comunicación': 'Infraestructura industrial, comercial y red vial.',
+        'Zonas de extracción minera y escombreras': 'Áreas de extracción de materiales y depósitos asociados.'
+      },
+      'ZonificacionAmbiental': {
+        '_default': 'Zonificación ambiental por sensibilidad: define las restricciones del territorio frente al desarrollo del proyecto.',
+        'Sensibilidad Ambiental Muy Alta': 'Sensibilidad muy alta: ecosistemas de máximo valor; la intervención está severamente restringida.',
+        'Sensibilidad Ambiental Alta': 'Sensibilidad alta: alta fragilidad ambiental; exige medidas de manejo estrictas.',
+        'Sensibilidad Ambiental Moderada': 'Sensibilidad moderada: fragilidad intermedia; manejo con medidas específicas.',
+        'Sensibilidad Ambiental Baja': 'Sensibilidad baja: menor fragilidad; intervención con manejo estándar.',
+        'Sensibilidad Ambiental Muy Baja': 'Sensibilidad muy baja: áreas ya transformadas, de baja fragilidad.'
+      },
+      'ZonificacionManejo': {
+        '_default': 'Zonificación de manejo ambiental: define dónde se puede intervenir y con qué restricciones.',
+        'Área de Exclusión': 'Áreas excluidas de intervención por su valor ambiental o restricción normativa (AE): no se permiten obras.',
+        'Área de Intervención con Restricción Media': 'Áreas intervenibles bajo medidas de manejo especiales y restricciones medias (AIR).',
+        'Área de Intervención': 'Áreas aptas para el desarrollo del proyecto con manejo ambiental estándar (AI).',
+        'AE': 'Área de Exclusión: no se permiten obras por valor ambiental o restricción normativa.',
+        'AIR': 'Área de Intervención con Restricción Media: obras permitidas con manejo especial.',
+        'AI': 'Área de Intervención: obras permitidas con manejo ambiental estándar.'
+      }
+    };
+
+    // Busca la descripción de una categoría/subcategoría: primero en su KMZ,
+    // luego en el catálogo global (componentes compartidos) y por último el «_default».
+    function _kmzDescripcion(nombreKMZ, cat) {
+      var mapa = _KMZ_DESCRIPCIONES[nombreKMZ] || null;
+      if (mapa && cat) {
+        if (mapa[cat]) return mapa[cat];
+        var target = _normalizaStr(cat);
+        var claves = Object.keys(mapa);
+        for (var i = 0; i < claves.length; i++) {
+          if (_normalizaStr(claves[i]) === target) return mapa[claves[i]];
+        }
+      }
+      if (cat) {
+        var targets = Object.keys(_KMZ_DESCRIPCIONES);
+        for (var k = 0; k < targets.length; k++) {
+          var m = _KMZ_DESCRIPCIONES[targets[k]];
+          if (m[cat]) return m[cat];
+          var cls = Object.keys(m);
+          for (var j = 0; j < cls.length; j++) {
+            if (_normalizaStr(cls[j]) === _normalizaStr(cat)) return m[cls[j]];
+          }
+        }
+      }
+      return (mapa && mapa['_default']) || '';
+    }
+
+    function _escHTML(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function _escAttr(s) {
+      return _escHTML(s).replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Panel de atributos (estilo Geodocs)
+    function _cerrarPanelAtributos() {
+      var panel = document.getElementById('kmz-attribute-panel');
+      if (panel) panel.classList.remove('kmz-attr-open');
+      var mapEl = document.getElementById('map');
+      if (mapEl) mapEl.classList.remove('kmz-attr-open');
+    }
+
+    function _abrirPanelAtributos(html) {
+      var panel = document.getElementById('kmz-attribute-panel');
+      if (!panel) return;
+      panel.innerHTML = html;
+      panel.classList.add('kmz-attr-open');
+      var mapEl = document.getElementById('map');
+      if (mapEl) mapEl.classList.add('kmz-attr-open');
+      lucide.createIcons();
+      var closeBtn = panel.querySelector('.kmz-attr-close');
+      if (closeBtn) closeBtn.addEventListener('click', _cerrarPanelAtributos);
+    }
+
+    function _renderPanelAtributos(feature, nombreCapa, colorCapa, extra) {
+      var p = feature.properties || {};
+      if (!p || Object.keys(p).length === 0) {
+        _abrirPanelAtributos('<div style="padding:20px;font-size:0.8rem;color:var(--text-muted);text-align:center;">Esta entidad no tiene atributos.</div>');
+        return;
+      }
+
+      var omitir = new Set(['_capa', '_capaKMZ', '_campoKMZ', '_valorKMZ', 'name', 'Shape_Area', 'Shape_Length', 'SHAPE_Length', 'SHAPE_Area', 'SHAPE', 'gid', 'OBJECTID', 'FID', 'Id']);
+      var claves = Object.keys(p).filter(function(k) { return !omitir.has(k) && p[k] !== '' && p[k] != null && String(p[k]).trim() !== ''; });
+
+      var titulo = p.name || p.NOMBRE || p.MDANMNombr || p.NOMENCLAT || p.ZONAMBIE || p.ZONMANEJO || p._valorKMZ || '(Entidad)';
+
+      var rows = claves.map(function(k) {
+        var val = String(p[k]);
+        if (val.length > 180) val = val.slice(0, 180) + '…';
+        return '<div class="attr-row"><div class="attr-key">' + (k || '') + '</div><div class="attr-val">' + val + '</div></div>';
+      }).join('');
+
+      var geom = feature.geometry || {};
+      var coords = geom.coordinates;
+      var lat = null, lng = null;
+      if (geom.type === 'Point') { lat = coords && coords[1]; lng = coords && coords[0]; }
+      else if (geom.type === 'Polygon' && coords && coords[0]) { lat = coords[0][0] && coords[0][0][1]; lng = coords[0][0] && coords[0][0][0]; }
+      else if (geom.type === 'MultiPolygon' && coords && coords[0] && coords[0][0]) { lat = coords[0][0][0] && coords[0][0][0][1]; lng = coords[0][0][0] && coords[0][0][0][0]; }
+
+      var coordHTML = (lat != null && lng != null)
+        ? '<div class="kmz-attr-coords"><i data-lucide="map-pin" style="width:12px;height:12px;"></i>' + Number(lat).toFixed(5) + ', ' + Number(lng).toFixed(5) + '</div>'
+        : '';
+
+      var catVal = p._valorKMZ && String(p._valorKMZ);
+      var subVal = (extra && extra.sub) ? String(extra.sub) : '';
+      var descCat = (extra && extra.cat) || catVal || '';
+      var descCapa = _kmzDescripcion(nombreCapa, subVal || descCat) || _kmzDescripcion(nombreCapa, descCat);
+      var anotCapa = null;
+      var anotCat = subVal || descCat;
+      if (anotCat) { try { anotCapa = _kmzLeerAnot(anotCat); } catch (e) {} }
+
+      var html = '';
+      html += '<div class="kmz-attr-header">';
+      html += '<div class="kmz-attr-title"><i data-lucide="file-text" style="width:16px;height:16px;color:' + colorCapa + ';"></i><span>Atributos</span></div>';
+      html += '<button class="kmz-attr-close" title="Cerrar"><i data-lucide="x" style="width:15px;height:15px;"></i></button>';
+      html += '</div>';
+
+      html += '<div class="kmz-attr-hero">';
+      html += '<div class="kmz-attr-hero-badge"><span style="width:8px;height:8px;border-radius:2px;background:' + colorCapa + ';display:inline-block;"></span>' + (nombreCapa || 'Capa KMZ') + (subVal ? ' · ' + _escHTML(subVal) : '') + '</div>';
+      html += '<h3>' + titulo + '</h3>';
+      if (catVal && catVal !== titulo) {
+        html += '<div class="kmz-attr-hero-desc" style="color:' + colorCapa + ';font-weight:600;">' + catVal + '</div>';
+      }
+      if (descCapa) {
+        html += '<div class="kmz-attr-desc">' + _escHTML(descCapa) + '</div>';
+      }
+      if (anotCapa && anotCapa.nota) {
+        html += '<div class="kmz-attr-desc kmz-attr-nota">' + _escHTML(anotCapa.nota) + '</div>';
+      }
+      html += '</div>';
+
+      html += '<div class="kmz-attr-section-title">Datos de la entidad (' + claves.length + ')</div>';
+      html += '<div class="kmz-attr-table">' + rows + '</div>';
+
+      html += coordHTML;
+
+      html += '<div class="kmz-attr-footer">';
+      html += '<span>' + (geom.type || '') + '</span>';
+      html += '<button onclick="_focoEntidadKMZ()"><i data-lucide="maximize-2" style="width:12px;height:12px;"></i> Zoom</button>';
+      html += '</div>';
+
+      _abrirPanelAtributos(html);
+      window._kmzEntidadActual = feature;
+    }
+
+    window._focoEntidadKMZ = function() {
+      var f = window._kmzEntidadActual;
+      if (!f || !f.geometry) return;
+      try {
+        var lyr = L.geoJSON(f);
+        var b = lyr.getBounds();
+        if (b && b.isValid()) { map.fitBounds(b, { padding: [40, 40] }); }
+      } catch (e) { console.warn('Zoom entidad:', e); }
+    };
+
+    function _toggleKMZPanel() {
+      var el = document.getElementById('kmz-layer-panel');
+      if (!el) return;
+      el.style.display = el.style.display === 'block' ? 'none' : 'block';
+      lucide.createIcons();
+    }
+
+    // Alias de compatibilidad: la lista de «Capas KMZ EIA» es la ventanilla única.
+    function _actualizarListaKMZ() { _construirLeyendaGrupo(); }
+
+    // ==========================================
+    // KMZ EIA: SIN AUTO-CARGA.
+    // El mapa inicia vacío. Las capas KMZ EIA se detectan y se listan con el
+    // botón «KMZ EIA» (listarKMZLocales) y SOLO se aplican cuando el usuario
+    // hace clic en una de ellas en el panel de locales. El manejo posterior
+    // (leyenda por categorías, prendido/apagado, anotaciones) no cambia.
+    // ==========================================
+
+    // ==========================================
+    // PRESENTACIÓN ANLA (pestaña Mapa)
+    // Capas del proyecto pre-cargadas y organizadas por temas:
+    //   1) Área de Desarrollo Garcero C
+    //   2) Áreas de influencia físico-biótica y socioeconómica
+    //   3) Unidades territoriales mayores (municipios / departamento) y menores
+    // Cada capa tiene interruptor, transparencia y simbología propia. Al hacer clic
+    // en una entidad se abre el panel lateral con sus datos y estadísticas
+    // (superficie, % dentro del AI físico-biótica y dentro del bloque Garcero C),
+    // calculadas por el servidor y guardadas en config/gis_cache/presentacion_*.json.
+    // Las áreas de influencia INTERMEDIAS por componente no llegan a esta vista.
+    // ==========================================
+    const ANLA_ESTADO_KEY = 'anla_presentacion_v1';
+
+    // Orden de las filas = orden de los temas en el panel.
+    const ANLA_CONFIG = [
+      {
+        id: 'proyecto', grupo: 'Área de Desarrollo', z: 407, contornoZ: 409,
+        nombre: 'Área de Desarrollo Garcero C',
+        color: '#FF2D2D', fill: '#FF2D2D', peso: 3, dash: null,
+        opacidad: 0.07, visible: true, etiqueta: false, contorno: true, className: 'anla-proyecto'
+      },
+      {
+        id: 'ai_fb', grupo: 'Áreas de influencia', z: 406, payload: 'influencia',
+        nombre: 'Físico-biótica',
+        color: '#007A38', fill: '#00B050', peso: 2.6, dash: '10 5',
+        opacidad: 0.14, visible: true, etiqueta: false
+      },
+      {
+        id: 'ai_se', grupo: 'Áreas de influencia', z: 405, payload: 'influencia',
+        nombre: 'Socioeconómica',
+        color: '#2B6CB0', fill: '#8DB4E2', peso: 2.6, dash: '2 6',
+        opacidad: 0.12, visible: true, etiqueta: false
+      },
+      {
+        id: 'municipios', grupo: 'Unidades territoriales mayores', z: 402,
+        nombre: 'Municipios',
+        color: '#B45309', fill: '#FFAA00', peso: 2, dash: '9 5',
+        opacidad: 0.06, visible: true, etiqueta: true
+      },
+      {
+        id: 'departamento', grupo: 'Unidades territoriales mayores', z: 401,
+        nombre: 'Departamento (Casanare)',
+        color: '#8A8177', fill: '#8A8177', peso: 1.6, dash: '14 6 3 6',
+        opacidad: 0.04, visible: false, etiqueta: true
+      },
+      {
+        id: 'ut_menores', grupo: 'Unidades territoriales menores', z: 403,
+        nombre: 'Veredas y resguardos',
+        color: '#6D28D9', fill: '#A78BFA', peso: 1.4, dash: '3 4',
+        opacidad: 0.1, visible: true, etiqueta: true
+      }
+    ];
+
+    const _anlaRegistry = {};      // id -> { cfg, layer, contorno, data, visible, f }
+    let _anlaLabelsActivos = false;
+    let _anlaRespuesta = null;
+
+    function _anlaFmtHa(v) {
+      return Number(v || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    function _anlaFmtPct(v) {
+      return Number(v || 0).toLocaleString('es-CO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' %';
+    }
+
+    function _anlaLeerEstado() {
+      try { return JSON.parse(localStorage.getItem(ANLA_ESTADO_KEY) || 'null') || {}; } catch (e) { return {}; }
+    }
+    function _anlaGuardarEstado() {
+      const estado = { visible: {}, opacidad: {}, nombres: _anlaLabelsActivos, colapsado: false };
+      const panel = document.getElementById('anla-panel');
+      estado.colapsado = !!(panel && panel.classList.contains('anla-colapsado'));
+      ANLA_CONFIG.forEach(function(cfg) {
+        const reg = _anlaRegistry[cfg.id];
+        if (!reg) return;
+        estado.visible[cfg.id] = reg.visible !== false;
+        estado.opacidad[cfg.id] = typeof reg.f === 'number' ? reg.f : 1;
+      });
+      try { localStorage.setItem(ANLA_ESTADO_KEY, JSON.stringify(estado)); } catch (e) {}
+    }
+
+    function _anlaNombreEntidad(cfg, props) {
+      props = props || {};
+      if (cfg.id === 'proyecto') return props.Nombre || cfg.nombre;
+      if (cfg.id === 'ut_menores') return props['Unidad territorial'] || props['Vereda / resguardo'] || cfg.nombre;
+      if (cfg.id === 'municipios') return props.Municipio || cfg.nombre;
+      if (cfg.id === 'departamento') return props.Departamento || cfg.nombre;
+      return props['Área de influencia'] || cfg.nombre;
+    }
+
+    function _anlaStatsHTML(cfg, props) {
+      const st = props && props._stats;
+      if (!st) return '';
+      const barra = function(pct, color) {
+        const w = Math.max(0, Math.min(100, Number(pct) || 0));
+        return '<div class="anla-stat-bar"><span style="width:' + w + '%;background:' + color + ';"></span></div>';
+      };
+      const filas = [];
+      if (st.total_ha != null) {
+        filas.push('<div class="anla-stat"><div class="anla-stat-top"><span>Superficie total</span>' +
+          '<span class="anla-stat-val">' + _anlaFmtHa(st.total_ha) + ' ha</span></div></div>');
+      }
+      if (st.aifb_ha != null) {
+        filas.push('<div class="anla-stat"><div class="anla-stat-top"><span>Dentro del AI físico-biótica</span>' +
+          '<span class="anla-stat-val">' + _anlaFmtHa(st.aifb_ha) + ' ha · ' + _anlaFmtPct(st.aifb_pct) + '</span></div>' +
+          barra(st.aifb_pct, '#00B050') + '</div>');
+      }
+      if (st.aise_ha != null) {
+        filas.push('<div class="anla-stat"><div class="anla-stat-top"><span>Dentro del AI socioeconómica</span>' +
+          '<span class="anla-stat-val">' + _anlaFmtHa(st.aise_ha) + ' ha · ' + _anlaFmtPct(st.aise_pct) + '</span></div>' +
+          barra(st.aise_pct, '#8DB4E2') + '</div>');
+      }
+      if (st.ad_ha != null) {
+        filas.push('<div class="anla-stat"><div class="anla-stat-top"><span>Dentro del AD Garcero C</span>' +
+          '<span class="anla-stat-val">' + _anlaFmtHa(st.ad_ha) + ' ha · ' + _anlaFmtPct(st.ad_pct) + '</span></div>' +
+          barra(st.ad_pct, '#FF2D2D') + '</div>');
+      }
+      if (!filas.length) return '';
+      return '<div class="anla-stats">' +
+        '<div class="anla-stats-title"><i data-lucide="sigma"></i> Estadísticas territoriales</div>' +
+        filas.join('') +
+        '<div class="anla-stats-nota">Superficies calculadas sobre la geometría oficial de la GDB del EIA.</div>' +
+        '</div>';
+    }
+
+    // Panel lateral (mismo estilo «Geodocs» de los KMZ) con estadísticas + datos
+    function _anlaAbrirPanel(feature, cfg) {
+      if (!feature) return;
+      const props = feature.properties || {};
+      const omitir = new Set(['_stats', '_capa', '_capaKMZ', 'SHAPE_Length', 'SHAPE_Area', 'Shape_Length', 'Shape_Area', 'gid', 'OBJECTID', 'FID']);
+      const claves = Object.keys(props).filter(function(k) {
+        return !omitir.has(k) && props[k] !== '' && props[k] != null;
+      });
+      const rows = claves.map(function(k) {
+        let val = String(props[k]);
+        if (val.length > 220) val = val.slice(0, 220) + '…';
+        return '<div class="attr-row"><div class="attr-key">' + _escHTML(k) + '</div><div class="attr-val">' + _escHTML(val) + '</div></div>';
+      }).join('');
+      const nombre = _anlaNombreEntidad(cfg, props);
+      const geom = feature.geometry || {};
+      const coords = geom.coordinates;
+      let lat = null, lng = null;
+      if (geom.type === 'Point') { lat = coords && coords[1]; lng = coords && coords[0]; }
+      else if (geom.type === 'Polygon' && coords && coords[0]) { lat = coords[0][0] && coords[0][0][1]; lng = coords[0][0] && coords[0][0][0]; }
+      else if (geom.type === 'MultiPolygon' && coords && coords[0] && coords[0][0]) { lat = coords[0][0][0] && coords[0][0][0][1]; lng = coords[0][0][0] && coords[0][0][0][0]; }
+      const coordHTML = (lat != null && lng != null)
+        ? '<div class="kmz-attr-coords"><i data-lucide="map-pin" style="width:12px;height:12px;"></i>' + Number(lat).toFixed(5) + ', ' + Number(lng).toFixed(5) + '</div>'
+        : '';
+
+      let html = '';
+      html += '<div class="kmz-attr-header">';
+      html += '<div class="kmz-attr-title"><i data-lucide="file-text" style="width:16px;height:16px;color:' + cfg.color + ';"></i><span>Presentación ANLA</span></div>';
+      html += '<button class="kmz-attr-close" title="Cerrar"><i data-lucide="x" style="width:15px;height:15px;"></i></button>';
+      html += '</div>';
+      html += '<div class="kmz-attr-hero">';
+      html += '<div class="kmz-attr-hero-badge"><span style="width:8px;height:8px;border-radius:2px;background:' + cfg.color + ';display:inline-block;"></span>' + _escHTML(cfg.grupo) + ' · ' + _escHTML(cfg.nombre) + '</div>';
+      html += '<h3>' + _escHTML(nombre) + '</h3>';
+      html += '</div>';
+      html += _anlaStatsHTML(cfg, props);
+      html += '<div class="kmz-attr-section-title">Datos de la entidad (' + claves.length + ')</div>';
+      html += '<div class="kmz-attr-table">' + rows + '</div>';
+      html += coordHTML;
+      html += '<div class="kmz-attr-footer"><span>' + (geom.type || '') + '</span>';
+      html += '<button onclick="_focoEntidadKMZ()"><i data-lucide="maximize-2" style="width:12px;height:12px;"></i> Zoom</button></div>';
+
+      _abrirPanelAtributos(html);
+      window._kmzEntidadActual = feature;
+    }
+
+    // Localiza la entidad ANLA bajo el clic: primero las unidades menores (más
+    // específicas), luego mayores, el bloque y al final las áreas de influencia.
+    function _anlaPuntoEnAnillo(pt, anillo) {
+      let dentro = false;
+      for (let i = 0, j = (anillo || []).length - 1; i < (anillo || []).length; j = i++) {
+        const xi = anillo[i][0], yi = anillo[i][1];
+        const xj = anillo[j][0], yj = anillo[j][1];
+        const cruza = ((yi > pt[1]) !== (yj > pt[1])) &&
+          (pt[0] < (xj - xi) * (pt[1] - yi) / ((yj - yi) || 1e-30) + xi);
+        if (cruza) dentro = !dentro;
+      }
+      return dentro;
+    }
+
+    function _anlaPuntoEnPoligono(pt, anillos) {
+      anillos = anillos || [];
+      if (!anillos.length || !_anlaPuntoEnAnillo(pt, anillos[0])) return false;
+      for (let k = 1; k < anillos.length; k++) {
+        if (_anlaPuntoEnAnillo(pt, anillos[k])) return false; // huecos
+      }
+      return true;
+    }
+
+    function _anlaPuntoEnGeometria(pt, geom) {
+      if (!geom) return false;
+      if (geom.type === 'Polygon') return _anlaPuntoEnPoligono(pt, geom.coordinates);
+      if (geom.type === 'MultiPolygon') {
+        return (geom.coordinates || []).some(function(poly) { return _anlaPuntoEnPoligono(pt, poly); });
+      }
+      return false;
+    }
+
+    // Muestra un selector cuando el punto está cubierto por varias capas a la vez
+    // (p. ej. una vereda + el bloque Garcero C + un área de influencia).
+    function _anlaMostrarSelector(ev, coincidencias) {
+      try { _cerrarPanelAtributos(); } catch (e) {}
+      const html = '<div class="anla-chooser">' +
+        '<div class="anla-chooser-title">¿Qué desea consultar en este punto?</div>' +
+        coincidencias.map(function(c, i) {
+          return '<button class="anla-chooser-item" data-i="' + i + '">' +
+            '<span class="anla-swatch" style="background:' + c.cfg.fill + ';border-color:' + c.cfg.color + ';"></span>' +
+            '<span class="anla-chooser-txt"><b>' + _escHTML(c.nombre) + '</b><em>' + _escHTML(c.cfg.grupo + ' · ' + c.cfg.nombre) + '</em></span>' +
+            '</button>';
+        }).join('') +
+        '</div>';
+      const pop = L.popup({ className: 'anla-chooser-popup', closeButton: true, autoPan: true, maxWidth: 340 })
+        .setLatLng(ev.latlng).setContent(html).openOn(map);
+      const cont = pop.getElement();
+      if (cont) {
+        cont.addEventListener('click', function(e) {
+          const btn = e.target.closest ? e.target.closest('.anla-chooser-item') : null;
+          if (!btn) return;
+          const c = coincidencias[Number(btn.getAttribute('data-i'))];
+          if (c) _anlaAbrirPanel(c.feature, c.cfg);
+          map.closePopup(pop);
+        });
+      }
+    }
+
+    function _anlaOnMapClick(ev) {
+      // Con una GDB en tiles cargada manda su «identify» (evita doble panel)
+      if (window._gdbActivaId) return;
+      // Orden de consulta: unidades menores > bloque Garcero C > áreas de influencia
+      // > unidades mayores (cada capa aporta máximo una entidad al selector).
+      const orden = ['ut_menores', 'proyecto', 'municipios', 'ai_fb', 'ai_se', 'departamento'];
+      const pt = [ev.latlng.lng, ev.latlng.lat];
+      const coincidencias = [];
+      for (let i = 0; i < orden.length; i++) {
+        const reg = _anlaRegistry[orden[i]];
+        if (!reg || reg.visible === false || !reg.data) continue;
+        const feats = reg.data.features || [];
+        for (let j = 0; j < feats.length; j++) {
+          if (_anlaPuntoEnGeometria(pt, feats[j].geometry)) {
+            coincidencias.push({ cfg: reg.cfg, feature: feats[j], nombre: _anlaNombreEntidad(reg.cfg, feats[j].properties) });
+            break;
+          }
+        }
+      }
+      if (coincidencias.length === 1) _anlaAbrirPanel(coincidencias[0].feature, coincidencias[0].cfg);
+      else if (coincidencias.length > 1) _anlaMostrarSelector(ev, coincidencias);
+    }
+
+    function _anlaEstilo(cfg, f) {
+      f = (typeof f === 'number') ? Math.max(0, Math.min(1, f)) : 1;
+      return {
+        color: cfg.color,
+        weight: cfg.peso,
+        opacity: Math.max(0.15, Math.min(1, 0.25 + 0.75 * f)),
+        dashArray: cfg.dash || null,
+        fill: true,
+        fillColor: cfg.fill,
+        fillOpacity: Math.max(0, Math.min(1, cfg.opacidad * f)),
+        className: cfg.className || null
+      };
+    }
+
+    function _anlaPane(nombre, z) {
+      const id = 'anla-pane-' + nombre;
+      const pane = map.getPane(id) || map.createPane(id);
+      pane.style.zIndex = z;
+      return id;
+    }
+
+    function _anlaAplicarEtiquetas(reg) {
+      if (!reg || !reg.layer || !reg.cfg.etiqueta) return;
+      reg.layer.eachLayer(function(lyr) {
+        if (lyr.getTooltip && lyr.getTooltip()) lyr.unbindTooltip();
+        const nombre = _anlaNombreEntidad(reg.cfg, (lyr.feature || {}).properties || {});
+        lyr.bindTooltip(nombre, {
+          permanent: _anlaLabelsActivos, direction: 'center',
+          className: 'anla-label', opacity: 1, interactive: false
+        });
+      });
+    }
+
+    function _anlaCrearCapa(cfg, geojson) {
+      const reg = _anlaRegistry[cfg.id];
+      const paneId = _anlaPane(cfg.id, cfg.z);
+      const renderer = L.svg({ pane: paneId, padding: 0.4 });
+      reg.layer = L.geoJSON(geojson, {
+        renderer: renderer,
+        interactive: false,   // el clic se resuelve en _anlaOnMapClick (prioridad por especificidad)
+        style: function() { return _anlaEstilo(cfg, reg.f); }
+      });
+      // Contorno del bloque Garcero C: siempre visible por encima de las demás capas
+      if (cfg.contorno) {
+        const paneC = _anlaPane(cfg.id + '-contorno', cfg.contornoZ || (cfg.z + 1));
+        const rendererC = L.svg({ pane: paneC, padding: 0.4 });
+        reg.contorno = L.layerGroup([
+          L.geoJSON(geojson, { renderer: rendererC, interactive: false, style: function() { return { color: '#FFFFFF', weight: 6, opacity: 0.35 * reg.f + 0.05, fill: false, className: cfg.className }; } }),
+          L.geoJSON(geojson, { renderer: rendererC, interactive: false, style: function() { return { color: cfg.color, weight: 2.6, opacity: 1, fill: false, className: cfg.className }; } })
+        ]);
+      }
+      _anlaAplicarEtiquetas(reg);
+    }
+
+    function _anlaPayloadPara(cfg, data) {
+      if (cfg.payload === 'influencia') {
+        const base = (data.capas.influencia && data.capas.influencia.geojson) || { type: 'FeatureCollection', features: [] };
+        const aguja = cfg.id === 'ai_fb' ? 'fisicobiot' : 'socioeconom';
+        const feats = (base.features || []).filter(function(f) {
+          return _normalizaStr((f.properties || {})['Área de influencia'] || '').indexOf(aguja) !== -1;
+        });
+        return { type: 'FeatureCollection', features: feats };
+      }
+      const capa = data.capas[cfg.id];
+      return capa ? capa.geojson : null;
+    }
+
+    function _anlaVisibilidad(id, visible) {
+      const reg = _anlaRegistry[id];
+      if (!reg || !reg.layer) return;
+      reg.visible = !!visible;
+      if (reg.visible) {
+        if (!map.hasLayer(reg.layer)) reg.layer.addTo(map);
+        if (reg.contorno && !map.hasLayer(reg.contorno)) reg.contorno.addTo(map);
+      } else {
+        if (map.hasLayer(reg.layer)) map.removeLayer(reg.layer);
+        if (reg.contorno && map.hasLayer(reg.contorno)) map.removeLayer(reg.contorno);
+      }
+      _anlaGuardarEstado();
+    }
+
+    function _anlaOpacidad(id, f) {
+      const reg = _anlaRegistry[id];
+      if (!reg) return;
+      reg.f = Math.max(0, Math.min(1, f));
+      if (reg.layer) reg.layer.setStyle(_anlaEstilo(reg.cfg, reg.f));
+      if (reg.contorno) {
+        reg.contorno.eachLayer(function(l) {
+          l.setStyle({ opacity: (l.options.color === '#FFFFFF' ? (0.35 * reg.f + 0.05) : 1) });
+        });
+      }
+      _anlaGuardarEstado();
+    }
+
+    function _anlaRenderPanel() {
+      const cont = document.getElementById('anla-grupos');
+      if (!cont) return;
+      const grupos = [];
+      ANLA_CONFIG.forEach(function(cfg) { if (grupos.indexOf(cfg.grupo) === -1) grupos.push(cfg.grupo); });
+      let html = '';
+      grupos.forEach(function(g) {
+        html += '<div class="anla-grupo"><div class="anla-grupo-title">' + _escHTML(g) + '</div>';
+        ANLA_CONFIG.filter(function(c) { return c.grupo === g; }).forEach(function(cfg) {
+          const reg = _anlaRegistry[cfg.id];
+          if (!reg) return;
+          const n = (reg.data && reg.data.features) ? reg.data.features.length : 0;
+          if (!n) {
+            html += '<div class="anla-row" data-id="' + cfg.id + '" style="opacity:0.55;"><div class="anla-row-head">' +
+              '<span class="anla-swatch" style="background:' + cfg.fill + ';border-color:' + cfg.color + ';"></span>' +
+              '<span class="anla-row-name">' + _escHTML(cfg.nombre) + ' <em>· sin datos</em></span></div></div>';
+            return;
+          }
+          const f = (typeof reg.f === 'number') ? reg.f : 1;
+          let extra = '(' + n + ')';
+          if (n === 1) {
+            const st = (reg.data.features[0].properties || {})._stats;
+            if (st && st.total_ha != null) extra = _anlaFmtHa(st.total_ha) + ' ha';
+          }
+          html += '<div class="anla-row" data-id="' + cfg.id + '">';
+          html += '<label class="anla-row-head">';
+          html += '<input type="checkbox" class="anla-chk"' + (reg.visible !== false ? ' checked' : '') + '>';
+          html += '<span class="anla-swatch" style="background:' + cfg.fill + ';border-color:' + cfg.color + ';' + (cfg.dash ? 'border-style:dashed;' : '') + '"></span>';
+          html += '<span class="anla-row-name">' + _escHTML(cfg.nombre) + ' <em>' + extra + '</em></span>';
+          html += '</label>';
+          html += '<div class="anla-row-tools">';
+          html += '<span class="anla-op-label">Transp.</span>';
+          html += '<input type="range" class="anla-range" min="0" max="100" step="5" value="' + Math.round(f * 100) + '" title="Transparencia de la capa">';
+          html += '<button class="anla-zoom" title="Zoom a la capa"><i data-lucide="maximize-2"></i></button>';
+          html += '</div></div>';
+        });
+        html += '</div>';
+      });
+      cont.innerHTML = html;
+      try { lucide.createIcons(); } catch (e) {}
+    }
+
+    function _anlaActualizarResumen(data) {
+      const r = data.resumen || {};
+      const foot = document.getElementById('anla-foot');
+      const partes = [];
+      if (data.gdb && data.gdb.nombre) partes.push('Fuente: ' + data.gdb.nombre);
+      else if (data.origen === 'kmz') partes.push('Fuente: KMZ locales');
+      if (r.aifb_ha) partes.push('AI físico-biótica: ' + _anlaFmtHa(r.aifb_ha) + ' ha');
+      if (r.aise_ha) partes.push('AI socioeconómica: ' + _anlaFmtHa(r.aise_ha) + ' ha');
+      if (r.proyecto_ha) partes.push('AD Garcero C: ' + _anlaFmtHa(r.proyecto_ha) + ' ha');
+      let html = partes.join(' · ');
+      if (r.ai_intermedias_omitidas) {
+        html += '<br>Áreas de influencia intermedias omitidas en esta vista: ' + r.ai_intermedias_omitidas + '.';
+      }
+      if (data.parcial && data.aviso) {
+        html += '<div class="anla-aviso">' + _escHTML(data.aviso) + '</div>';
+      }
+      if (foot) foot.innerHTML = html;
+      // Barra inferior de métricas
+      if (r.proyecto_ha) { const el = document.getElementById('val-area'); if (el) el.textContent = _anlaFmtHa(r.proyecto_ha) + ' ha'; }
+      if (r.municipios) { const el = document.getElementById('val-mun'); if (el) el.textContent = r.municipios; }
+      if (r.ut_menores) { const el = document.getElementById('val-ver'); if (el) el.textContent = r.ut_menores; }
+    }
+
+    async function inicializarPresentacionANLA() {
+      const status = document.getElementById('anla-status');
+      try {
+        const res = await fetch('/api/gis/presentacion');
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'No disponible');
+        _anlaRespuesta = data;
+
+        const estado = _anlaLeerEstado();
+        _anlaLabelsActivos = estado.nombres === true;
+
+        ANLA_CONFIG.forEach(function(cfg) {
+          const geojson = _anlaPayloadPara(cfg, data);
+          const n = (geojson && geojson.features) ? geojson.features.length : 0;
+          const fEstado = (estado.opacidad && typeof estado.opacidad[cfg.id] === 'number') ? estado.opacidad[cfg.id] : 1;
+          const vEstado = (estado.visible && typeof estado.visible[cfg.id] === 'boolean') ? estado.visible[cfg.id] : cfg.visible;
+          _anlaRegistry[cfg.id] = { cfg: cfg, data: geojson, f: fEstado, visible: !!vEstado };
+          if (n) {
+            _anlaCrearCapa(cfg, geojson);
+            if (vEstado) {
+              _anlaRegistry[cfg.id].layer.addTo(map);
+              if (_anlaRegistry[cfg.id].contorno) _anlaRegistry[cfg.id].contorno.addTo(map);
+            }
+          }
+        });
+
+        const chkNombres = document.getElementById('anla-nombres');
+        if (chkNombres) chkNombres.checked = _anlaLabelsActivos;
+        Object.keys(_anlaRegistry).forEach(function(id) { _anlaAplicarEtiquetas(_anlaRegistry[id]); });
+
+        _anlaRenderPanel();
+        _anlaActualizarResumen(data);
+        if (status) status.style.display = 'none';
+
+        // Panel colapsado / eventos
+        const panel = document.getElementById('anla-panel');
+        const btnCollapse = document.getElementById('anla-collapse');
+        if (panel && estado.colapsado) panel.classList.add('anla-colapsado');
+        if (btnCollapse) {
+          btnCollapse.addEventListener('click', function() {
+            if (!panel) return;
+            panel.classList.toggle('anla-colapsado');
+            _anlaGuardarEstado();
+          });
+        }
+        const btnReset = document.getElementById('anla-reset');
+        if (btnReset) {
+          btnReset.addEventListener('click', function() {
+            ANLA_CONFIG.forEach(function(cfg) {
+              const reg = _anlaRegistry[cfg.id];
+              if (!reg) return;
+              reg.f = 1;
+              _anlaOpacidad(cfg.id, 1);
+              _anlaVisibilidad(cfg.id, cfg.visible);
+            });
+            _anlaRenderPanel();
+          });
+        }
+        if (chkNombres) {
+          chkNombres.addEventListener('change', function() {
+            _anlaLabelsActivos = !!chkNombres.checked;
+            Object.keys(_anlaRegistry).forEach(function(id) { _anlaAplicarEtiquetas(_anlaRegistry[id]); });
+            _anlaGuardarEstado();
+          });
+        }
+        const cont = document.getElementById('anla-grupos');
+        if (cont) {
+          cont.addEventListener('change', function(e) {
+            const fila = e.target.closest ? e.target.closest('.anla-row') : null;
+            if (!fila) return;
+            const id = fila.getAttribute('data-id');
+            if (e.target.classList.contains('anla-chk')) _anlaVisibilidad(id, e.target.checked);
+            else if (e.target.classList.contains('anla-range')) _anlaOpacidad(id, Number(e.target.value) / 100);
+          });
+          cont.addEventListener('input', function(e) {
+            if (!e.target.classList.contains('anla-range')) return;
+            const fila = e.target.closest('.anla-row');
+            if (fila) _anlaOpacidad(fila.getAttribute('data-id'), Number(e.target.value) / 100);
+          });
+          cont.addEventListener('click', function(e) {
+            const btn = e.target.closest ? e.target.closest('.anla-zoom') : null;
+            if (!btn) return;
+            const fila = btn.closest('.anla-row');
+            const reg = fila ? _anlaRegistry[fila.getAttribute('data-id')] : null;
+            if (reg && reg.layer) {
+              const b = reg.layer.getBounds();
+              if (b && b.isValid()) {
+                try { map.invalidateSize(); } catch (e2) {}
+                map.fitBounds(b, { padding: [30, 30], animate: false });
+              }
+            }
+          });
+        }
+
+        if (!window._gdbActivaId) map.on('click', _anlaOnMapClick);
+      } catch (err) {
+        console.warn('Presentación ANLA:', err);
+        if (status) {
+          status.className = 'anla-status anla-error';
+          status.innerHTML = 'No se pudo cargar la presentación: ' + _escHTML((err && err.message) || '') +
+            '<br>Revisa que el servidor encuentre la GDB del EIA o su caché en config/gis_cache; si acabas de actualizar la aplicación, reiníciala (cierra su ventana y ejecuta iniciar.bat de nuevo).';
+        }
+      }
+    }
+
+    function exportarPresentacionANLA() {
+      const features = [];
+      ANLA_CONFIG.forEach(function(cfg) {
+        const reg = _anlaRegistry[cfg.id];
+        if (!reg || !reg.data) return;
+        (reg.data.features || []).forEach(function(f) {
+          const props = Object.assign({}, f.properties || {}, { _capaANLA: cfg.nombre, _temaANLA: cfg.grupo });
+          features.push({ type: 'Feature', properties: props, geometry: f.geometry });
+        });
+      });
+      if (!features.length) { mostrarToast('La presentación aún no tiene capas cargadas.', 'warn'); return; }
+      const blob = new Blob([JSON.stringify({ type: 'FeatureCollection', features: features }, null, 2)], { type: 'application/geo+json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'presentacion_ANLA_Garcero_C_' + new Date().toISOString().slice(0, 10) + '.geojson';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      mostrarToast('Presentación exportada en GeoJSON (WGS84).', 'ok');
+    }
+
+    // ---- Botones del encabezado y menú secundario de datos ----
+    (function _anlaWireEncabezado() {
+      const panelBtn = document.getElementById('btn-panel-anla');
+      const panel = document.getElementById('anla-panel');
+      if (panelBtn && panel) {
+        panelBtn.addEventListener('click', function() { panel.classList.toggle('anla-oculto'); });
+      }
+      const btnAdmin = document.getElementById('btn-admin-menu');
+      const admin = document.getElementById('admin-menu');
+      if (btnAdmin && admin) {
+        btnAdmin.addEventListener('click', function(e) {
+          e.stopPropagation();
+          admin.style.display = admin.style.display === 'block' ? 'none' : 'block';
+          try { lucide.createIcons(); } catch (e2) {}
+        });
+        const btnClose = document.getElementById('btn-close-admin');
+        if (btnClose) btnClose.addEventListener('click', function() { admin.style.display = 'none'; });
+        document.addEventListener('click', function(e) {
+          if (admin.style.display === 'block' && !admin.contains(e.target) && !btnAdmin.contains(e.target)) {
+            admin.style.display = 'none';
+          }
+        });
+      }
+      const btnExportANLA = document.getElementById('btn-export-anla');
+      if (btnExportANLA) btnExportANLA.addEventListener('click', exportarPresentacionANLA);
+      const btnExportKMZ = document.getElementById('btn-export-kmz');
+      if (btnExportKMZ) btnExportKMZ.addEventListener('click', descargarGeoJSON);
+    })();
+
+    // ==========================================
+    // VISTA DE CAPAS KMZ: memoria DURANTE la sesión del proyecto.
+    // Al cambiar de vista (index2, index3…) y volver al mapa se restaura:
+    // capas cargadas, encendido/apagado de archivos/categorías/componentes,
+    // colores y la posición del mapa. Cuando se APAGA el proyecto (el
+    // servidor se cierra), el token de sesión cambia y todo vuelve a
+    // reestablecerse como al inicio.
+    // ==========================================
+    const _VISTA_KMZ_KEY = 'mapa_kmz_vista_v1';
+    let _sesionServidor = null;
+    let _restaurandoVista = false;
+
+    function _guardarVistaKMZ() {
+      if (_restaurandoVista) return;
+      try {
+        const capas = Object.keys(_kmzRegistry).map(function(k) {
+          const reg = _kmzRegistry[k];
+          const grupos = {};
+          Object.keys(reg.grupos || {}).forEach(function(cat) {
+            const g = reg.grupos[cat];
+            grupos[cat] = { oculto: !!g.oculto, subs: Object.assign({}, g.subOcultos || {}) };
+          });
+          return { ruta: reg.ruta || '', visible: reg.visible !== false, grupos: grupos };
+        });
+        const c = map.getCenter();
+        const datos = {
+          sesion: _sesionServidor,
+          capas: capas,
+          vista: { lat: c.lat, lng: c.lng, zoom: map.getZoom() }
+        };
+        localStorage.setItem(_VISTA_KMZ_KEY, JSON.stringify(datos));
+      } catch (e) {}
+    }
+
+    // Reaplica a una capa recién cargada el estado guardado (mismo criterio
+    // que los toggles de la leyenda, pero sin toasts ni re-zoom).
+    function _aplicarEstadoGuardado(reg, est) {
+      if (!reg || !est) return;
+      const grupos = est.grupos || {};
+      Object.keys(reg.grupos || {}).forEach(function(cat) {
+        const g = reg.grupos[cat];
+        const e = grupos[cat];
+        if (!e) return;
+        g.oculto = !!e.oculto;
+        if (e.subs) {
+          g.subOcultos = g.subOcultos || {};
+          Object.keys(e.subs).forEach(function(s) { g.subOcultos[s] = !!e.subs[s]; });
+        }
+      });
+      reg.visible = est.visible !== false;
+      try {
+        if (reg.visible) {
+          if (!map.hasLayer(reg.group)) map.addLayer(reg.group);
+          if (reg.outline && !map.hasLayer(reg.outline)) map.addLayer(reg.outline);
+          Object.keys(reg.grupos || {}).forEach(function(cat) {
+            const g = reg.grupos[cat];
+            if (g.oculto && g.layer && map.hasLayer(g.layer)) map.removeLayer(g.layer);
+            _kmzSyncSubsEnMapa(g);
+          });
+        } else {
+          if (map.hasLayer(reg.group)) map.removeLayer(reg.group);
+          if (reg.outline && map.hasLayer(reg.outline)) map.removeLayer(reg.outline);
+        }
+      } catch (e) {}
+    }
+
+    function _restaurarVistaKMZ() {
+      let guardado = null;
+      try { guardado = JSON.parse(localStorage.getItem(_VISTA_KMZ_KEY) || 'null'); } catch (e) {}
+      fetch('/api/ping')
+        .then(function(r) { return r.json(); })
+        .then(function(ping) {
+          _sesionServidor = (ping && ping.sesion) || null;
+          if (!guardado || !guardado.capas || !guardado.capas.length ||
+              !_sesionServidor || guardado.sesion !== _sesionServidor) {
+            // Proyecto recién encendido (o sin nada guardado): todo al inicio.
+            try { localStorage.removeItem(_VISTA_KMZ_KEY); } catch (e) {}
+            return;
+          }
+          // Misma sesión del servidor: restaurar silenciosamente las capas y
+          // después sus estados (encendido/apagado), la leyenda y la posición.
+          _restaurandoVista = true;
+          Promise.all(guardado.capas.map(function(estCapa) {
+            return cargarKMZLocal(estCapa.ruta, null);
+          }))
+            .then(function() {
+              Object.keys(_kmzRegistry).forEach(function(k) {
+                const reg = _kmzRegistry[k];
+                const est = reg.ruta && guardado.capas.filter(function(e) { return e.ruta === reg.ruta; })[0];
+                if (est) _aplicarEstadoGuardado(reg, est);
+              });
+              _construirLeyendaGrupo();
+              _reapilarKMZ();
+              const v = guardado.vista;
+              if (v && isFinite(v.lat) && isFinite(v.lng) && isFinite(v.zoom)) {
+                try { map.setView([v.lat, v.lng], v.zoom, { animate: false }); } catch (e) {}
+              }
+            })
+            .catch(function(err) { console.error('Error restaurando vista KMZ:', err); })
+            .finally(function() { _restaurandoVista = false; });
+        })
+        .catch(function() {});
+    }
+
+    // Posición del mapa también hace parte de la vista guardada.
+    try { map.on('moveend', function() { _guardarVistaKMZ(); }); } catch (e) {}
+
+    // Al abrir la página: recuperar la vista si el proyecto sigue encendido.
+    _restaurarVistaKMZ();
+
+    // Vista de presentación ANLA: capas del proyecto pre-cargadas (bloque Garcero C,
+    // áreas de influencia físico-biótica y socioeconómica y unidades territoriales).
+    inicializarPresentacionANLA();
+  </script>
+  <script src="ia_geo.js"></script>
+</body>
+</html>

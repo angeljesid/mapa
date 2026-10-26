@@ -1,0 +1,11 @@
+# Rutas de carpetas donde buscar geodatabases locales (*.gdb) para el panel "GDB locales".
+# Escribe una ruta por linea. Las lineas que empiecen con # se ignoran.
+# Las rutas que no existan en ese equipo se ignoran sin error.
+
+D:\ASI.SAS
+D:\
+
+# Ejemplos:
+# E:\datos\gis
+# \\servidor\carpeta\gis
+# C:\mapa\config\gdb

@@ -1,0 +1,41 @@
+services:
+  mapa-garcero-c:
+    build: .
+    image: mapa-garcero-c:latest
+    container_name: mapa-garcero-c
+    restart: unless-stopped
+    ports:
+      - "${MAPA_PUERTO:-8000}:8000"
+    environment:
+      MAPA_HOST: "0.0.0.0"
+      MAPA_PORT: "8000"
+      MAPA_NO_BROWSER: "1"
+      MAPA_NO_PAUSE: "1"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      MAPA_AUTH_USER: "${MAPA_AUTH_USER:-}"
+      MAPA_AUTH_PASSWORD: "${MAPA_AUTH_PASSWORD:-}"
+    volumes:
+      # Datos editables y multimedia: se conservan fuera del contenedor.
+      - ./uploads:/app/uploads
+      - ./data:/app/data
+      - ./config:/app/config
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/ping', timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  # Enlace público temporal con Cloudflare Tunnel.
+  # Arranque: docker compose --profile tunnel up -d
+  # URL:      docker compose logs -f cloudflared
+  # Detener:  docker compose --profile tunnel down
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: mapa-garcero-c-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate --url http://mapa-garcero-c:8000
+    depends_on:
+      mapa-garcero-c:
+        condition: service_healthy
+    profiles: ["tunnel"]

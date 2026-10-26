@@ -1,0 +1,2057 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="estilos.css?v=12">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+  <title>Caracterización - SIG • Perenco Garcero C</title>
+
+  <!-- Google Fonts & Lucide Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="lib/lucide/lucide.min.js"></script>
+  <script src="sync_data.js"></script>
+  <script src="garcero_geo.js"></script>
+
+</head>
+<body data-page="p4">
+
+  <!-- BARRA LATERAL -->
+  <aside class="sidebar">
+    <div class="brand-logo">
+      <img src="assets/perenco-dark.webp" alt="Perenco" class="brand-logo-img">
+    </div>
+    <ul class="nav-list">
+      <a href="index.html" class="nav-item">
+        <i data-lucide="map"></i>
+        <span>Mapa</span>
+      </a>
+      <a href="index2.html" class="nav-item">
+        <i data-lucide="layers"></i>
+        <span>Estrategias</span>
+      </a>
+      <a href="index3.html" class="nav-item">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Uso y Ap.</span>
+      </a>
+      <a href="index4.html" class="nav-item active">
+        <i data-lucide="user-check"></i>
+        <span>Caracteriz.</span>
+      </a>
+      <a href="index5.html" class="nav-item">
+        <i data-lucide="git-fork"></i>
+        <span>Zonific.</span>
+      </a>
+      <a href="index6.html#tab-evaluacion" class="nav-item">
+        <i data-lucide="activity"></i>
+        <span>Eval. Imptos</span>
+      </a>
+      <a href="index6.html#tab-pma" class="nav-item">
+        <i data-lucide="shield-alert"></i>
+        <span>PMA &amp; PSM</span>
+      </a>
+      <a href="index6.html#tab-compensaciones" class="nav-item">
+        <i data-lucide="coins"></i>
+        <span>1% y Comp.</span>
+      </a>
+      <li class="nav-item" data-geo-ia style="margin-top: auto; margin-bottom: 20px; color: var(--accent-blue);" title="Abrir el asistente Geo-IA aquí mismo (se cierra con la X o con Esc)">
+        <i data-lucide="sparkles"></i>
+        <span>Geo-IA</span>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <div class="main-wrapper">
+
+    <!-- HEADER -->
+    <header class="top-header">
+      <div class="header-title">
+        <h1>Caracterización Ambiental y Territorial <span class="header-badge">SIG v2.0</span></h1>
+        <p>Área de Desarrollo Garcero C • Estudios de Impacto Ambiental y Levantamiento de Línea Base</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-secondary" id="btn-export-report">
+          <i data-lucide="file-text"></i> Exportar Reporte
+        </button>
+      </div>
+    </header>
+
+    <div class="content-container">
+
+      <!-- SUBPESTAÑAS -->
+      <div class="subtabs-container">
+        <button class="subtab-btn active" onclick="cambiarSubtab('abiotico', this)">
+          <i data-lucide="mountain"></i> Medio Abiótico
+        </button>
+        <button class="subtab-btn" onclick="cambiarSubtab('biotico', this)">
+          <i data-lucide="trees"></i> Medio Biótico
+        </button>
+        <button class="subtab-btn" onclick="cambiarSubtab('socioeconomico', this)">
+          <i data-lucide="users"></i> Medio Socioeconómico
+        </button>
+      </div>
+
+      <!-- CONTENEDOR DINÁMICO DE TARJETAS -->
+      <div class="cards-grid" id="cards-container">
+        <!-- Renderizado dinámico mediante JS -->
+      </div>
+
+    </div>
+
+    <footer class="bottom-bar">
+      <div class="metrics-group">
+        <div class="metric-item">
+          <span>Medios:</span>
+          <strong class="text-lg">3 Principales</strong>
+        </div>
+        <div class="metric-item">
+          <span>Componentes:</span>
+          <strong id="footer-count">11 Activos</strong>
+        </div>
+        <div class="metric-item">
+          <span>Proyecto:</span>
+          <strong>Área Garcero C</strong>
+        </div>
+      </div>
+      <div class="crs-tag">
+        PERENCO COLOMBIA LIMITED • EIA 2026
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- MODAL DE DETALLE Y GESTIÓN DE VIDEO -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal-card">
+      <div class="p4-glow"></div>
+
+      <div class="modal-header">
+        <h3 id="modal-title"><i data-lucide="info"></i> Detalle del Componente</h3>
+        <button id="btn-close-modal"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div id="modal-content-area">
+          <!-- Contenido dinámico inyectado -->
+        </div>
+
+        <div class="modal-edit-group">
+          <label class="modal-field-label" for="video-input">
+            <i data-lucide="video" class="ico-green"></i> Videos del Componente (Subir a /uploads)
+          </label>
+          <input type="file" id="video-input" class="modal-text-input" accept="video/mp4,video/webm,video/ogg,video/quicktime" multiple onchange="subirVideosComponente(event)">
+          <div class="preview-img-container">
+            <div class="modal-img-slot" id="video-preview-box">
+              <i data-lucide="video"></i>
+              <span>Sin videos configurados</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-close-footer">Cerrar</button>
+        <button class="btn-primary" id="btn-save-changes" onclick="guardarEdicionComponente(event)">
+          <i data-lucide="save"></i> Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PARA GESTIONAR EL VIDEO DE CADA COMPONENTE (trabajo de campo) -->
+  <div class="modal-overlay" id="component-videos-modal">
+    <div class="modal-card modal-card-wide">
+      <div class="modal-header">
+        <h3><i data-lucide="clapperboard"></i> Videos de los Componentes (trabajo de campo)</h3>
+        <button id="btn-close-component-videos"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-hint" style="margin-bottom:12px;">Cada componente tiene su propia ranura de video. Sube un video desde tu PC (se guarda en <strong>/uploads</strong> y viaja con el proyecto) o pega un enlace de YouTube/MP4. Se acepta <strong>.mp4</strong>, <strong>.webm</strong>, <strong>.ogv</strong> y <strong>.mov</strong> de hasta 1 GB. El video se muestra al inicio del componente, como introducción al trabajo de campo.</p>
+        <div id="component-videos-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-close-component-videos-2">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE ZOOM (imagen, mapa o video ampliado) -->
+  <div class="modal-overlay" id="image-zoom-modal">
+    <div class="zoom-modal-card">
+      <div class="modal-header">
+        <h3 id="zoom-modal-title"><i data-lucide="image"></i> Vista Ampliada</h3>
+        <button id="btn-close-zoom"><i data-lucide="x"></i></button>
+      </div>
+      <div class="zoom-modal-body">
+        <img id="zoom-modal-img" src="" alt="Imagen ampliada" style="display:none;">
+        <div id="zoom-modal-map" style="display:none;"></div>
+        <video id="zoom-modal-video" controls playsinline preload="metadata" style="display:none;"></video>
+      </div>
+      <div class="zv-selector" id="zoom-modal-videos" style="display:none;"></div>
+    </div>
+  </div>
+
+  <!-- PANEL DE IA -->
+  
+
+  <script>
+    // Inicializar íconos
+    lucide.createIcons();
+
+    // Estructura base de datos — reorganizada por medio y componente según la
+    // solicitud (Medio abiótico: civil, geología/geomorfología/suelos/geotecnia,
+    // hidrología, calidad del agua/usos/usuarios, hidrogeología y atmósfera;
+    // Medio biótico: paisaje, flora, flora vascular y no vascular y fauna;
+    // Medio socioeconómico: un componente). Los datos y estadísticas provienen de
+    // la presentación del tercer momento (ASI S.A.S., 2026) y las figuras se
+    // extrajeron de esa misma presentación a assets/caracterizacion.
+    const CARAC_VERSION = 2;
+
+    const defaultData = {
+      abiotico: [
+        {
+          id: "civil",
+          title: "Componente Civil e Infraestructura",
+          code: "9.1 · Componente civil",
+          badge: "Infraestructura",
+          desc: "Infraestructura asociada al proyecto: vías de acceso y obras de arte caracterizadas, plataformas multipozo y facilidades del Área de Desarrollo Garcero C.",
+          features: [
+            "272 obras de arte caracterizadas (alcantarillas, pontones y puentes)",
+            "524,50 km de vías caracterizadas en el AI físico-biótica",
+            "13 plataformas multipozo, 65 pozos nuevos y 100 km de vías nuevas"
+          ],
+          gdb: "T_33_PROYECTO/InfraProyetcoPT",
+           videos: ["uploads/carac_civil.mp4"],
+          stats: { "Obras de arte": "272", "Vías caracterizadas": "524,50 km", "Plataformas": "13" },
+          charts: [
+            { t: "Obras de arte (cantidad)", items: [
+              ["Alcantarilla sencilla", "152"],
+              ["Alcantarilla doble", "27"],
+              ["Pontón", "24"],
+              ["Puente", "13"],
+              ["Box Culvert", "2"],
+              ["Otros", "23"]
+            ]},
+            { t: "Vías caracterizadas (km)", items: [
+              ["Tipo 4", "325,98"],
+              ["Tipo 3", "117,07"],
+              ["Tipo 2", "81,44"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/civil_infraestructura.webp", titulo: "Obras de arte y vías del AI físico-biótica" },
+            { src: "assets/caracterizacion/civil_figura_2.webp", titulo: "Distribución de obras de arte (272 estructuras)" },
+            { src: "assets/caracterizacion/civil_figura_3.webp", titulo: "Longitud de vías caracterizadas (524,50 km)" }
+          ]
+        },
+        {
+          id: "geologia",
+          title: "Geología, geomorfología, suelos y geotecnia",
+          code: "9.2 · 9.3 · Suelos y geotecnia",
+          badge: "Geotecnia",
+          desc: "Unidades geológicas y geomorfológicas del AI físico-biótica, base para la caracterización de suelos, capacidad de uso y estabilidad geotécnica.",
+          features: [
+            "4 unidades geológicas: Qed, Qal, Qtp y Qte",
+            "14 formas del terreno cartografiadas",
+            "Predominan los depósitos de terraza con influencia eólica (Qte, 76,46 %)"
+          ],
+          gdb: "T_08_GEOLOGIA",
+           videos: ["uploads/carac_geologia_geomorfologia.mp4", "uploads/carac_geologia_infiltracion.mp4"],
+          stats: { "Unidades geológicas": "4", "Formas del terreno": "14", "AI físico-biótica": "127.512,29 ha" },
+          charts: [
+            { t: "Unidades geológicas (ha)", items: [
+              ["Qte · terraza eólica", "97.496,49"],
+              ["Qtp · terraza aluvial", "13.800,43"],
+              ["Qal · aluviales", "12.585,66"],
+              ["Qed · eólicos", "3.629,70"]
+            ]},
+            { t: "Formas del terreno (ha)", items: [
+              ["Ptie · terraza eólica", "96.475,51"],
+              ["Pt · plano de terraza", "13.274,92"],
+              ["Vv · vega de valle", "7.082,25"],
+              ["Pcd · cubeta de desborde", "4.788,02"],
+              ["Pm · médanos", "3.548,77"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/geologia_mapa_unidades.webp", titulo: "Mapa de unidades geológicas (Qed, Qal, Qtp, Qte)" },
+            { src: "assets/caracterizacion/geomorfologia_mapa_formas.webp", titulo: "Mapa de formas del terreno (14 unidades)" }
+          ]
+        },
+        {
+          id: "hidrologia",
+          title: "Hidrología",
+          code: "9.4 · Hidrología",
+          badge: "Hidrología",
+          desc: "Unidades hidrológicas (cuencas y subzonas) y caracterización de cuerpos de agua lóticos y lénticos del área de influencia.",
+          features: [
+            "Área hidrográfica Orinoco – zona Meta (subzona Caño Guanápalo y otros directos al Meta)",
+            "56 puntos de control en cuerpos lóticos (ríos, caños y afluentes)",
+            "61 puntos de control en cuerpos lénticos (jagüeyes, pantanos, esteros, lagunas y madreviejas)"
+          ],
+          gdb: "T_10_HIDROLOGIA",
+           videos: ["uploads/carac_hidrologia.mp4"],
+          stats: { "Puntos lóticos": "56", "Puntos lénticos": "61", "Subzonas hidrográficas": "5" },
+          charts: [
+            { t: "Puntos de control", items: [
+              ["Cuerpos lénticos", "61"],
+              ["Cuerpos lóticos", "56"],
+              ["Subzonas hidrográficas", "5"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/hidrologia_mapa_unidades.webp", titulo: "Mapa de cuencas hidrográficas del proyecto" },
+            { src: "assets/caracterizacion/hidrologia_loticos_1.webp", titulo: "Cuerpos de agua lóticos (56 puntos)" },
+            { src: "assets/caracterizacion/hidrologia_loticos_2.webp", titulo: "Muestreo en caños y ríos" },
+            { src: "assets/caracterizacion/hidrologia_lenticos_1.webp", titulo: "Cuerpos de agua lénticos (61 puntos)" },
+            { src: "assets/caracterizacion/hidrologia_lenticos_2.webp", titulo: "Jagüeyes, esteros y madreviejas" }
+          ]
+        },
+        {
+          id: "calidad_agua",
+          title: "Calidad del agua, usos y usuarios",
+          code: "9.5 · 9.6 · Calidad y usos",
+          badge: "Calidad & Usos",
+          desc: "Índice de calidad del agua (ICA) superficial y subterránea, y usos del agua identificados en el área de influencia.",
+          features: [
+            "ICA superficial: 64,71 % de los puntos sin afectación (\"Ninguna\")",
+            "Puntos ASUP-30 y ASUP-44 clasificados como \"Baja\" y ASUP-43 como \"Media\"",
+            "Usos identificados: USU-30 (doméstico y pecuario), USU-28 (doméstico, pecuario y agrícola) y uso industrial",
+            "El agua subterránea es adecuada para usos domésticos y agropecuarios"
+          ],
+          gdb: "T_12_CALIDAD_AGUA",
+           videos: ["uploads/video_usos_usuarios.mp4"],
+          stats: { "Puntos sin afectación": "64,71 %", "Usos identificados": "3 tipos", "Agua subterránea": "Apta" },
+          charts: [
+            { t: "ICA superficial (puntos evaluados)", items: [
+              ["Sin afectación (Ninguna)", "64,71 %"],
+              ["Clasificación Baja", "2 puntos"],
+              ["Clasificación Media", "1 punto"]
+            ]},
+            { t: "Usos del agua", items: [
+              ["USU-30 doméstico y pecuario", "1"],
+              ["USU-28 doméstico, pecuario y agrícola", "1"],
+              ["Uso industrial", "1"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/agua_ica_superficial_1.webp", titulo: "Puntos de muestreo de agua superficial – temporada seca" },
+            { src: "assets/caracterizacion/agua_ica_superficial_2.webp", titulo: "Puntos de muestreo de agua superficial – temporada de lluvias" },
+            { src: "assets/caracterizacion/agua_ica_subterranea.webp", titulo: "Puntos de muestreo de agua subterránea" },
+            { src: "assets/caracterizacion/agua_usos_mapa.webp", titulo: "Usos del agua en el área de influencia" },
+            { src: "assets/caracterizacion/agua_usos_1.webp", titulo: "Pozo profundo para uso doméstico" },
+            { src: "assets/caracterizacion/agua_usos_2.webp", titulo: "Uso industrial del agua" }
+          ]
+        },
+        {
+          id: "hidrogeologia",
+          title: "Hidrogeología",
+          code: "9.7 · Hidrogeología",
+          badge: "Hidrogeología",
+          desc: "Modelo hidrogeológico conceptual, unidades acuíferas, zonas de recarga, inventario de pozos y vulnerabilidad del agua subterránea.",
+          features: [
+            "Clasificación de las unidades hidrogeológicas del AI físico-biótica",
+            "Bloque-diagrama del modelo hidrogeológico conceptual (zonas de recarga)",
+            "3 pozos concesionados y 6 formaciones de inyección"
+          ],
+          gdb: "T_11_HIDROGEOLOGIA",
+           videos: ["uploads/carac_hidrogeologia_bombeo.mp4", "uploads/video_sevs_hidrogeologia.mp4"],
+          stats: { "Pozos concesionados": "3", "Formaciones de inyección": "6", "Vulnerabilidad": "Media-Baja" },
+          charts: [
+            { t: "Hidrogeología", items: [
+              ["Pozos concesionados", "3"],
+              ["Formaciones de inyección", "6"],
+              ["Caudal por pozo", "1,5 l/s"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/hidrogeologia_unidades.webp", titulo: "Unidades hidrogeológicas del AI físico-biótica" },
+            { src: "assets/caracterizacion/hidrogeologia_bloque_1.webp", titulo: "Bloque-diagrama – zonas de recarga" },
+            { src: "assets/caracterizacion/hidrogeologia_bloque_2.webp", titulo: "Bloque-diagrama – vista noreste" }
+          ]
+        },
+        {
+          id: "atmosfera",
+          title: "Atmósfera",
+          code: "9.8 · Atmósfera",
+          badge: "Clima y Ruido",
+          desc: "Calidad del aire (ICA por estación), ruido ambiental diurno y nocturno en días hábiles y no hábiles, y variables climáticas.",
+          features: [
+            "3 estaciones de calidad del aire (CA_1, CA_2 y CA_3)",
+            "28 monitoreos de ruido ambiental en horarios diurno y nocturno",
+            "Contaminantes criterio en categoría Buena o Aceptable"
+          ],
+          gdb: "T_07_CLIMA_AIRE",
+           videos: [],
+          portada: "assets/caracterizacion/atmosfera_ruido_general.webp",
+          stats: { "Estaciones de aire": "3", "Monitoreos de ruido": "28", "Contaminantes criterio": "5" },
+          charts: [
+            { t: "ICA promedio por contaminante", items: [
+              ["PM2,5", "55"],
+              ["NO2", "52"],
+              ["O3_8H", "37"],
+              ["PM10", "21"],
+              ["CO", "15"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/atmosfera_calidad_aire.webp", titulo: "Estaciones de calidad del aire y resultados ICA" },
+            { src: "assets/caracterizacion/atmosfera_ruido_general.webp", titulo: "Ruido ambiental: 28 monitoreos" },
+            { src: "assets/caracterizacion/atmosfera_ruido_diurno_1.webp", titulo: "Comportamiento diurno RA1–RA11" },
+            { src: "assets/caracterizacion/atmosfera_ruido_diurno_2.webp", titulo: "Comportamiento diurno RA12–RA21" },
+            { src: "assets/caracterizacion/atmosfera_ruido_nocturno_1.webp", titulo: "Comportamiento nocturno RA1–RA11" }
+          ]
+        }
+      ],
+      biotico: [
+        {
+          id: "paisaje",
+          title: "Paisaje",
+          code: "9.9 · Paisaje",
+          badge: "Paisaje",
+          desc: "Unidades de paisaje determinadas por la interacción entre las coberturas vegetales y la geomorfología del área de influencia.",
+          features: [
+            "55 unidades de paisaje identificadas para el proyecto",
+            "Determinadas por la interacción coberturas vegetales – geomorfología",
+            "Base para la evaluación de alteración de la percepción visual del paisaje"
+          ],
+          gdb: "T_19_PAISAJE",
+           videos: ["uploads/video_paisaje.mp4"],
+          stats: { "Unidades de paisaje": "55", "Criterio": "Coberturas + geomorfología" },
+          charts: [
+            { t: "Paisaje", items: [
+              ["Unidades de paisaje", "55"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/paisaje_unidades.webp", titulo: "Unidades de paisaje del área de influencia" }
+          ]
+        },
+        {
+          id: "flora",
+          title: "Flora",
+          code: "9.10 · Flora",
+          badge: "Botánica",
+          desc: "Coberturas de la tierra en el AI y en el Área de Desarrollo, parcelas de inventario forestal, composición florística y volumen por cobertura.",
+          features: [
+            "Coberturas de la tierra en el AI físico-biótica y en el Área de Desarrollo",
+            "108 parcelas, 84 especies y 1.407 individuos inventariados",
+            "Volumen total inventariado de 660,30 m³"
+          ],
+          gdb: "T_20_BIOTICO_CONTI_COTE",
+           videos: ["uploads/carac_flora.mp4"],
+          stats: { "Parcelas": "108", "Especies": "84", "Individuos": "1.407", "Volumen": "660,30 m³" },
+          charts: [
+            { t: "Coberturas en el AI (ha)", items: [
+              ["Herbazal denso inundable no arbolado", "82.121,32"],
+              ["Pastos limpios", "18.196,22"],
+              ["Arroz", "7.856,82"],
+              ["Bosque de galería y/o ripario", "5.309,32"]
+            ]},
+            { t: "Coberturas en el AD (ha)", items: [
+              ["Herbazal denso inundable no arbolado", "10.062,73"],
+              ["Pastos limpios", "3.541,58"],
+              ["Arroz", "2.729,73"],
+              ["Herbazal denso inundable arbolado", "1.124,22"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/flora_coberturas_mapa.webp", titulo: "Mapa de coberturas de la tierra (Corine Land Cover)" }
+          ]
+        },
+        {
+          id: "flora_veda",
+          title: "Flora vascular y no vascular",
+          code: "9.11 · Especies en veda",
+          badge: "Especies en veda",
+          desc: "Especies en veda nacional (epífitas y en otros sustratos): flora vascular y no vascular identificada en el área de influencia.",
+          features: [
+            "48 especies vasculares en veda y 197.578 cm² de cobertura de individuos no vasculares",
+            "30 especies vasculares en veda con 3.794 individuos",
+            "No vasculares: musgo 47,75 %, liquen 38,92 % y hepática 13,33 %",
+            "Presentes en 12–15 coberturas de la tierra"
+          ],
+          gdb: "T_20_BIOTICO_CONTI_COTE/PuntoMuestreoFlora",
+           videos: ["uploads/video_veda_flora.mp4"],
+          stats: { "Vasculares en veda": "48 spp", "No vasculares": "197.578 cm²", "Individuos vasculares": "3.794" },
+          charts: [
+            { t: "No vasculares en veda (%)", items: [
+              ["Musgo", "47,75 %"],
+              ["Liquen", "38,92 %"],
+              ["Hepática", "13,33 %"]
+            ]},
+            { t: "Sustrato de epífitas (%)", items: [
+              ["Epífito", "98,56 %"],
+              ["Rupícola", "0,68 %"],
+              ["Humícola", "0,41 %"],
+              ["Terrestre", "0,35 %"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/flora_veda_no_vasculares.webp", titulo: "Sustrato de las especies no vasculares en veda" },
+            { src: "assets/caracterizacion/flora_veda_1.webp", titulo: "Especies vasculares y no vasculares en veda" },
+            { src: "assets/caracterizacion/flora_veda_2.svg", titulo: "Distribución de especies en veda" },
+            { src: "assets/caracterizacion/flora_veda_3.webp", titulo: "Coberturas con presencia de especies en veda" }
+          ]
+        },
+        {
+          id: "fauna",
+          title: "Fauna",
+          code: "9.12 · Fauna",
+          badge: "Fauna",
+          desc: "Caracterización de herpetos (anfibios y reptiles), aves y mamíferos: riqueza, abundancia, esfuerzo de muestreo y especies de interés.",
+          features: [
+            "Aves: 122 especies y 4.455 individuos (228 transectos y 195 redes de niebla)",
+            "Mamíferos: 45 especies y 815 individuos (cámaras trampa, Sherman, Tomahawk y audiomoth)",
+            "Herpetos: 12 anfibios (404 individuos) y 20 reptiles (288 individuos) en 314 transectos",
+            "Especies de interés: 5 anfibios y 9 reptiles; mamíferos con categoría VU (oso palmero)"
+          ],
+          gdb: "T_21_FAUNA",
+           videos: ["uploads/carac_fauna_herpetos.mp4", "uploads/carac_fauna_masto.mp4", "uploads/carac_fauna_aves.mp4"],
+          stats: { "Aves": "122 spp", "Mamíferos": "45 spp", "Reptiles": "20 spp", "Anfibios": "12 spp" },
+          charts: [
+            { t: "Riqueza por grupo", items: [
+              ["Aves", "122"],
+              ["Mamíferos", "45"],
+              ["Reptiles", "20"],
+              ["Anfibios", "12"]
+            ]},
+            { t: "Abundancia por grupo", items: [
+              ["Aves", "4.455"],
+              ["Mamíferos", "815"],
+              ["Anfibios", "404"],
+              ["Reptiles", "288"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/fauna_aves_2.webp", titulo: "Aves: riqueza 122 y abundancia 4.455" },
+            { src: "assets/caracterizacion/fauna_aves_1.webp", titulo: "Muestreo de aves (transectos y redes de niebla)" },
+            { src: "assets/caracterizacion/fauna_herpetos_1.webp", titulo: "Transectos de herpetos (anfibios y reptiles)" },
+            { src: "assets/caracterizacion/fauna_herpetos_2.webp", titulo: "Herpetos: anfibios y reptiles" },
+            { src: "assets/caracterizacion/fauna_mamiferos_2.webp", titulo: "Mamíferos: riqueza 45 y abundancia 815" },
+            { src: "assets/caracterizacion/fauna_mamiferos_1.webp", titulo: "Instalación de cámaras trampa" }
+          ]
+        }
+      ],
+      socioeconomico: [
+        {
+          id: "socioeconomico",
+          title: "Medio socioeconómico",
+          code: "9.13 · Socioeconómico",
+          badge: "Social",
+          desc: "Proceso de participación y consulta previa, cartografía social, infraestructura comunitaria y ficha veredal del área de influencia.",
+          features: [
+            "Consulta previa con el Resguardo Indígena El Médano (12 jornadas entre 2024 y 2025)",
+            "Primer propósito: 366 asistentes en 14 unidades territoriales; segundo propósito: 259 asistentes en 12",
+            "Cartografía social en El Pellizco, La Independencia y La Libertad: discrepancias de límites y equipamientos comunitarios",
+            "Más de 150 espacios comunitarios identificados y población del AIS de 2.397 habitantes"
+          ],
+          gdb: "T_30_SOCIO",
+           videos: [],
+          portada: "assets/caracterizacion/socio_cartografia_3.webp",
+          stats: { "Población AIS": "2.397", "Asistentes (1.º + 2.º propósito)": "625", "Espacios comunitarios": "+150" },
+          charts: [
+            { t: "Participación (asistentes)", items: [
+              ["Primer propósito", "366"],
+              ["Segundo propósito", "259"]
+            ]},
+            { t: "Población del AIS", items: [
+              ["Mujeres", "1.229"],
+              ["Hombres", "1.168"]
+            ]}
+          ],
+          figuras: [
+            { src: "assets/caracterizacion/socio_cartografia_1.webp", titulo: "Cartografía social – vereda El Pellizco" },
+            { src: "assets/caracterizacion/socio_cartografia_2.webp", titulo: "Cartografía social – vereda La Independencia" },
+            { src: "assets/caracterizacion/socio_cartografia_3.webp", titulo: "Cartografía social – vereda La Libertad" },
+            { src: "assets/caracterizacion/socio_participacion_1.webp", titulo: "Primer y segundo propósito de participación" },
+            { src: "assets/caracterizacion/socio_consulta_previa_1.webp", titulo: "Consulta previa – Resguardo Indígena El Médano" },
+            { src: "assets/caracterizacion/socio_ficha_veredal.webp", titulo: "Ficha veredal – población del AIS" },
+            { src: "assets/caracterizacion/socio_infraestructura_1.webp", titulo: "Infraestructura social identificada" },
+            { src: "assets/caracterizacion/socio_infraestructura_2.webp", titulo: "Equipamientos comunitarios" }
+          ]
+        }
+      ]
+    };
+
+    // Coberturas de imagen y video que ya estaban configuradas (se conservan al
+    // reorganizar los componentes; las claves son los id anteriores).
+    const MIGRA_COMPONENTES = {
+      civil: 'civil',
+      geologia: 'geosfera',
+      hidrologia: 'agua_sup',
+      hidrogeologia: 'agua_sub',
+      atmosfera: 'atmosfera',
+      flora: 'flora',
+      fauna: 'fauna',
+      socioeconomico: 'poblacion'
+    };
+
+    // Gráficas por defecto por tarjeta (respaldo si los datos guardados no traen `charts`)
+    const GRAFICAS_DEFECTO = {};
+    ['abiotico', 'biotico', 'socioeconomico'].forEach(k => {
+      defaultData[k].forEach(c => { GRAFICAS_DEFECTO[c.id] = c.charts; });
+    });
+
+    // Cargar datos guardados previamente
+    let caracterizacionData = defaultData;
+    let currentSubtab = 'abiotico';
+    let selectedComponentId = null;
+
+    // Frase vacía solo para documentar ayuda :D
+    // Nota: las mini-barras son decorativas (representan la magnitud del valor).
+
+    // Función auxiliar para parsear URLs de video (YouTube → embed, MP4 directo)
+    function parseVideoUrl(url) {
+      if (!url) return null;
+      const trimmed = url.trim();
+      const ytMatch = trimmed.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([\w-]{11})/);
+      if (ytMatch) return { tipo: 'youtube', id: ytMatch[1] };
+      if (/\.(mp4|webm|ogv|mov|m4v)(\?|#|$)/i.test(trimmed)) return { tipo: 'mp4', url: trimmed };
+      return null;
+    }
+
+    function construirVideoHTML(url) {
+      const parsed = parseVideoUrl(url);
+      if (!parsed) return null;
+      if (parsed.tipo === 'youtube') {
+        return `<iframe src="https://www.youtube.com/embed/${parsed.id}" title="Video" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+      }
+      return `<video src="${esc(parsed.url)}" poster="${posterVideo(parsed.url)}" controls preload="metadata"></video>`;
+    }
+
+    // Sube un video al servidor y lo guarda en la carpeta /uploads (hasta 1 GB)
+    async function subirVideo(file) {
+      const nombre = 'vid_' + Date.now() + '_' + (file.name || 'video').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const res = await fetch('/api/upload?nombre=' + encodeURIComponent(nombre), {
+        method: 'POST',
+        headers: { 'Content-Type': file.type || 'video/mp4' },
+        body: file
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error((data && data.error) || 'Error al subir el video');
+      return data.ruta; // ej: uploads/vid_1689000000000_intro.mp4
+    }
+
+    const GRUPOS_VIDEO = [
+      { catId: "abiotico", nombre: "Medio Abiótico" },
+      { catId: "biotico", nombre: "Medio Biótico" },
+      { catId: "socioeconomico", nombre: "Medio Socioeconómico" }
+    ];
+    function esc(s) {
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    // Miniatura (poster) para que los videos no arranquen en negro.
+    // Las imágenes se generaron con ffmpeg en assets/caracterizacion/posters.
+    const POSTERS_VIDEO = [
+      'carac_civil', 'carac_fauna_aves', 'carac_fauna_herpetos', 'carac_fauna_masto',
+      'carac_flora', 'carac_geologia_geomorfologia', 'carac_geologia_infiltracion',
+      'carac_hidrogeologia_bombeo', 'carac_hidrologia', 'video_ambiental', 'video_paisaje',
+      'video_sevs_hidrogeologia', 'video_trafico', 'video_usos_aprovechamiento',
+      'video_usos_usuarios', 'video_veda_flora', 'video_zonificacion_ambiental',
+      'video_zonificacion_manejo'
+    ];
+    function posterVideo(src, item) {
+      const s = String(src || '');
+      if (/^(uploads\/|assets\/)/i.test(s)) {
+        const base = s.split('/').pop().split('?')[0].replace(/\.[^.]+$/, '');
+        if (POSTERS_VIDEO.indexOf(base) !== -1) {
+          return 'assets/caracterizacion/posters/' + base + '.webp';
+        }
+      }
+      if (item && item.figuras && item.figuras.length) return item.figuras[0].src;
+      return '';
+    }
+
+    // Sube una imagen al servidor y la guarda en la carpeta /uploads
+    async function subirImagen(file) {
+      const nombre = 'img_' + Date.now() + '_' + (file.name || 'archivo').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const res = await fetch('/api/upload?nombre=' + encodeURIComponent(nombre), {
+        method: 'POST',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error((data && data.error) || 'Error al subir la imagen');
+      return data.ruta;
+    }
+
+    let _qcColores = ['qcb-blue', 'qcb-green', 'qcb-amber', 'qcb-cyan', 'qcb-violet'];
+
+    function parseNumRapido(v) {
+      if (v == null) return 0;
+      let s = String(v).replace(/[.]/g, '').replace(',', '.').replace(/,/g, '');
+      const n = parseFloat(s);
+      return isNaN(n) ? 0 : Math.abs(n);
+    }
+
+// ==================================================================
+    // MINI MAPAS TEMÁTICOS (SVG) DE LAS TARJETAS
+    // Se dibujan sobre la GEOMETRÍA REAL del AD Garcero C (garcero_geo.js):
+    // polígono del AD, AIS, ríos y caños, vías, municipios, cuencas,
+    // coberturas y puntos reales — con la MISMA paleta de las
+    // mini-estadísticas (qc-*) y los MISMOS valores, para que concuerden.
+    // ==================================================================
+
+    const _QC_HEX = {
+      'qcb-blue': '#8DB4E2',
+      'qcb-green': '#00B050',
+      'qcb-amber': '#FFAA00',
+      'qcb-cyan': '#A9D9FE',
+      'qcb-violet': '#CC99FF'
+    };
+    const _MM_W = 340;
+    const _MM_H = 210;
+    // Zona del mapa dentro del SVG: ampliada (más área geográfica = mapa más
+    // grandecito y legible en la tarjeta). La flecha norte y la escala quedan
+    // en sus márgenes sin chocar con la zona del mapa.
+    const _MM_AREA = { x: 38, y: 8, w: 270, h: 172 }; // zona del mapa dentro del SVG
+
+    // Mismo criterio de color que la tabla de mini-estadísticas
+    function _colorQc(gi, ri) { return _qcColores[(gi + ri) % _qcColores.length]; }
+    function _hexQc(gi, ri) { return _QC_HEX[_colorQc(gi, ri)] || '#8DB4E2'; }
+
+    function _mmHash(texto) {
+      let h = 2166136261;
+      for (let i = 0; i < texto.length; i++) { h ^= texto.charCodeAt(i); h = Math.imul(h, 16777619); }
+      return h >>> 0;
+    }
+
+    // Azar determinista: el mismo componente dibuja siempre el mismo mini mapa
+    function _mmRng(seed) {
+      let a = seed >>> 0;
+      return function () {
+        a |= 0; a = (a + 0x6D2B79F5) | 0;
+        let t = Math.imul(a ^ (a >>> 15), 1 | a);
+        t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+
+    // Filas de las gráficas con su color y valor numérico (igual que las barras)
+    function _mmFilas(item) {
+      const grupos = (item.charts && item.charts.length) ? item.charts : (GRAFICAS_DEFECTO[item.id] || []);
+      const filas = [];
+      grupos.forEach((g, gi) => {
+        (g.items || []).forEach((it, ri) => {
+          filas.push({
+            grupo: g.t || '', gi: gi, ri: ri,
+            label: it[0], valor: it[1],
+            num: parseNumRapido(it[1]),
+            clase: _colorQc(gi, ri),
+            hex: _hexQc(gi, ri)
+          });
+        });
+      });
+      return filas;
+    }
+
+    // Accesos seguros para los constructores
+    function _mmCtx(ctx) {
+      return {
+        rng: ctx.rng,
+        item: ctx.item,
+        F: ctx.F,
+        C: (i) => (ctx.F[i] ? ctx.F[i].hex : ['#8DB4E2', '#00B050', '#FFAA00', '#A9D9FE', '#CC99FF'][i % 5]),
+        V: (i) => (ctx.F[i] ? (ctx.F[i].num || 0) : 0),
+        L: (i) => (ctx.F[i] ? String(ctx.F[i].label || '') : '')
+      };
+    }
+
+    // ------------------- Proyección y capas reales -------------------
+    let _GEO = null;
+    let _GEO_ERR = false;
+
+    function _mmGeo() {
+      if (_GEO) return _GEO;
+      if (_GEO_ERR || !window.GARCERO_C_GEO) { _GEO_ERR = true; return null; }
+      const Graw = window.GARCERO_C_GEO;
+      const [w, s, e, n] = Graw.bbox;
+      const mid = ((s + n) / 2) * Math.PI / 180;
+      const cw = Math.cos(mid);
+      const fw = (e - w) * cw, fh = n - s;
+      const k = Math.min(_MM_AREA.w / fw, _MM_AREA.h / fh);
+      const ox = _MM_AREA.x + (_MM_AREA.w - fw * k) / 2;
+      const oy = _MM_AREA.y + (_MM_AREA.h - fh * k) / 2;
+      const P = (lon, lat) => [((lon - w) * cw * k) + ox, ((n - lat) * k) + oy];
+      const mLinea = pts => {
+        let d = '';
+        pts.forEach((p, i) => { const q = P(p[0], p[1]); d += (i ? 'L' : 'M') + q[0].toFixed(1) + ',' + q[1].toFixed(1); });
+        return d;
+      };
+      const mRing = ring => mLinea(ring) + 'Z';
+      const mPts = pts => pts.map(p => P(p[0], p[1]));
+      const adPts = mPts(Graw.ad);
+      let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9;
+      adPts.forEach(p => {
+        if (p[0] < minx) minx = p[0]; if (p[1] < miny) miny = p[1];
+        if (p[0] > maxx) maxx = p[0]; if (p[1] > maxy) maxy = p[1];
+      });
+      _GEO = {
+        G: Graw, P: P,
+        adPts: adPts, ad: mRing(Graw.ad), adBox: [minx, miny, maxx, maxy],
+        adCent: P(Graw.adCent[0], Graw.adCent[1]),
+        ais: (Graw.ais || []).map(mRing),
+        agua: (Graw.agua || []).map(mRing),
+        aguasNombradas: (Graw.aguasNombradas || []).map(x => ({ n: x.n, p: P(x.c[0], x.c[1]) })),
+        rios: (Graw.rios || []).map(mPts),
+        vias: (Graw.vias || []).map(mPts),
+        muni: (Graw.muni || []).map(pts => mLinea(pts)),
+        ciudades: (Graw.ciudades || []).map(c => ({ n: c.n, p: P(c.c[0], c.c[1]) })),
+        cuencas: (Graw.cuencas || []).map(c => ({
+          d: (c.c || []).map(mRing).join(''), n: c.n, p: P(c.cent[0], c.cent[1])
+        })),
+        unidades: (Graw.unidades || []).map(rings => (rings || []).map(mRing).join('')),
+        cob: (Graw.cob || []).map(c => ({ d: (c.c || []).map(mRing).join(''), k: c.k })),
+        transectos: (Graw.transectos || []).map(mPts),
+        pCivil: (Graw.pCivil || []).map(p => P(p[0], p[1])),
+        pSub: (Graw.pSub || []).map(p => P(p[0], p[1])),
+        pEst: (Graw.pEst || []).map(p => P(p[0], p[1])),
+        pSitio: (Graw.pSitio || []).map(p => P(p[0], p[1])),
+        casas: (Graw.casas || []).map(p => P(p[0], p[1]))
+      };
+      return _GEO;
+    }
+
+    function _mmPathStr(pts) {
+      let d = '';
+      pts.forEach((p, i) => { d += (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1); });
+      return d;
+    }
+
+    function _mmEnPoligono(pts, x, y) {
+      let dentro = false;
+      for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+        const xi = pts[i][0], yi = pts[i][1], xj = pts[j][0], yj = pts[j][1];
+        if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) dentro = !dentro;
+      }
+      return dentro;
+    }
+
+    function _mmPuntoAlAzarAD(rng, G, pad) {
+      const px = pad == null ? 4 : pad;
+      const [bx0, by0, bx1, by1] = G.adBox;
+      let guard = 0;
+      while (guard++ < 400) {
+        const x = bx0 + px + rng() * (bx1 - bx0 - 2 * px);
+        const y = by0 + px + rng() * (by1 - by0 - 2 * px);
+        if (_mmEnPoligono(G.adPts, x, y)) return [x, y];
+      }
+      return [G.adCent[0], G.adCent[1]];
+    }
+
+    function _mmPuntosEnPoligono(rng, pts, n, margenPx) {
+      const m = margenPx == null ? 4 : margenPx;
+      let minx = 1e9, miny = 1e9, maxx = -1e9, maxy = -1e9;
+      pts.forEach(p => {
+        if (p[0] < minx) minx = p[0]; if (p[1] < miny) miny = p[1];
+        if (p[0] > maxx) maxx = p[0]; if (p[1] > maxy) maxy = p[1];
+      });
+      const out = [];
+      let guard = 0;
+      while (out.length < n && guard < n * 90) {
+        guard++;
+        const x = minx + m + rng() * (maxx - minx - 2 * m);
+        const y = miny + m + rng() * (maxy - miny - 2 * m);
+        if (_mmEnPoligono(pts, x, y)) out.push([x, y]);
+      }
+      return out;
+    }
+
+    // n puntos a lo largo de un conjunto de líneas (por longitud acumulada)
+    function _mmMuestrearEnLineas(rng, lineas, n) {
+      const tramos = [];
+      let total = 0;
+      (lineas || []).forEach(pts => {
+        for (let i = 1; i < pts.length; i++) {
+          const dl = Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+          tramos.push([pts[i - 1], pts[i], dl]);
+          total += dl;
+        }
+      });
+      const out = [];
+      for (let j = 0; j < n; j++) {
+        if (!total) break;
+        let t = rng() * total, i = 0, acc = 0;
+        for (; i < tramos.length - 1; i++) { if (acc + tramos[i][2] >= t) break; acc += tramos[i][2]; }
+        const f = tramos[i][2] ? (t - acc) / tramos[i][2] : 0;
+        out.push([
+          tramos[i][0][0] + (tramos[i][1][0] - tramos[i][0][0]) * f,
+          tramos[i][0][1] + (tramos[i][1][1] - tramos[i][0][1]) * f
+        ]);
+      }
+      return out;
+    }
+
+    // Celdas irregulares dentro de la caja proyectada del AD
+    function _mmCeldasAd(rng, n, G, jit) {
+      const [bx0, by0, bx1, by1] = G.adBox;
+      const dx = bx1 - bx0, dy = by1 - by0, pad = 10;
+      const cols = Math.max(1, Math.min(n, Math.round(Math.sqrt(n * (dx / dy)))));
+      const rows = Math.ceil(n / cols);
+      const cw = dx / cols, ch = dy / rows;
+      const j = jit == null ? 5 : jit;
+      const salida = [];
+      for (let r = 0; r < rows && salida.length < n; r++) {
+        for (let c = 0; c < cols && salida.length < n; c++) {
+          const cx = bx0 + pad + c * cw + cw / 2;
+          const cy = by0 + pad + r * ch + ch / 2;
+          const w2 = cw * 0.84, h2 = ch * 0.84;
+          const pts = [
+            [cx - w2 / 2 + (rng() - 0.5) * j, cy - h2 / 2 + (rng() - 0.5) * j],
+            [cx + w2 / 2 + (rng() - 0.5) * j, cy - h2 / 2 + (rng() - 0.5) * j],
+            [cx + w2 / 2 + (rng() - 0.5) * j, cy + h2 / 2 + (rng() - 0.5) * j],
+            [cx - w2 / 2 + (rng() - 0.5) * j, cy + h2 / 2 + (rng() - 0.5) * j]
+          ];
+          salida.push({ cx: cx, cy: cy, d: _mmPoligono(pts) });
+        }
+      }
+      return salida;
+    }
+
+    function _mmBlob(rng, cx, cy, rx, ry, jit) {
+      const nn = 8, pts = [];
+      const j = jit == null ? 0.24 : jit;
+      for (let i = 0; i < nn; i++) {
+        const a = (i / nn) * Math.PI * 2;
+        const r = 1 - j / 2 + rng() * j;
+        pts.push([cx + Math.cos(a) * rx * r, cy + Math.sin(a) * ry * r]);
+      }
+      let d = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
+      for (let i = 0; i < nn; i++) {
+        const p0 = pts[i], p1 = pts[(i + 1) % nn];
+        d += 'Q' + p0[0].toFixed(1) + ',' + p0[1].toFixed(1) + ' ' +
+             ((p0[0] + p1[0]) / 2).toFixed(1) + ',' + ((p0[1] + p1[1]) / 2).toFixed(1);
+      }
+      return d + 'Z';
+    }
+
+    function _mmPoligono(pts) {
+      let d = 'M' + pts[0][0].toFixed(1) + ',' + pts[0][1].toFixed(1);
+      for (let i = 1; i < pts.length; i++) d += 'L' + pts[i][0].toFixed(1) + ',' + pts[i][1].toFixed(1);
+      return d + 'Z';
+    }
+
+    function _mmEstrella(cx, cy, r, r2) {
+      let d = '';
+      for (let i = 0; i < 10; i++) {
+        const a = -Math.PI / 2 + i * Math.PI / 5;
+        const rr = i % 2 === 0 ? r : r2;
+        d += (i ? 'L' : 'M') + (cx + Math.cos(a) * rr).toFixed(1) + ',' + (cy + Math.sin(a) * rr).toFixed(1);
+      }
+      return d + 'Z';
+    }
+
+    function _mmMarca(x, y, hex, forma, s, op) {
+      op = op == null ? 0.95 : op;
+      x = +x.toFixed(1); y = +y.toFixed(1); s = +s.toFixed(2);
+      switch (forma) {
+        case 'cuadrado':
+          return `<rect x="${(x - s).toFixed(1)}" y="${(y - s).toFixed(1)}" width="${(2 * s).toFixed(1)}" height="${(2 * s).toFixed(1)}" rx="1" fill="${hex}" opacity="${op}"/>`;
+        case 'casa':
+          return `<path d="M${(x - s).toFixed(1)},${y} L${x},${(y - s * 1.2).toFixed(1)} L${(x + s).toFixed(1)},${y} L${(x + s).toFixed(1)},${(y + s).toFixed(1)} L${(x - s).toFixed(1)},${(y + s).toFixed(1)}Z" fill="${hex}" opacity="${op}"/>`;
+        case 'rombo':
+          return `<path d="M${x},${(y - s).toFixed(1)} L${(x + s).toFixed(1)},${y} L${x},${(y + s).toFixed(1)} L${(x - s).toFixed(1)},${y}Z" fill="${hex}" opacity="${op}"/>`;
+        case 'triangulo':
+          return `<path d="M${x},${(y - s).toFixed(1)} L${(x + s).toFixed(1)},${(y + s * 0.8).toFixed(1)} L${(x - s).toFixed(1)},${(y + s * 0.8).toFixed(1)}Z" fill="${hex}" opacity="${op}"/>`;
+        case 'chevron':
+          return `<path d="M${(x - s).toFixed(1)},${(y - s * 0.5).toFixed(1)} L${x},${(y + s * 0.6).toFixed(1)} L${(x + s).toFixed(1)},${(y - s * 0.5).toFixed(1)}" fill="none" stroke="${hex}" stroke-width="${Math.max(1.1, s * 0.7).toFixed(1)}" stroke-linecap="round" stroke-linejoin="round" opacity="${op}"/>`;
+        case 'gota':
+          return `<path d="M${x},${(y - s).toFixed(1)} C${(x + s * 0.9).toFixed(1)},${(y - s * 0.1).toFixed(1)} ${(x + s * 0.7).toFixed(1)},${(y + s).toFixed(1)} ${x},${(y + s).toFixed(1)} C${(x - s * 0.7).toFixed(1)},${(y + s).toFixed(1)} ${(x - s * 0.9).toFixed(1)},${(y - s * 0.1).toFixed(1)} ${x},${(y - s).toFixed(1)}Z" fill="${hex}" opacity="${op}"/>`;
+        case 'estrella':
+          return `<path d="${_mmEstrella(x, y, s, s * 0.45)}" fill="${hex}" opacity="${op}"/>`;
+        case 'arbol':
+          return `<g opacity="${op}"><rect x="${(x - 0.7).toFixed(1)}" y="${(y + s * 0.1).toFixed(1)}" width="1.4" height="${(s * 1.1).toFixed(1)}" rx="0.5" fill="#8a6a3f"/><circle cx="${x}" cy="${(y - s * 0.4).toFixed(1)}" r="${s.toFixed(1)}" fill="${hex}"/></g>`;
+        default:
+          return `<circle cx="${x}" cy="${y}" r="${s}" fill="${hex}" opacity="${op}"/>`;
+      }
+    }
+
+    function _mmPildora(x, y, hex, texto) {
+      const w = 15 + String(texto).length * 4.05;
+      return `<g>
+        <rect x="${x}" y="${y}" width="${w.toFixed(1)}" height="15" rx="7.5" fill="rgba(9,16,26,0.9)" stroke="${hex}" stroke-opacity="0.55"/>
+        <circle cx="${(x + 9.5).toFixed(1)}" cy="${(y + 7.5).toFixed(1)}" r="3.2" fill="${hex}"/>
+        <text x="${(x + 16).toFixed(1)}" y="${(y + 10.6).toFixed(1)}" font-size="7.5" fill="#e6edf7" font-family="Inter, sans-serif" font-weight="600">${esc(texto)}</text>
+      </g>`;
+    }
+
+    // Texto con posición contenida dentro del lienzo
+    function _mmEtiqueta(x, y, texto, color, tam, italic, peso) {
+      const tx = Math.min(Math.max(x, 26), _MM_W - 26);
+      const ty = Math.min(Math.max(y, 12), _MM_H - 10);
+      return `<text x="${tx.toFixed(1)}" y="${ty.toFixed(1)}" text-anchor="middle" font-size="${tam || 6}" fill="${color || '#bcd7ec'}" font-family="Inter, sans-serif" ${italic ? 'font-style="italic"' : ''} ${peso ? 'font-weight="' + peso + '"' : ''} opacity="0.92">${esc(texto)}</text>`;
+    }
+
+    // Base geográfica: AIS, municipios, vías, agua y ríos reales
+    function _mmBase(G) {
+      let s = `<rect x="0" y="0" width="${_MM_W}" height="${_MM_H}" rx="12" fill="#0d1622"/>`;
+      s += `<ellipse cx="${_MM_W * 0.5}" cy="${_MM_H * 0.55}" rx="${_MM_W * 0.52}" ry="${_MM_H * 0.62}" fill="rgba(141,180,226,0.04)"/>`;
+      for (let x = 40; x < _MM_W; x += 40) s += `<line x1="${x}" y1="0" x2="${x}" y2="${_MM_H}" stroke="rgba(148,163,184,0.06)" stroke-width="1"/>`;
+      for (let y = 28; y < _MM_H; y += 28) s += `<line x1="0" y1="${y}" x2="${_MM_W}" y2="${y}" stroke="rgba(148,163,184,0.06)" stroke-width="1"/>`;
+      // Área de Influencia
+      G.ais.forEach(d => s += `<path d="${d}" fill="rgba(148,163,184,0.035)" stroke="rgba(148,163,184,0.32)" stroke-width="0.9" stroke-dasharray="3 3"/>`);
+      // Límites municipales
+      G.muni.forEach(d => s += `<path d="${d}" fill="none" stroke="rgba(203,213,225,0.30)" stroke-width="1"/>`);
+      // Vías
+      G.vias.forEach(pts => s += `<path d="${_mmPathStr(pts)}" fill="none" stroke="#8a8177" stroke-width="1" opacity="0.5"/>`);
+      // Cuerpos de agua reales (Río Meta, caños, lagunas)
+      G.agua.forEach(d => s += `<path d="${d}" fill="rgba(96,165,215,0.34)" stroke="rgba(130,190,235,0.5)" stroke-width="0.7"/>`);
+      // Ríos (líneas)
+      G.rios.forEach((pts, i) => s += `<path d="${_mmPathStr(pts)}" fill="none" stroke="#4f93c5" stroke-width="${i < 3 ? 2 : i < 8 ? 1.5 : 1.1}" opacity="0.9"/>`);
+      // Nombres de agua principales
+      G.aguasNombradas.slice(0, 5).forEach(x => s += _mmEtiqueta(x.p[0], x.p[1] + 3, x.n, '#c3ddf2', 5.6, true));
+      return s;
+    }
+
+    // Anillo del AD Garcero C con rótulo
+    function _mmAD(G) {
+      let s = `<path d="${G.ad}" fill="rgba(203,213,225,0.06)" stroke="#e2e8f0" stroke-width="1.6" stroke-dasharray="5 3"/>`;
+      const c = G.adCent;
+      s += `<text x="${c[0].toFixed(1)}" y="${(c[1] - 8).toFixed(1)}" text-anchor="middle" font-size="7.5" font-weight="700" letter-spacing="0.5px" fill="#e2e8f0" font-family="Inter, sans-serif" opacity="0.95">AD GARCERO C</text>`;
+      return s;
+    }
+
+    function _mmNorte() {
+      const x = _MM_W - 18, y = 14;
+      return `<g opacity="0.9">
+        <circle cx="${x}" cy="${y}" r="10" fill="rgba(9,16,26,0.85)" stroke="rgba(148,163,184,0.35)" stroke-width="1"/>
+        <path d="M${x},${y - 6.2} L${x + 3.4},${y + 2} L${x},${y - 0.2} L${x - 3.4},${y + 2}Z" fill="#cbd5e1"/>
+        <text x="${x}" y="${y + 8}" text-anchor="middle" font-size="5.4" fill="#cbd5e1" font-family="Inter, sans-serif" font-weight="700">N</text>
+      </g>`;
+    }
+
+    function _mmEscala() {
+      const x = _MM_AREA.x, y = _MM_H - 12;
+      return `<g opacity="0.85">
+        <line x1="${x}" y1="${y}" x2="${x + 44}" y2="${y}" stroke="#cbd5e1" stroke-width="2"/>
+        <line x1="${x}" y1="${y - 3.5}" x2="${x}" y2="${y + 3.5}" stroke="#cbd5e1" stroke-width="2"/>
+        <line x1="${x + 22}" y1="${y - 2.5}" x2="${x + 22}" y2="${y + 2.5}" stroke="#cbd5e1" stroke-width="1.4"/>
+        <line x1="${x + 44}" y1="${y - 3.5}" x2="${x + 44}" y2="${y + 3.5}" stroke="#cbd5e1" stroke-width="2"/>
+        <text x="${x + 50}" y="${y + 2.6}" font-size="6.6" fill="#cbd5e1" font-family="Inter, sans-serif" font-weight="600">15 km</text>
+      </g>`;
+    }
+
+    // ------------------- Escenas por componente (sobre Garcero C) -------------------
+    const MINI_MAPAS = {
+
+      // Civil: vías, 13 plataformas y 65 pozos sobre el AD real
+      civil(ctx) {
+        const { rng, C, V } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        G.vias.forEach(pts => s += `<path d="${_mmPathStr(pts)}" fill="none" stroke="${C(4)}" stroke-width="1.6" opacity="0.85"/>`);
+        G.pCivil.forEach(p => {
+          s += _mmMarca(p[0], p[1], C(2), 'cuadrado', 3.4, 0.95);
+          for (let k = 0; k < 5; k++) {
+            const a = rng() * Math.PI * 2, r = 4.5 + rng() * 3.5;
+            s += _mmMarca(p[0] + Math.cos(a) * r, p[1] + Math.sin(a) * r, C(3), 'circulo', 1.4, 0.85);
+          }
+        });
+        if (V(4)) s += _mmPildora(_MM_AREA.x + 2, _MM_AREA.y + 2, C(4), V(4) + ' km de vías');
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Geósfera: 4 unidades geológicas reales recortadas del AD + relieves
+      geosfera(ctx) {
+        const { rng, C, L } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        G.unidades.forEach((d, i) => {
+          s += `<path d="${d}" fill="${C(i)}" fill-opacity="0.20" stroke="${C(i)}" stroke-width="1.1" opacity="0.95"/>`;
+          const ring0 = (G.G.unidades[i] || [])[0];
+          if (ring0 && ring0.length) {
+            const cx = ring0.reduce((a, p) => a + p[0], 0) / ring0.length;
+            const cy = ring0.reduce((a, p) => a + p[1], 0) / ring0.length;
+            const q = G.P(cx, cy);
+            const corto = (L(i).split('·')[0] || '').trim() || ('U' + (i + 1));
+            s += `<text x="${q[0].toFixed(1)}" y="${(q[1] + 3).toFixed(1)}" text-anchor="middle" font-size="6.8" fill="#eef3f8" font-family="JetBrains Mono, monospace" font-weight="700" opacity="0.95">${esc(corto)}</text>`;
+          }
+        });
+        // 14 formas del terreno (textura)
+        for (let i = 0; i < 14; i++) {
+          const p = _mmPuntoAlAzarAD(rng, G, 6);
+          s += `<path d="M${p[0].toFixed(1)},${(p[1] + 3).toFixed(1)} L${(p[0] + 4).toFixed(1)},${(p[1] - 3).toFixed(1)} L${(p[0] + 8).toFixed(1)},${(p[1] + 3).toFixed(1)}Z" fill="none" stroke="#94a3b8" stroke-width="1" opacity="0.55"/>`;
+        }
+        const idxMax = ctx.F.reduce((bi, f, i, arr) => ((f.num || 0) > (arr[bi].num || 0) ? i : bi), 0);
+        if (ctx.F[idxMax]) {
+          const etiquetaMax = (L(idxMax).split('·')[0] || '').trim();
+          s += _mmPildora(_MM_AREA.x + 2, _MM_AREA.y + 2, C(idxMax), ctx.F[idxMax].valor + (etiquetaMax ? ' · ' + etiquetaMax : '') + ' (mayor)');
+        }
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Agua superficial: subzonas reales, gotas lóticas sobre los ríos y cuerpos lénticos
+      agua_sup(ctx) {
+        const { rng, C, V } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        G.cuencas.forEach(c => {
+          s += `<path d="${c.d}" fill="none" stroke="${C(2)}" stroke-width="1.3" stroke-dasharray="5 4" opacity="0.85"/>`;
+          const corto = String(c.n || '').replace('Río ', '').replace('Caño ', '').slice(0, 14);
+          if (corto) s += _mmEtiqueta(c.p[0], c.p[1] + 3, corto, '#e8c58e', 5.6, false, 600);
+        });
+        const gotas = _mmMuestrearEnLineas(rng, G.rios, Math.min(V(0), 90));
+        gotas.forEach(p => s += _mmMarca(p[0], p[1], C(0), 'gota', 2, 0.95));
+        const lent = _mmPuntosEnPoligono(rng, G.adPts, Math.min(V(1), 70));
+        lent.forEach(p => {
+          const rx = 2.4 + rng() * 2.4, ry = rx * (0.5 + rng() * 0.3);
+          s += `<ellipse cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" rx="${rx.toFixed(1)}" ry="${ry.toFixed(1)}" fill="${C(1)}" opacity="0.85"/>`;
+        });
+        if (V(0) || V(1)) s += _mmPildora(_MM_AREA.x + 2, _MM_AREA.y + 2, C(0), V(0) + ' lóticos · ' + V(1) + ' lénticos');
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Agua subterránea: pozos reales y formaciones de inyección
+      agua_sub(ctx) {
+        const { C, V } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        const [bx0, by0, bx1, by1] = G.adBox;
+        for (let i = 0; i < 6; i++) {
+          const y = by0 + ((i + 1) / 7) * (by1 - by0);
+          s += `<line x1="${(bx0 + 4).toFixed(1)}" y1="${y.toFixed(1)}" x2="${(bx1 - 4).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${C(2)}" stroke-width="1.2" stroke-dasharray="2 4" opacity="0.55"/>`;
+          s += `<text x="${(bx1 - 5).toFixed(1)}" y="${(y + 2.4).toFixed(1)}" text-anchor="end" font-size="5.4" fill="#c9b28a" font-family="JetBrains Mono, monospace" opacity="0.8">F${i + 1}</text>`;
+        }
+        G.pSub.forEach(p => {
+          s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="7" fill="rgba(141,180,226,0.15)" stroke="rgba(141,180,226,0.45)" stroke-dasharray="2 2"/>`;
+          s += `<line x1="${p[0].toFixed(1)}" y1="${(p[1] - 5).toFixed(1)}" x2="${p[0].toFixed(1)}" y2="${(p[1] + 8).toFixed(1)}" stroke="${C(0)}" stroke-width="2.4"/>`;
+          s += `<path d="M${p[0].toFixed(1)},${(p[1] - 8).toFixed(1)} l-3.4,6 h2.6 v6 h1.6 v-6 h2.6 z" fill="${C(1)}" opacity="0.95"/>`;
+        });
+        if (V(1)) s += _mmPildora(_MM_AREA.x + 2, _MM_AREA.y + 2, C(1), 'caudal ' + ctx.F[1].valor);
+        if (V(0)) s += _mmPildora(_MM_AREA.x + 2, _MM_AREA.y + 20, C(0), V(0) + ' pozos concesionados');
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Atmósfera: estaciones y burbujas ICA sobre el AD
+      atmosfera(ctx) {
+        const { rng, C, F } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        const [bx0, by0, bx1, by1] = G.adBox;
+        for (let i = 0; i < 7; i++) {
+          const p = _mmPuntoAlAzarAD(rng, G, 8);
+          s += `<path d="M${p[0].toFixed(1)},${p[1].toFixed(1)} q14,${((rng() - 0.5) * 8).toFixed(1)} 28,0" fill="none" stroke="#94a3b8" stroke-width="1" opacity="0.22"/>`;
+        }
+        G.pEst.forEach(p => {
+          s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="12" fill="rgba(141,180,226,0.12)" stroke="rgba(141,180,226,0.4)" stroke-dasharray="3 3"/>`;
+          s += _mmMarca(p[0], p[1], '#cbd5e1', 'triangulo', 4.4, 0.95);
+        });
+        const maxN = Math.max.apply(null, F.map(f => f.num || 1)) || 1;
+        F.forEach((f, i) => {
+          const gx = bx0 + ((i + 0.5) / F.length) * (bx1 - bx0) + (rng() - 0.5) * 14;
+          const gy = by0 + (0.32 + (i % 2) * 0.32) * (by1 - by0) + (rng() - 0.5) * 10;
+          const r = 4.5 + 6.5 * Math.sqrt((f.num || 1) / maxN);
+          s += `<circle cx="${gx.toFixed(1)}" cy="${gy.toFixed(1)}" r="${r.toFixed(1)}" fill="${f.hex}" fill-opacity="0.30" stroke="${f.hex}" stroke-width="1.4"/>`;
+          s += `<text x="${gx.toFixed(1)}" y="${(gy + 2.4).toFixed(1)}" text-anchor="middle" font-size="6.4" font-weight="700" fill="#eef3f8" font-family="Inter, sans-serif">${esc(f.label)}</text>`;
+        });
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Ecosistemas: coberturas reales del AD (herbazal, pastos, arroz, bosque de galería)
+      ecosistemas(ctx) {
+        const { C, V } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        const orden = { herbazal: 0, pastos: 1, arroz: 2, bosque: 3 };
+        let s = '';
+        G.cob.forEach(c => {
+          const i = orden[c.k] != null ? orden[c.k] : 0;
+          s += `<path d="${c.d}" fill="${C(i)}" fill-opacity="0.16" stroke="${C(i)}" stroke-width="0.9" opacity="0.95"/>`;
+        });
+        if (V(3)) s += _mmPildora(_MM_AREA.x + 2, _MM_AREA.y + 2, C(3), ctx.F[3].valor + ' de bosque');
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Flora: 108 parcelas sobre transectos reales y especies registradas
+      flora(ctx) {
+        const { rng, C, V } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        G.transectos.forEach(pts => s += `<path d="${_mmPathStr(pts)}" fill="none" stroke="#64748b" stroke-width="1" stroke-dasharray="4 3" opacity="0.6"/>`);
+        const parcelas = _mmMuestrearEnLineas(rng, G.transectos, Math.min(V(0), 110));
+        parcelas.forEach(p => s += `<rect x="${(p[0] - 1.4).toFixed(1)}" y="${(p[1] - 1.4).toFixed(1)}" width="2.8" height="2.8" rx="0.6" fill="${C(0)}" opacity="0.9"/>`);
+        const esp = _mmPuntosEnPoligono(rng, G.adPts, Math.min(V(1), 90));
+        esp.forEach(p => s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="1.5" fill="${C(1)}" opacity="0.85"/>`);
+        if (V(2)) s += _mmPildora(_MM_AREA.x + 2, _MM_AREA.y + 2, C(2), String(ctx.F[2].valor) + ' individuos');
+        if (V(3)) s += _mmPildora(_MM_AREA.x + 130, _MM_AREA.y + 2, C(3), String(ctx.F[3].valor));
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Fauna: hábitats y riqueza por grupo dentro del AD
+      fauna(ctx) {
+        const { rng, C, V } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        const [bx0, by0, bx1, by1] = G.adBox;
+        const cx1 = bx0 + (bx1 - bx0) * 0.34, cy1 = by0 + (by1 - by0) * 0.44;
+        const cx2 = bx0 + (bx1 - bx0) * 0.72, cy2 = by0 + (by1 - by0) * 0.64;
+        s += `<path d="${_mmBlob(rng, cx1, cy1, (bx1 - bx0) * 0.20, (by1 - by0) * 0.26, 0.4)}" fill="rgba(95,156,110,0.14)" stroke="rgba(95,156,110,0.4)" stroke-width="1" stroke-dasharray="4 3"/>`;
+        s += `<path d="${_mmBlob(rng, cx2, cy2, (bx1 - bx0) * 0.19, (by1 - by0) * 0.23, 0.42)}" fill="rgba(95,160,200,0.12)" stroke="rgba(95,160,200,0.4)" stroke-width="1" stroke-dasharray="4 3"/>`;
+        const grupos = [
+          [cx1, cy1, 0.16, 0.19, 2.1, 'circulo'],
+          [cx2, cy2, 0.15, 0.18, 2.0, 'rombo'],
+          [cx2, cy2, 0.15, 0.18, 1.9, 'gota']
+        ];
+        for (let fi = 1; fi <= 3; fi++) {
+          const [cx, cy, rxr, ryr, sz, forma] = grupos[fi - 1];
+          const n = Math.min(V(fi), 60);
+          for (let i = 0; i < n; i++) {
+            const x = cx + (rng() * 2 - 1) * (bx1 - bx0) * rxr;
+            const y = cy + (rng() * 2 - 1) * (by1 - by0) * ryr;
+            s += _mmMarca(x, y, C(fi), forma, sz, 0.9);
+          }
+        }
+        for (let i = 0; i < Math.min(V(0), 130); i++) {
+          const p = _mmPuntoAlAzarAD(rng, G, 4);
+          s += _mmMarca(p[0], p[1], C(0), 'chevron', 2.1, 0.9);
+        }
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Población: veredas del AD y círculos proporcionales de población
+      poblacion(ctx) {
+        const { rng, C, F } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        // Veredas/UT del AD (contexto neutro)
+        _mmCeldasAd(rng, 8, G, 5).forEach(c => {
+          s += `<path d="${c.d}" fill="rgba(148,163,184,0.05)" stroke="#94a3b8" stroke-width="1" opacity="0.85"/>`;
+        });
+        // Viviendas reales
+        const casasSel = G.casas.filter(() => true).slice(0, 30);
+        casasSel.forEach(p => s += _mmMarca(p[0], p[1], '#94a3b8', 'casa', 2.1, 0.8));
+        // Círculos proporcionales: total (centro del AD) y hombres/mujeres
+        const pos = [
+          [G.adCent[0], G.adCent[1] + 10],
+          G.ciudades[0] ? [G.ciudades[0].p[0], G.ciudades[0].p[1]] : [G.adCent[0] + 30, G.adCent[1] - 20],
+          G.ciudades[1] ? [G.ciudades[1].p[0], G.ciudades[1].p[1]] : [G.adCent[0] - 28, G.adCent[1] + 14]
+        ];
+        const maxN = Math.max.apply(null, F.map(f => f.num || 1)) || 1;
+        F.slice(0, 3).forEach((f, i) => {
+          const r = 7 + 16 * Math.sqrt((f.num || 1) / maxN);
+          const p = pos[i];
+          s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${r.toFixed(1)}" fill="${f.hex}" fill-opacity="0.24" stroke="${f.hex}" stroke-width="1.6"/>`;
+          s += `<text x="${p[0].toFixed(1)}" y="${(p[1] + 2.4).toFixed(1)}" text-anchor="middle" font-size="6.6" font-weight="700" fill="#eef3f8" font-family="JetBrains Mono, monospace">${esc(String(f.valor))}</text>`;
+        });
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Servicios e infraestructura: UT, resguardo y 150 espacios comunitarios reales
+      infra_socio(ctx) {
+        const { rng, C, V } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        const celdas = _mmCeldasAd(rng, 8, G, 5);
+        celdas.forEach((c, i) => {
+          const esResguardo = (i === 0);
+          s += `<path d="${c.d}" fill="${esResguardo ? C(2) : C(1)}" fill-opacity="${esResguardo ? 0.24 : 0.13}" stroke="${esResguardo ? C(2) : C(1)}" stroke-width="1.2"/>`;
+          if (esResguardo) {
+            s += `<text x="${c.cx.toFixed(1)}" y="${(c.cy - 7).toFixed(1)}" text-anchor="middle" font-size="5.6" font-weight="700" fill="#ffe0a3" font-family="Inter, sans-serif">Resguardo El Médano</text>`;
+          }
+        });
+        // Espacios comunitarios reales (hasta 150)
+        const nCasas = Math.min(V(0), 150);
+        for (let i = 0; i < nCasas && i < G.casas.length; i++) {
+          s += _mmMarca(G.casas[i][0], G.casas[i][1], C(0), 'casa', 1.5, 0.85);
+        }
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Cultura: impacto por categoría sobre el AD + hallazgos arqueológicos
+      cultura_eco(ctx) {
+        const { rng, C } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        const celdas = _mmCeldasAd(rng, 6, G, 5);
+        ctx.F.slice(0, 6).forEach((f, i) => {
+          const c = celdas[i];
+          if (!c) return;
+          s += `<path d="${c.d}" fill="${f.hex}" fill-opacity="0.20" stroke="${f.hex}" stroke-width="1.2" opacity="0.95"/>`;
+          s += `<text x="${c.cx.toFixed(1)}" y="${(c.cy + 2.4).toFixed(1)}" text-anchor="middle" font-size="6.4" font-weight="700" fill="#eef3f8" font-family="JetBrains Mono, monospace">${esc(String(f.valor))}</text>`;
+        });
+        G.pSitio.forEach(p => {
+          s += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="8" fill="rgba(255,209,102,0.15)" stroke="#FFD166" stroke-dasharray="2 2" stroke-width="1"/>`;
+          s += _mmMarca(p[0], p[1], '#FFD166', 'estrella', 4, 1);
+        });
+        s += _mmAD(G);
+        return s;
+      },
+
+      // Respaldo genérico: racimos de puntos dentro del AD
+      _generico(ctx) {
+        const { rng, C, V } = _mmCtx(ctx);
+        const G = _mmGeo();
+        if (!G) return '';
+        let s = '';
+        ctx.F.forEach((f, i) => {
+          const cant = Math.min(f.num || 1, 36);
+          for (let k = 0; k < cant; k++) {
+            const p = _mmPuntoAlAzarAD(rng, G, 6);
+            s += _mmMarca(p[0], p[1], f.hex, 'circulo', 1.8, 0.9);
+          }
+        });
+        s += _mmAD(G);
+        return s;
+      }
+    };
+
+    // Construye el mini mapa (SVG + leyenda) de una tarjeta
+    function construirMiniMapa(item) {
+      const G = _mmGeo();
+      if (!G) return '';
+      const filas = _mmFilas(item);
+      if (!filas.length) return '';
+      const rng = _mmRng(_mmHash(String(item.id) + '|' + filas.map(f => f.label + ':' + f.valor).join('|')));
+      const constructor = MINI_MAPAS[item.id] || MINI_MAPAS._generico;
+      let contenido = '';
+      try {
+        contenido = constructor({ rng: rng, F: filas, item: item });
+      } catch (e) {
+        contenido = '';
+      }
+      const leyenda = filas.map(f =>
+        `<span class="mm-leg" title="${esc(f.label)} · ${esc(f.valor)}"><i class="mm-swatch ${f.clase}"></i>${esc(f.label)} <strong>${esc(f.valor)}</strong></span>`
+      ).join('');
+      return `
+        <div class="card-mini-map">
+          <div class="mm-head">
+            <span class="mm-title"><i data-lucide="map-pinned"></i> Mini mapa · ${esc(item.badge || 'Componente')}</span>
+            <span class="mm-tag">Garcero C · WGS84</span>
+          </div>
+          <div class="mm-svg-wrap" onclick="abrirZoomMiniMapa(this)" title="Clic para ampliar el mapa" role="button">
+            <svg class="mm-svg" viewBox="0 0 ${_MM_W} ${_MM_H}" role="img" aria-label="Mini mapa del AD Garcero C: ${esc(filas.map(f => f.label + ' ' + f.valor).join(', '))}">
+              ${_mmBase(G)}
+              ${contenido}
+              ${_mmNorte()}
+              ${_mmEscala()}
+            </svg>
+            <span class="mm-zoom-hint">🔍 Clic para ampliar</span>
+          </div>
+          <div class="mm-legend">${leyenda}</div>
+        </div>`;
+    }
+
+    // Construye la tabla de gráficas rápidas de una tarjeta según sus datos y subpestaña
+    function construirTablaGraficas(item) {
+      const grupos = (item.charts && item.charts.length) ? item.charts : (GRAFICAS_DEFECTO[item.id] || []);
+      if (!grupos.length) return '';
+      let html = '';
+      grupos.forEach((g, gi) => {
+        let max = 0;
+        g.items.forEach(it => { const n = parseNumRapido(it[1]); if (n > max) max = n; });
+        html += `<div class="qc-group">
+          ${g.t ? `<span class="qc-title">${esc(g.t)}</span>` : ''}
+          <div class="qc-rows">`;
+        g.items.forEach((it, ri) => {
+          const n = parseNumRapido(it[1]);
+          const color = _colorQc(gi, ri);
+          const pct = max > 0 ? Math.max(3, Math.round((n / max) * 100)) : 3;
+          html += `<div class="qc-row">
+            <span class="qc-label" title="${esc(it[0])}">${esc(it[0])}</span>
+            <div class="qc-bar"><span class="${color}" style="width:${pct}%"></span></div>
+            <span class="qc-value">${esc(it[1])}</span>
+          </div>`;
+        });
+        html += `</div></div>`;
+      });
+      return html;
+    }
+
+    // Galería de figuras del documento (presentación del tercer momento) que
+    // reemplaza el anterior mini mapa temático de las tarjetas.
+    function construirFiguras(item, compacto) {
+      const figs = item.figuras || [];
+      if (!figs.length) {
+        return `<div class="card-figuras">
+          <div class="cf-head">
+            <span class="cf-title"><i data-lucide="images"></i> Figuras del documento</span>
+            <span class="cf-tag">Presentación 3.er momento</span>
+          </div>
+          <div class="cf-vacio"><i data-lucide="image-off"></i> Sin figuras cargadas para este componente.</div>
+        </div>`;
+      }
+      const items = figs.map(f => `
+        <figure class="cf-item" title="${esc(f.titulo || '')} · Clic para ampliar" onclick="abrirZoomImagen('${f.src}')">
+          <img src="${f.src}" alt="${esc(f.titulo || item.title)}" loading="lazy"
+               onerror="this.closest('.cf-item').classList.add('cf-error'); this.remove();">
+          <figcaption>${esc(f.titulo || '')}</figcaption>
+        </figure>`).join('');
+      return `<div class="card-figuras${compacto ? ' cf-compacto' : ''}">
+        <div class="cf-head">
+          <span class="cf-title"><i data-lucide="images"></i> Figuras del documento</span>
+          <span class="cf-tag">${figs.length} figura${figs.length === 1 ? '' : 's'} · Presentación 3.er momento</span>
+        </div>
+        <div class="cf-grid">${items}</div>
+      </div>`;
+    }
+
+    function _buscarComponente(id) {
+      for (const k in caracterizacionData) {
+        const it = (caracterizacionData[k] || []).find(x => x && x.id === id);
+        if (it) return it;
+      }
+      return null;
+    }
+
+    // Guarda la caracterización (imágenes y videos de los componentes incluidos)
+    // en el navegador y en data/estado_app.json para que viaje con el proyecto.
+    function guardarCaracterizacion() {
+      try { localStorage.setItem('caracterizacion_perenco_data', JSON.stringify(caracterizacionData)); } catch (e) {}
+      guardarEstadoServidor({ caracterizacion: caracterizacionData, caracterizacion_version: CARAC_VERSION });
+    }
+
+    // --------------------------------------------------------------
+    // VIDEOS DEL COMPONENTE (van en el encabezado de cada tarjeta).
+    // Se pueden subir desde el PC (quedan en /uploads y viajan con el
+    // proyecto) o pegar un enlace; cada componente admite varios videos.
+    // --------------------------------------------------------------
+    const componentVideosModal = document.getElementById('component-videos-modal');
+
+    function _nombreVideo(v) {
+      return String(v).split('/').pop().replace(/^carac_/, '').replace(/\.(mp4|webm|ogv|mov|m4v)$/i, '').replace(/_/g, ' ');
+    }
+
+    // Cambia el video que se muestra en el encabezado de una tarjeta.
+    // El encabezado es solo una vista previa: la reproducción ocurre en la
+    // vista ampliada (al hacer clic sobre el video).
+    function cambiarVideoTarjeta(id, idx, btn) {
+      const item = _buscarComponente(id);
+      if (!item || !item.videos || !item.videos[idx]) return;
+      const card = document.querySelector('.component-card[data-id="' + id + '"]');
+      const video = card ? card.querySelector('video') : null;
+      if (video) {
+        video.poster = posterVideo(item.videos[idx], item);
+        video.src = item.videos[idx];
+        try { video.load(); } catch (e) {}
+      }
+      if (btn && btn.parentElement) {
+        btn.parentElement.querySelectorAll('.cv-chip').forEach(function (c) { c.classList.remove('activo'); });
+        btn.classList.add('activo');
+      }
+    }
+
+    function renderComponentVideosManager(focoId) {
+      const list = document.getElementById('component-videos-list');
+      if (!list) return;
+      let html = '';
+      ['abiotico', 'biotico', 'socioeconomico'].forEach(medio => {
+        const items = caracterizacionData[medio] || [];
+        if (!items.length) return;
+        html += `<div class="gv-medio">${esc((GRUPOS_VIDEO.find(g => g.catId === medio) || {}).nombre || medio)}</div>`;
+        items.forEach(item => {
+          const vids = item.videos || [];
+          const previa = vids.length
+            ? `<video src="${esc(vids[0])}" poster="${posterVideo(vids[0], item)}" controls preload="metadata" style="max-height:72px;border-radius:6px;"></video>`
+            : '<span class="gv-sin-video">Sin video</span>';
+          const lista = vids.map(function (v, i) {
+            return `<div class="gv-video-item">
+              <i data-lucide="film" style="width:13px;height:13px;"></i>
+              <span class="gv-video-nombre" title="${esc(v)}">${esc(String(v).split('/').pop())}</span>
+              <button type="button" class="gv-quitar-video" data-idx="${i}" title="Quitar este video"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+            </div>`;
+          }).join('');
+          html += `<div class="group-video-row${focoId === item.id ? ' gv-foco' : ''}" data-id="${item.id}">
+            <div class="gv-head">
+              <span class="gv-titulo">${esc(item.title)}</span>
+              <span class="gv-preview-box">${previa}</span>
+            </div>
+            ${lista}
+            <div class="gv-controles">
+              <label class="gv-file-btn"><i data-lucide="upload" style="width:14px;height:14px;"></i> Subir video(s) (.mp4, .webm, .ogv, .mov)
+                <input type="file" accept="video/mp4,video/webm,video/ogg,video/quicktime" multiple>
+              </label>
+              <input type="text" class="gv-url" placeholder="O pega un enlace (YouTube o .mp4)">
+              <button class="btn-primary gv-guardar"><i data-lucide="plus" style="width:14px;height:14px;"></i> Agregar</button>
+            </div>
+          </div>`;
+        });
+      });
+      list.innerHTML = html;
+      lucide.createIcons();
+    }
+
+    function abrirGestorVideoComponente(id) {
+      if (!componentVideosModal) return;
+      renderComponentVideosManager(id);
+      componentVideosModal.classList.add('open');
+    }
+
+    function cerrarGestorVideoComponente() {
+      if (componentVideosModal) componentVideosModal.classList.remove('open');
+      renderCards(currentSubtab);
+      const detalle = document.getElementById('detail-modal');
+      if (detalle && detalle.classList.contains('open') && selectedComponentId) {
+        try { abrirDetalle(selectedComponentId); } catch (e) {}
+      }
+    }
+
+    function wireComponentVideosModal() {
+      const list = document.getElementById('component-videos-list');
+      if (!list) return;
+
+      list.addEventListener('click', (e) => {
+        const fila = e.target.closest('.group-video-row');
+        if (!fila) return;
+        const id = fila.getAttribute('data-id');
+        const item = _buscarComponente(id);
+        if (!item) return;
+        item.videos = item.videos || [];
+
+        const btnQuitar = e.target.closest('.gv-quitar-video');
+        if (btnQuitar) {
+          const idx = parseInt(btnQuitar.getAttribute('data-idx'), 10);
+          if (!isNaN(idx)) item.videos.splice(idx, 1);
+          guardarCaracterizacion();
+          renderComponentVideosManager(id);
+          return;
+        }
+
+        if (e.target.closest('.gv-guardar')) {
+          const urlInput = fila.querySelector('.gv-url');
+          const urlValor = urlInput ? urlInput.value.trim() : '';
+          if (!urlValor) { alert('Selecciona un video del PC o pega un enlace de YouTube/MP4 antes de agregar.'); return; }
+          if (!parseVideoUrl(urlValor)) { alert('El enlace no es válido. Usa YouTube o un archivo .mp4, .webm, .ogv o .mov.'); return; }
+          item.videos.push(urlValor);
+          guardarCaracterizacion();
+          renderComponentVideosManager(id);
+        }
+      });
+
+      list.addEventListener('change', async (e) => {
+        const fileInput = e.target.closest('.gv-file-btn input[type="file"]');
+        if (!fileInput || !fileInput.files || !fileInput.files.length) return;
+        const fila = fileInput.closest('.group-video-row');
+        if (!fila) return;
+        const id = fila.getAttribute('data-id');
+        const item = _buscarComponente(id);
+        if (!item) return;
+        item.videos = item.videos || [];
+        try {
+          for (const archivo of Array.from(fileInput.files)) {
+            const ruta = await subirVideo(archivo);
+            item.videos.push(ruta);
+          }
+          guardarCaracterizacion();
+          renderComponentVideosManager(id);
+        } catch (err) {
+          alert('No se pudo subir el video a /uploads: ' + err.message);
+        }
+      });
+    }
+
+    // Subida directa desde el modal de detalle (varios archivos a la vez).
+    async function subirVideosComponente(event) {
+      const input = event.target;
+      const item = _buscarComponente(selectedComponentId);
+      if (!item || !input.files || !input.files.length) return;
+      item.videos = item.videos || [];
+      try {
+        for (const archivo of Array.from(input.files)) {
+          const ruta = await subirVideo(archivo);
+          item.videos.push(ruta);
+        }
+        guardarCaracterizacion();
+        input.value = '';
+        renderPreviewVideos(item);
+        renderCards(currentSubtab);
+      } catch (err) {
+        alert('No se pudo subir el video a /uploads: ' + err.message);
+      }
+    }
+
+    // Lista de videos del componente dentro del modal de detalle.
+    function renderPreviewVideos(item) {
+      const caja = document.getElementById('video-preview-box');
+      if (!caja) return;
+      const vids = (item && item.videos) || [];
+      if (!vids.length) {
+        caja.innerHTML = '<i data-lucide="video"></i><span>Sin videos configurados</span>';
+      } else {
+        caja.innerHTML = vids.map(function (v, i) {
+          return `<div class="gv-video-item" style="margin:4px 0;">
+            <i data-lucide="film" style="width:13px;height:13px;"></i>
+            <span class="gv-video-nombre" title="${esc(v)}">${esc(String(v).split('/').pop())}</span>
+            <button type="button" class="gv-quitar-video" onclick="quitarVideoComponente('${item.id}', ${i})" title="Quitar este video"><i data-lucide="trash-2" style="width:13px;height:13px;"></i></button>
+          </div>`;
+        }).join('');
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function quitarVideoComponente(id, idx) {
+      const item = _buscarComponente(id);
+      if (!item || !item.videos) return;
+      item.videos.splice(idx, 1);
+      guardarCaracterizacion();
+      renderPreviewVideos(item);
+      renderCards(currentSubtab);
+    }
+
+    function renderCards(subtabKey) {
+      currentSubtab = subtabKey;
+      const container = document.getElementById('cards-container');
+      container.innerHTML = '';
+
+      const items = caracterizacionData[subtabKey];
+      document.getElementById('footer-count').textContent = `${items.length} Activos`;
+
+      items.forEach(item => {
+        // Icono dinámico según la insignia (badge)
+        let iconName = "folder-kanban";
+        if (item.badge === "Hidrología" || item.badge === "Hidrogeología" || item.badge === "Fauna & Agua") iconName = "droplet";
+        else if (item.badge === "Botánica" || item.badge === "Coberturas") iconName = "leaf";
+        else if (item.badge === "Geotecnia") iconName = "mountain";
+        else if (item.badge === "Demografía" || item.badge === "Cultura") iconName = "users";
+
+        // Tabla de gráficas rápidas (concordante con la caracterización de la tarjeta)
+        const graficasHtml = construirTablaGraficas(item);
+
+        // Figuras del documento (reemplazan el anterior mini mapa)
+        const figurasHtml = construirFiguras(item);
+
+        // ENCABEZADO: video del trabajo de campo (con selector si hay varios)
+        // o imagen de portada cuando el componente no tiene video.
+        const vids = (item.videos && item.videos.length) ? item.videos : [];
+        const portada = vids.length ? '' : (item.portada || '');
+        const nombresVid = vids.map(function (v) {
+          return String(v).split('/').pop()
+            .replace(/^carac_/, '')
+            .replace(/\.(mp4|webm|ogv|mov|m4v)$/i, '')
+            .replace(/_/g, ' ');
+        });
+        const coverHtml = vids.length
+          ? `<video src="${vids[0]}" poster="${posterVideo(vids[0], item)}" preload="metadata" playsinline muted
+               onclick="abrirZoomVideo('${item.id}')"
+               title="Clic para reproducir el video (se abre ampliado)"></video>
+             <div class="cv-play-badge"><i data-lucide="play"></i></div>` +
+            (vids.length > 1
+              ? `<div class="cv-selector">` + vids.map(function (v, i) {
+                  return `<button type="button" class="cv-chip${i === 0 ? ' activo' : ''}" onclick="cambiarVideoTarjeta('${item.id}', ${i}, this)" title="${esc(v)}">${esc(nombresVid[i])}</button>`;
+                }).join('') + `</div>`
+              : '')
+          : (portada
+              ? `<img class="cv-portada" src="${esc(portada)}" alt="${esc(item.title)}"
+                   onclick="abrirZoomImagen('${portada}')"
+                   title="Clic para ampliar la imagen">`
+              : `<div class="card-video-empty" title="Este componente no tiene video cargado">
+                   <i data-lucide="video"></i>
+                   <span>Sin video</span>
+                 </div>`);
+
+        const card = document.createElement('div');
+        card.className = 'component-card';
+        card.setAttribute('data-id', item.id);
+
+        card.innerHTML = `
+          <div class="card-cover">
+            ${coverHtml}
+            <div class="card-cover-veil"></div>
+            <div class="card-top-badges">
+              <span class="card-chip">
+                <span class="card-chip-dot ok"></span>
+                ${item.badge}
+              </span>
+              <div class="card-icon-box">
+                <i data-lucide="${iconName}"></i>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-content">
+            <div>
+              <h3 class="card-title" title="${item.title}">${item.title}</h3>
+              <span class="card-code"><i data-lucide="tag"></i> ${item.code}</span>
+            </div>
+
+            <div class="card-quick-charts">
+              ${graficasHtml}
+            </div>
+
+            ${figurasHtml}
+
+            <p class="card-desc">${item.desc}</p>
+
+            <div class="card-footer">
+              <span class="card-gdb" title="${item.gdb}">
+                <i data-lucide="database"></i> ${item.gdb.split('/')[0]}
+              </span>
+            </div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      lucide.createIcons();
+    }
+
+    function cambiarSubtab(subtabKey, btnElement) {
+      document.querySelectorAll('.subtab-btn').forEach(b => b.classList.remove('active'));
+      btnElement.classList.add('active');
+      renderCards(subtabKey);
+    }
+
+    // Carga portable: el servidor (data/estado_app.json) manda; si no hay aun,
+    // se usan los datos del navegador y se siembran al servidor para que viajen.
+    async function inicializarCaracterizacion() {
+      const server = await cargarEstadoServidor();
+      const local = leerLocalStorage('caracterizacion_perenco_data', null);
+
+      const versionServidor = server ? server.caracterizacion_version : null;
+      if (server && server.caracterizacion && typeof server.caracterizacion === 'object' && versionServidor === CARAC_VERSION) {
+        caracterizacionData = server.caracterizacion;
+        try { localStorage.setItem('caracterizacion_perenco_data', JSON.stringify(caracterizacionData)); } catch (e) {}
+      } else {
+        // Reorganización por medio y componente: se parte de la estructura nueva y
+        // se conservan las imágenes y videos que ya estaban configurados.
+        const previo = (server && server.caracterizacion) || (local && typeof local === 'object' ? local : null);
+        caracterizacionData = JSON.parse(JSON.stringify(defaultData));
+        if (previo && typeof previo === 'object') {
+          Object.keys(caracterizacionData).forEach(medio => {
+            (caracterizacionData[medio] || []).forEach(item => {
+              const viejoId = MIGRA_COMPONENTES[item.id];
+              if (!viejoId) return;
+              for (const k in previo) {
+                const viejo = (previo[k] || []).find(x => x && x.id === viejoId);
+                if (viejo) {
+                  if (viejo.image) item.image = viejo.image;
+                  if (Array.isArray(viejo.videos) && viejo.videos.length) item.videos = viejo.videos.slice();
+                  else if (viejo.video) item.videos = [viejo.video];
+                  break;
+                }
+              }
+            });
+          });
+        }
+        guardarCaracterizacion();
+      }
+
+      renderCards('abiotico');
+      wireComponentVideosModal();
+
+      const btnCloseCompVideos = document.getElementById('btn-close-component-videos');
+      const btnCloseCompVideos2 = document.getElementById('btn-close-component-videos-2');
+      if (btnCloseCompVideos) btnCloseCompVideos.addEventListener('click', cerrarGestorVideoComponente);
+      if (btnCloseCompVideos2) btnCloseCompVideos2.addEventListener('click', cerrarGestorVideoComponente);
+      if (componentVideosModal) {
+        componentVideosModal.addEventListener('click', (e) => {
+          if (e.target === componentVideosModal) cerrarGestorVideoComponente();
+        });
+      }
+    }
+
+    inicializarCaracterizacion();
+
+    const detailModal = document.getElementById('detail-modal');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    const btnCloseFooter = document.getElementById('btn-close-footer');
+
+    // Lógica del modal de Zoom (imagen, mini mapa o video)
+    const imageZoomModal = document.getElementById('image-zoom-modal');
+    const zoomModalImg = document.getElementById('zoom-modal-img');
+    const zoomModalMap = document.getElementById('zoom-modal-map');
+    const zoomModalVideo = document.getElementById('zoom-modal-video');
+    const zoomModalTitle = document.getElementById('zoom-modal-title');
+    const zoomModalVideos = document.getElementById('zoom-modal-videos');
+    const btnCloseZoom = document.getElementById('btn-close-zoom');
+
+    // Detiene y limpia el reproductor de la vista ampliada (libera el video
+    // para que no siga sonando al cerrar o al cambiar a una figura).
+    function _pararVideoZoom() {
+      if (!zoomModalVideo) return;
+      try { zoomModalVideo.pause(); } catch (e) {}
+      zoomModalVideo.removeAttribute('src');
+      try { zoomModalVideo.load(); } catch (e) {}
+      zoomModalVideo.style.display = 'none';
+      if (zoomModalVideos) {
+        zoomModalVideos.style.display = 'none';
+        zoomModalVideos.innerHTML = '';
+      }
+    }
+
+    function abrirZoomImagen(url) {
+      _pararVideoZoom();
+      zoomModalTitle.innerHTML = '<i data-lucide="image"></i> Vista Ampliada';
+      zoomModalMap.style.display = 'none';
+      zoomModalMap.innerHTML = '';
+      zoomModalImg.style.display = '';
+      zoomModalImg.src = url;
+      imageZoomModal.classList.add('open');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Amplía un mini mapa de una tarjeta (o del modal de detalle): clona el SVG
+    // vectorial y lo muestra a gran tamaño en el mismo modal que las imágenes.
+    function abrirZoomMiniMapa(contenedor) {
+      const svg = contenedor ? contenedor.querySelector('.mm-svg') : null;
+      if (!svg) return;
+      _pararVideoZoom();
+      zoomModalTitle.innerHTML = '<i data-lucide="map"></i> Vista Ampliada';
+      const clon = svg.cloneNode(true);
+      clon.classList.add('mm-svg-zoom');
+      zoomModalImg.style.display = 'none';
+      zoomModalImg.src = '';
+      zoomModalMap.innerHTML = '';
+      zoomModalMap.appendChild(clon);
+      zoomModalMap.style.display = 'flex';
+      imageZoomModal.classList.add('open');
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Amplía el video del trabajo de campo de un componente (clic en el video
+    // de la tarjeta o del detalle), igual que las figuras. Si el componente
+    // tiene varios videos, abajo aparecen fichas para cambiar entre ellos.
+    function abrirZoomVideo(id) {
+      const item = _buscarComponente(id);
+      if (!item || !(item.videos || []).length) return;
+      // pausa el video de la tarjeta y el del detalle para no oír dos a la vez
+      const card = document.querySelector('.component-card[data-id="' + id + '"]');
+      const videoTarjeta = card ? card.querySelector('.card-cover video') : null;
+      if (videoTarjeta) { try { videoTarjeta.pause(); } catch (e) {} }
+      const videoDetalle = document.querySelector('#detail-modal video');
+      if (videoDetalle) { try { videoDetalle.pause(); } catch (e) {} }
+      // abre en el mismo video que estaba seleccionado en la tarjeta
+      let idx = 0;
+      if (card) {
+        const pos = Array.from(card.querySelectorAll('.cv-chip')).findIndex(function (c) { return c.classList.contains('activo'); });
+        if (pos >= 0) idx = pos;
+      }
+      _mostrarVideoZoom(item, idx);
+      imageZoomModal.classList.add('open');
+    }
+
+    function _mostrarVideoZoom(item, idx) {
+      const vids = item.videos || [];
+      if (!vids[idx]) return;
+      zoomModalImg.style.display = 'none';
+      zoomModalImg.src = '';
+      zoomModalMap.style.display = 'none';
+      zoomModalMap.innerHTML = '';
+      zoomModalTitle.innerHTML = '<i data-lucide="play-circle"></i> Video ampliado · ' + item.title;
+      zoomModalVideo.style.display = '';
+      zoomModalVideo.poster = posterVideo(vids[idx], item);
+      zoomModalVideo.src = vids[idx];
+      try { zoomModalVideo.play().catch(function () {}); } catch (e) {}
+      if (vids.length > 1) {
+        zoomModalVideos.style.display = '';
+        zoomModalVideos.innerHTML = vids.map(function (v, i) {
+          return `<button type="button" class="zv-chip${i === idx ? ' activo' : ''}" title="${esc(v)}" onclick="cambiarVideoZoom('${item.id}', ${i})">${esc(_nombreVideo(v))}</button>`;
+        }).join('');
+      } else {
+        zoomModalVideos.style.display = 'none';
+        zoomModalVideos.innerHTML = '';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Cambia de video dentro de la vista ampliada y deja la tarjeta en el mismo
+    // (la tarjeta solo actualiza su vista previa, sin reproducir nada).
+    function cambiarVideoZoom(id, idx) {
+      const item = _buscarComponente(id);
+      if (!item || !(item.videos || [])[idx]) return;
+      _mostrarVideoZoom(item, idx);
+      const card = document.querySelector('.component-card[data-id="' + id + '"]');
+      const chips = card ? card.querySelectorAll('.cv-chip') : [];
+      cambiarVideoTarjeta(id, idx, chips[idx] || null);
+    }
+
+    function cerrarZoomImagen() {
+      imageZoomModal.classList.remove('open');
+      zoomModalImg.src = '';
+      zoomModalMap.innerHTML = '';
+      _pararVideoZoom();
+    }
+
+    btnCloseZoom.addEventListener('click', cerrarZoomImagen);
+    imageZoomModal.addEventListener('click', (e) => {
+      if (e.target === imageZoomModal) cerrarZoomImagen();
+    });
+
+    function abrirDetalle(componentId) {
+      selectedComponentId = componentId;
+      let found = null;
+      for (let key in caracterizacionData) {
+        const match = caracterizacionData[key].find(i => i.id === componentId);
+        if (match) { found = match; break; }
+      }
+
+      if (!found) return;
+
+      document.getElementById('modal-title').innerHTML = `<i data-lucide="activity"></i> ${found.title}`;
+
+      let statsHtml = '';
+      for (let statKey in found.stats) {
+        statsHtml += `
+          <div class="stat-box">
+            <span>${statKey}</span>
+            <strong>${found.stats[statKey]}</strong>
+          </div>
+        `;
+      }
+
+      let featuresHtml = '';
+      found.features.forEach(f => {
+        featuresHtml += `<li class="modal-feature-item"><i data-lucide="check-circle-2"></i> <span>${f}</span></li>`;
+      });
+
+      // Videos del componente y figuras del documento
+      const vidsComp = (found.videos || []);
+      const portadaComp = vidsComp.length ? '' : (found.portada || '');
+      const videoHtml = vidsComp.length
+        ? `<div class="modal-video-preview">
+             <video src="${vidsComp[0]}" poster="${posterVideo(vidsComp[0], found)}" preload="metadata" playsinline muted
+                    onclick="abrirZoomVideo('${found.id}')"
+                    title="Clic para reproducir el video (se abre ampliado)"></video>
+             <div class="cv-play-badge"><i data-lucide="play"></i></div>
+           </div>` +
+          (vidsComp.length > 1
+            ? `<div class="modal-video-lista">` + vidsComp.map(function (v) {
+                return `<span class="modal-video-item"><i data-lucide="film"></i> ${esc(String(v).split('/').pop())}</span>`;
+              }).join('') + `</div>`
+            : '')
+        : (portadaComp
+            ? `<div class="modal-video-preview">
+                 <img src="${esc(portadaComp)}" alt="${esc(found.title)}" style="width:100%;display:block;cursor:zoom-in;"
+                      onclick="abrirZoomImagen('${portadaComp}')" title="Clic para ampliar la imagen">
+               </div>`
+            : `<div class="card-video-empty" style="position:relative;height:150px;border-radius:10px;" onclick="abrirGestorVideoComponente('${found.id}')">
+                 <i data-lucide="video"></i><span>Subir video del componente</span>
+               </div>`);
+      const figurasHtml = construirFiguras(found, true);
+
+      const contentArea = document.getElementById('modal-content-area');
+      contentArea.innerHTML = `
+        <div>
+          <span class="modal-section-title"><i data-lucide="${portadaComp ? 'image' : 'clapperboard'}"></i> ${portadaComp ? 'Imagen del Componente' : 'Video del Componente (trabajo de campo)'}</span>
+          <div class="modal-video-box">${videoHtml}
+            <div style="margin-top:8px;">
+              <button type="button" class="btn-secondary" onclick="abrirGestorVideoComponente('${found.id}')">
+                <i data-lucide="settings-2"></i> Administrar videos del componente
+              </button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <span class="modal-section-title"><i data-lucide="file-text"></i> Descripción General</span>
+          <p class="modal-desc">${found.desc}</p>
+        </div>
+        <div>
+          <span class="modal-section-title"><i data-lucide="list-checks"></i> Elementos Clave y Resultados</span>
+          <ul class="card-features-list">${featuresHtml}</ul>
+        </div>
+        <div>
+          <span class="modal-section-title"><i data-lucide="bar-chart-3"></i> Estadísticas y Datos Clave de Campo</span>
+          <div class="modal-grid-stats">
+            ${statsHtml}
+          </div>
+        </div>
+        <div>
+          <span class="modal-section-title"><i data-lucide="images"></i> Figuras del Documento</span>
+          <div class="modal-figuras">${figurasHtml}</div>
+        </div>
+        <div class="modal-gdb-chip">
+          <i data-lucide="database"></i> Capa GDB Origen: ${found.gdb}
+        </div>
+      `;
+
+      const videoInput = document.getElementById('video-input');
+      if (videoInput) videoInput.value = '';
+      renderPreviewVideos(found);
+
+      detailModal.classList.add('open');
+      lucide.createIcons();
+    }
+
+    function closeModal() {
+      detailModal.classList.remove('open');
+      renderCards(currentSubtab);
+    }
+
+    btnCloseModal.addEventListener('click', closeModal);
+    btnCloseFooter.addEventListener('click', closeModal);
+    detailModal.addEventListener('click', (e) => {
+      if (e.target === detailModal) closeModal();
+    });
+
+    async function guardarEdicionComponente(event) {
+      let match = null;
+      for (let key in caracterizacionData) {
+        const m = caracterizacionData[key].find(i => i.id === selectedComponentId);
+        if (m) { match = m; break; }
+      }
+      if (!match) return;
+
+      // Los videos del componente se administran en su propio panel (subir/quitar).
+      guardarCaracterizacion();
+
+      const btn = event.currentTarget;
+      const originalHtml = btn.innerHTML;
+      btn.innerHTML = `<i data-lucide="check"></i> ¡Guardado!`;
+      btn.classList.add('success');
+      lucide.createIcons();
+
+      setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.classList.remove('success');
+        lucide.createIcons();
+      }, 2000);
+    }
+
+    // ==========================================
+    // EXPORTAR REPORTE GENERAL
+    // ==========================================
+    document.getElementById('btn-export-report').addEventListener('click', () => {
+      let reportContent = "REPORTE GENERAL DE CARACTERIZACIÓN AMBIENTAL Y TERRITORIAL - PERENCO GARCERO C\n\n";
+      for (let key in caracterizacionData) {
+        reportContent += `--- MEDIO: ${key.toUpperCase()} ---\n`;
+        caracterizacionData[key].forEach(item => {
+          reportContent += `* Componente: ${item.title} (${item.code})\n`;
+          reportContent += `  Descripción: ${item.desc}\n`;
+          reportContent += `  Capa GDB: ${item.gdb}\n`;
+          if (item.video) reportContent += `  Video de Campo: ${item.video}\n`;
+          reportContent += `\n`;
+        });
+      }
+
+      const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Reporte_Caracterizacion_Garcero_C_${new Date().toISOString().slice(0,10)}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+
+    // ==========================================
+  </script>
+  <script src="ia_geo.js"></script>
+</body>
+</html>

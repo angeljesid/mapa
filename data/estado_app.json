@@ -1,0 +1,1051 @@
+{
+  "estrategias": [
+    {
+      "id": "0",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Actualización de Coordenadas del Bloque Garcero C",
+      "request": "PERENCO COLOMBIA LIMITED solicita la modificación del Artículo Primero de la Resolución 0409 del 09 de marzo del 2007 en el sentido de actualizar las coordenadas que conforman el Bloque Garcero C (Área de Desarrollo Garcero C con 19.872,68 ha en sistema MAGNA-SIRGAS Origen Único Nacional), en jurisdicción de los municipios de Orocué y San Luis de Palenque, Departamento de Casanare.",
+      "image": "assets/estrategias/est_coordenadas_bloque.webp",
+      "video": ""
+    },
+    {
+      "id": "1",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Construcción de Vías Nuevas (Accesos)",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 6 (y Numeral 7) de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la construcción de hasta 100 kilómetros de nuevos accesos viales, con una longitud máxima de hasta 10 kilómetros cada uno, para el acceso a las 13 plataformas multipozos, adicionales a los ya autorizados.",
+      "image": "assets/estrategias/est_vias_nuevas.webp",
+      "video": ""
+    },
+    {
+      "id": "1.1",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Adecuación de Vías Existentes",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la inclusión de adecuación de hasta 100 km de vías existentes que sean utilizadas por el proyecto, al interior del Área de Desarrollo Garcero C.",
+      "image": "assets/estrategias/est_vias_adecuacion.webp",
+      "video": ""
+    },
+    {
+      "id": "1.2",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Mantenimiento de Vías",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la inclusión de la actividad de mantenimiento de las vías existentes y/o a construir que sean objeto del uso por el proyecto Área de Desarrollo Garcero C.",
+      "image": "assets/estrategias/est_vias_mantenimiento.webp",
+      "video": ""
+    },
+    {
+      "id": "2",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Ampliación del Derecho de Vía (DDV)",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 6 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la ampliación hasta los 35 metros de los derechos de vía (DDV) de las vías existentes y nuevas a construir, que dan acceso a las plataformas, estaciones y subestaciones dentro del Área de Desarrollo Garcero C.",
+      "image": "assets/estrategias/est_ddv_35m.webp",
+      "video": ""
+    },
+    {
+      "id": "3",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Construcción de Plataformas Multipozo",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 7 (y Numeral 9) de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la construcción de 13 plataformas multipozos con un área de hasta 2,5 ha (hasta 5 pozos de desarrollo y/o de inyección/reinyección por plataforma), adicionales a las ya autorizadas.",
+      "image": "assets/estrategias/est_plataformas_multipozo.webp",
+      "video": ""
+    },
+    {
+      "id": "4",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Ampliación de Facilidades (Estación Sardinas)",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 1 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la ampliación de la Estación Sardinas hasta un área de 9 ha más de las actualmente autorizadas.",
+      "image": "assets/estrategias/est_facilidades_produccion.webp",
+      "video": ""
+    },
+    {
+      "id": "5",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Perforación de Pozos Nuevos",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 5 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la perforación de hasta 65 pozos nuevos, de desarrollo y/o de inyección/reinyección distribuidos en las 13 plataformas nuevas, con un máximo de 5 pozos por cada una.",
+      "image": "assets/estrategias/est_perforacion_pozos.webp",
+      "video": ""
+    },
+    {
+      "id": "6",
+      "catId": "1",
+      "catName": "1. Desarrollo de Infraestructura Petrolera",
+      "catClass": "cat-1",
+      "activity": "Construcción de Líneas de Flujo",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 4 y Numeral 11 de la Resolución 0409 del 09 de marzo del 2007 para la construcción de 100 kilómetros de nuevas líneas de flujo de hasta 10” de diámetro con una longitud máxima de hasta 15 km cada una, conectando plataformas nuevas, existentes, facilidades de producción y subestaciones.",
+      "image": "assets/estrategias/est_lineas_flujo.webp",
+      "video": ""
+    },
+    {
+      "id": "7",
+      "catId": "2",
+      "catName": "2. Suministro Energético",
+      "catClass": "cat-2",
+      "activity": "Granjas Solares Fotovoltaicas",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo de la Resolución 0409 de 2007 en el sentido de solicitar la construcción de dos (2) Granjas Solares Fotovoltaicas, en un área de hasta 20 hectáreas y una capacidad de hasta 9,9 MW cada una.",
+      "image": "assets/estrategias/est_granja_solar.webp",
+      "video": ""
+    },
+    {
+      "id": "8",
+      "catId": "2",
+      "catName": "2. Suministro Energético",
+      "catClass": "cat-2",
+      "activity": "Líneas Eléctricas de Media Tensión y Subestaciones",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo de la Resolución 0409 del 09 de marzo del 2007 para la construcción de hasta 100 kilómetros de líneas eléctricas de media tensión (con longitud máxima de hasta 15 km cada una) para interconectar Granjas Solares, plataformas, facilidades y subestaciones, así como la construcción, instalación y operación de subestaciones eléctricas elevadoras y/o reductoras.",
+      "image": "assets/estrategias/est_lineas_electricas.webp",
+      "video": ""
+    },
+    {
+      "id": "9",
+      "catId": "2",
+      "catName": "2. Suministro Energético",
+      "catClass": "cat-2",
+      "activity": "Interconexión a Redes Eléctricas",
+      "request": "PERENCO COLOMBIA LIMITED solicita autorización para la interconexión a redes del sistema nacional y/o privado existentes y/o a construir a futuro dentro del Área de Influencia del Área de Desarrollo Garcero C.",
+      "image": "assets/estrategias/est_interconexion_redes.webp",
+      "video": ""
+    },
+    {
+      "id": "10",
+      "catId": "3",
+      "catName": "3. Inyección / Reinyección",
+      "catClass": "cat-3",
+      "activity": "Inyección y Reinyección de Aguas de Producción",
+      "request": "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Tercero Numeral 3 Literal c de la Resolución 0409 del 2007 (modificada por Res. 0163 de 2014) en el sentido de aumentar la capacidad de inyección/reinyección en 315.829 BWPD de aguas de producción en pozos nuevos, inactivos o no productores para contar con un caudal total de 467.329 BWPD (151.500 BWPD autorizados + 315.829 BWPD solicitados) en las formaciones Carbonera (unidades C1, C3, C5, C7), Guadalupe y Areniscas (LSS).",
+      "image": "assets/estrategias/est_inyeccion_reinyeccion.webp",
+      "video": ""
+    },
+    {
+      "id": "11",
+      "catId": "4",
+      "catName": "4. Optimización de Procesos",
+      "catClass": "cat-4",
+      "activity": "Sinergia entre Campos y Transporte de Fluidos",
+      "request": "PERENCO COLOMBIA LIMITED solicita la conexión a infraestructura de transferencia existente o proyectada (oleoductos/gasoductos) dentro del Área de Desarrollo Garcero C, así como la entrega y/o recepción de fluidos de producción con otros campos para tratamiento, almacenamiento y/o comercialización (vía líneas de flujo o carrotanque), previo acuerdo entre titulares.",
+      "image": "assets/estrategias/est_sinergia_campos.webp",
+      "video": ""
+    }
+  ],
+  "terreno_img": {
+    "ambMediaSanFran": {
+      "ruta": "uploads/img_1790002934809_DJI_0019.webp",
+      "nombre": "img_1790002934809_DJI_0019.webp"
+    },
+    "ambBajaTigre": {
+      "ruta": "uploads/img_1790003066562_DJI_0023.webp",
+      "nombre": "img_1790003066562_DJI_0023.webp"
+    },
+    "ambAltaTigre": {
+      "ruta": "uploads/img_1790003130256_DJI_0036.webp",
+      "nombre": "img_1790003130256_DJI_0036.webp"
+    }
+  },
+  "caracterizacion": {
+    "abiotico": [
+      {
+        "id": "civil",
+        "title": "Componente Civil e Infraestructura",
+        "code": "9.1 · Componente civil",
+        "badge": "Infraestructura",
+        "desc": "Infraestructura asociada al proyecto: vías de acceso y obras de arte caracterizadas, plataformas multipozo y facilidades del Área de Desarrollo Garcero C.",
+        "features": [
+          "272 obras de arte caracterizadas (alcantarillas, pontones y puentes)",
+          "524,50 km de vías caracterizadas en el AI físico-biótica",
+          "13 plataformas multipozo, 65 pozos nuevos y 100 km de vías nuevas"
+        ],
+        "gdb": "T_33_PROYECTO/InfraProyetcoPT",
+        "videos": [
+          "uploads/carac_civil.mp4"
+        ],
+        "stats": {
+          "Obras de arte": "272",
+          "Vías caracterizadas": "524,50 km",
+          "Plataformas": "13"
+        },
+        "charts": [
+          {
+            "t": "Obras de arte (cantidad)",
+            "items": [
+              [
+                "Alcantarilla sencilla",
+                "152"
+              ],
+              [
+                "Alcantarilla doble",
+                "27"
+              ],
+              [
+                "Pontón",
+                "24"
+              ],
+              [
+                "Puente",
+                "13"
+              ],
+              [
+                "Box Culvert",
+                "2"
+              ],
+              [
+                "Otros",
+                "23"
+              ]
+            ]
+          },
+          {
+            "t": "Vías caracterizadas (km)",
+            "items": [
+              [
+                "Tipo 4",
+                "325,98"
+              ],
+              [
+                "Tipo 3",
+                "117,07"
+              ],
+              [
+                "Tipo 2",
+                "81,44"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/civil_infraestructura.webp",
+            "titulo": "Obras de arte y vías del AI físico-biótica"
+          },
+          {
+            "src": "assets/caracterizacion/civil_figura_2.webp",
+            "titulo": "Distribución de obras de arte (272 estructuras)"
+          },
+          {
+            "src": "assets/caracterizacion/civil_figura_3.webp",
+            "titulo": "Longitud de vías caracterizadas (524,50 km)"
+          }
+        ]
+      },
+      {
+        "id": "geologia",
+        "title": "Geología, geomorfología, suelos y geotecnia",
+        "code": "9.2 · 9.3 · Suelos y geotecnia",
+        "badge": "Geotecnia",
+        "desc": "Unidades geológicas y geomorfológicas del AI físico-biótica, base para la caracterización de suelos, capacidad de uso y estabilidad geotécnica.",
+        "features": [
+          "4 unidades geológicas: Qed, Qal, Qtp y Qte",
+          "14 formas del terreno cartografiadas",
+          "Predominan los depósitos de terraza con influencia eólica (Qte, 76,46 %)"
+        ],
+        "gdb": "T_08_GEOLOGIA",
+        "videos": [
+          "uploads/carac_geologia_geomorfologia.mp4",
+          "uploads/carac_geologia_infiltracion.mp4"
+        ],
+        "stats": {
+          "Unidades geológicas": "4",
+          "Formas del terreno": "14",
+          "AI físico-biótica": "127.512,29 ha"
+        },
+        "charts": [
+          {
+            "t": "Unidades geológicas (ha)",
+            "items": [
+              [
+                "Qte · terraza eólica",
+                "97.496,49"
+              ],
+              [
+                "Qtp · terraza aluvial",
+                "13.800,43"
+              ],
+              [
+                "Qal · aluviales",
+                "12.585,66"
+              ],
+              [
+                "Qed · eólicos",
+                "3.629,70"
+              ]
+            ]
+          },
+          {
+            "t": "Formas del terreno (ha)",
+            "items": [
+              [
+                "Ptie · terraza eólica",
+                "96.475,51"
+              ],
+              [
+                "Pt · plano de terraza",
+                "13.274,92"
+              ],
+              [
+                "Vv · vega de valle",
+                "7.082,25"
+              ],
+              [
+                "Pcd · cubeta de desborde",
+                "4.788,02"
+              ],
+              [
+                "Pm · médanos",
+                "3.548,77"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/geologia_mapa_unidades.webp",
+            "titulo": "Mapa de unidades geológicas (Qed, Qal, Qtp, Qte)"
+          },
+          {
+            "src": "assets/caracterizacion/geomorfologia_mapa_formas.webp",
+            "titulo": "Mapa de formas del terreno (14 unidades)"
+          }
+        ]
+      },
+      {
+        "id": "hidrologia",
+        "title": "Hidrología",
+        "code": "9.4 · Hidrología",
+        "badge": "Hidrología",
+        "desc": "Unidades hidrológicas (cuencas y subzonas) y caracterización de cuerpos de agua lóticos y lénticos del área de influencia.",
+        "features": [
+          "Área hidrográfica Orinoco – zona Meta (subzona Caño Guanápalo y otros directos al Meta)",
+          "56 puntos de control en cuerpos lóticos (ríos, caños y afluentes)",
+          "61 puntos de control en cuerpos lénticos (jagüeyes, pantanos, esteros, lagunas y madreviejas)"
+        ],
+        "gdb": "T_10_HIDROLOGIA",
+        "videos": [
+          "uploads/carac_hidrologia.mp4"
+        ],
+        "stats": {
+          "Puntos lóticos": "56",
+          "Puntos lénticos": "61",
+          "Subzonas hidrográficas": "5"
+        },
+        "charts": [
+          {
+            "t": "Puntos de control",
+            "items": [
+              [
+                "Cuerpos lénticos",
+                "61"
+              ],
+              [
+                "Cuerpos lóticos",
+                "56"
+              ],
+              [
+                "Subzonas hidrográficas",
+                "5"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/hidrologia_mapa_unidades.webp",
+            "titulo": "Mapa de cuencas hidrográficas del proyecto"
+          },
+          {
+            "src": "assets/caracterizacion/hidrologia_loticos_1.webp",
+            "titulo": "Cuerpos de agua lóticos (56 puntos)"
+          },
+          {
+            "src": "assets/caracterizacion/hidrologia_loticos_2.webp",
+            "titulo": "Muestreo en caños y ríos"
+          },
+          {
+            "src": "assets/caracterizacion/hidrologia_lenticos_1.webp",
+            "titulo": "Cuerpos de agua lénticos (61 puntos)"
+          },
+          {
+            "src": "assets/caracterizacion/hidrologia_lenticos_2.webp",
+            "titulo": "Jagüeyes, esteros y madreviejas"
+          }
+        ]
+      },
+      {
+        "id": "calidad_agua",
+        "title": "Calidad del agua, usos y usuarios",
+        "code": "9.5 · 9.6 · Calidad y usos",
+        "badge": "Calidad & Usos",
+        "desc": "Índice de calidad del agua (ICA) superficial y subterránea, y usos del agua identificados en el área de influencia.",
+        "features": [
+          "ICA superficial: 64,71 % de los puntos sin afectación (\"Ninguna\")",
+          "Puntos ASUP-30 y ASUP-44 clasificados como \"Baja\" y ASUP-43 como \"Media\"",
+          "Usos identificados: USU-30 (doméstico y pecuario), USU-28 (doméstico, pecuario y agrícola) y uso industrial",
+          "El agua subterránea es adecuada para usos domésticos y agropecuarios"
+        ],
+        "gdb": "T_12_CALIDAD_AGUA",
+        "videos": [
+          "uploads/video_usos_usuarios.mp4"
+        ],
+        "stats": {
+          "Puntos sin afectación": "64,71 %",
+          "Usos identificados": "3 tipos",
+          "Agua subterránea": "Apta"
+        },
+        "charts": [
+          {
+            "t": "ICA superficial (puntos evaluados)",
+            "items": [
+              [
+                "Sin afectación (Ninguna)",
+                "64,71 %"
+              ],
+              [
+                "Clasificación Baja",
+                "2 puntos"
+              ],
+              [
+                "Clasificación Media",
+                "1 punto"
+              ]
+            ]
+          },
+          {
+            "t": "Usos del agua",
+            "items": [
+              [
+                "USU-30 doméstico y pecuario",
+                "1"
+              ],
+              [
+                "USU-28 doméstico, pecuario y agrícola",
+                "1"
+              ],
+              [
+                "Uso industrial",
+                "1"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/agua_ica_superficial_1.webp",
+            "titulo": "Puntos de muestreo de agua superficial – temporada seca"
+          },
+          {
+            "src": "assets/caracterizacion/agua_ica_superficial_2.webp",
+            "titulo": "Puntos de muestreo de agua superficial – temporada de lluvias"
+          },
+          {
+            "src": "assets/caracterizacion/agua_ica_subterranea.webp",
+            "titulo": "Puntos de muestreo de agua subterránea"
+          },
+          {
+            "src": "assets/caracterizacion/agua_usos_mapa.webp",
+            "titulo": "Usos del agua en el área de influencia"
+          },
+          {
+            "src": "assets/caracterizacion/agua_usos_1.webp",
+            "titulo": "Pozo profundo para uso doméstico"
+          },
+          {
+            "src": "assets/caracterizacion/agua_usos_2.webp",
+            "titulo": "Uso industrial del agua"
+          }
+        ]
+      },
+      {
+        "id": "hidrogeologia",
+        "title": "Hidrogeología",
+        "code": "9.7 · Hidrogeología",
+        "badge": "Hidrogeología",
+        "desc": "Modelo hidrogeológico conceptual, unidades acuíferas, zonas de recarga, inventario de pozos y vulnerabilidad del agua subterránea.",
+        "features": [
+          "Clasificación de las unidades hidrogeológicas del AI físico-biótica",
+          "Bloque-diagrama del modelo hidrogeológico conceptual (zonas de recarga)",
+          "3 pozos concesionados y 6 formaciones de inyección"
+        ],
+        "gdb": "T_11_HIDROGEOLOGIA",
+        "videos": [
+          "uploads/carac_hidrogeologia_bombeo.mp4",
+          "uploads/video_sevs_hidrogeologia.mp4"
+        ],
+        "stats": {
+          "Pozos concesionados": "3",
+          "Formaciones de inyección": "6",
+          "Vulnerabilidad": "Media-Baja"
+        },
+        "charts": [
+          {
+            "t": "Hidrogeología",
+            "items": [
+              [
+                "Pozos concesionados",
+                "3"
+              ],
+              [
+                "Formaciones de inyección",
+                "6"
+              ],
+              [
+                "Caudal por pozo",
+                "1,5 l/s"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/hidrogeologia_unidades.webp",
+            "titulo": "Unidades hidrogeológicas del AI físico-biótica"
+          },
+          {
+            "src": "assets/caracterizacion/hidrogeologia_bloque_1.webp",
+            "titulo": "Bloque-diagrama – zonas de recarga"
+          },
+          {
+            "src": "assets/caracterizacion/hidrogeologia_bloque_2.webp",
+            "titulo": "Bloque-diagrama – vista noreste"
+          }
+        ]
+      },
+      {
+        "id": "atmosfera",
+        "title": "Atmósfera",
+        "code": "9.8 · Atmósfera",
+        "badge": "Clima y Ruido",
+        "desc": "Calidad del aire (ICA por estación), ruido ambiental diurno y nocturno en días hábiles y no hábiles, y variables climáticas.",
+        "features": [
+          "3 estaciones de calidad del aire (CA_1, CA_2 y CA_3)",
+          "28 monitoreos de ruido ambiental en horarios diurno y nocturno",
+          "Contaminantes criterio en categoría Buena o Aceptable"
+        ],
+        "gdb": "T_07_CLIMA_AIRE",
+        "videos": [],
+        "stats": {
+          "Estaciones de aire": "3",
+          "Monitoreos de ruido": "28",
+          "Contaminantes criterio": "5"
+        },
+        "charts": [
+          {
+            "t": "ICA promedio por contaminante",
+            "items": [
+              [
+                "PM2,5",
+                "55"
+              ],
+              [
+                "NO2",
+                "52"
+              ],
+              [
+                "O3_8H",
+                "37"
+              ],
+              [
+                "PM10",
+                "21"
+              ],
+              [
+                "CO",
+                "15"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/atmosfera_calidad_aire.webp",
+            "titulo": "Estaciones de calidad del aire y resultados ICA"
+          },
+          {
+            "src": "assets/caracterizacion/atmosfera_ruido_general.webp",
+            "titulo": "Ruido ambiental: 28 monitoreos"
+          },
+          {
+            "src": "assets/caracterizacion/atmosfera_ruido_diurno_1.webp",
+            "titulo": "Comportamiento diurno RA1–RA11"
+          },
+          {
+            "src": "assets/caracterizacion/atmosfera_ruido_diurno_2.webp",
+            "titulo": "Comportamiento diurno RA12–RA21"
+          },
+          {
+            "src": "assets/caracterizacion/atmosfera_ruido_nocturno_1.webp",
+            "titulo": "Comportamiento nocturno RA1–RA11"
+          }
+        ],
+        "portada": "assets/caracterizacion/atmosfera_ruido_general.webp"
+      }
+    ],
+    "biotico": [
+      {
+        "id": "paisaje",
+        "title": "Paisaje",
+        "code": "9.9 · Paisaje",
+        "badge": "Paisaje",
+        "desc": "Unidades de paisaje determinadas por la interacción entre las coberturas vegetales y la geomorfología del área de influencia.",
+        "features": [
+          "55 unidades de paisaje identificadas para el proyecto",
+          "Determinadas por la interacción coberturas vegetales – geomorfología",
+          "Base para la evaluación de alteración de la percepción visual del paisaje"
+        ],
+        "gdb": "T_19_PAISAJE",
+        "videos": [
+          "uploads/video_paisaje.mp4"
+        ],
+        "stats": {
+          "Unidades de paisaje": "55",
+          "Criterio": "Coberturas + geomorfología"
+        },
+        "charts": [
+          {
+            "t": "Paisaje",
+            "items": [
+              [
+                "Unidades de paisaje",
+                "55"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/paisaje_unidades.webp",
+            "titulo": "Unidades de paisaje del área de influencia"
+          }
+        ]
+      },
+      {
+        "id": "flora",
+        "title": "Flora",
+        "code": "9.10 · Flora",
+        "badge": "Botánica",
+        "desc": "Coberturas de la tierra en el AI y en el Área de Desarrollo, parcelas de inventario forestal, composición florística y volumen por cobertura.",
+        "features": [
+          "Coberturas de la tierra en el AI físico-biótica y en el Área de Desarrollo",
+          "108 parcelas, 84 especies y 1.407 individuos inventariados",
+          "Volumen total inventariado de 660,30 m³"
+        ],
+        "gdb": "T_20_BIOTICO_CONTI_COTE",
+        "videos": [
+          "uploads/carac_flora.mp4"
+        ],
+        "stats": {
+          "Parcelas": "108",
+          "Especies": "84",
+          "Individuos": "1.407",
+          "Volumen": "660,30 m³"
+        },
+        "charts": [
+          {
+            "t": "Coberturas en el AI (ha)",
+            "items": [
+              [
+                "Herbazal denso inundable no arbolado",
+                "82.121,32"
+              ],
+              [
+                "Pastos limpios",
+                "18.196,22"
+              ],
+              [
+                "Arroz",
+                "7.856,82"
+              ],
+              [
+                "Bosque de galería y/o ripario",
+                "5.309,32"
+              ]
+            ]
+          },
+          {
+            "t": "Coberturas en el AD (ha)",
+            "items": [
+              [
+                "Herbazal denso inundable no arbolado",
+                "10.062,73"
+              ],
+              [
+                "Pastos limpios",
+                "3.541,58"
+              ],
+              [
+                "Arroz",
+                "2.729,73"
+              ],
+              [
+                "Herbazal denso inundable arbolado",
+                "1.124,22"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/flora_coberturas_mapa.webp",
+            "titulo": "Mapa de coberturas de la tierra (Corine Land Cover)"
+          }
+        ]
+      },
+      {
+        "id": "flora_veda",
+        "title": "Flora vascular y no vascular",
+        "code": "9.11 · Especies en veda",
+        "badge": "Especies en veda",
+        "desc": "Especies en veda nacional (epífitas y en otros sustratos): flora vascular y no vascular identificada en el área de influencia.",
+        "features": [
+          "48 especies vasculares en veda y 197.578 cm² de cobertura de individuos no vasculares",
+          "30 especies vasculares en veda con 3.794 individuos",
+          "No vasculares: musgo 47,75 %, liquen 38,92 % y hepática 13,33 %",
+          "Presentes en 12–15 coberturas de la tierra"
+        ],
+        "gdb": "T_20_BIOTICO_CONTI_COTE/PuntoMuestreoFlora",
+        "videos": [
+          "uploads/video_veda_flora.mp4"
+        ],
+        "stats": {
+          "Vasculares en veda": "48 spp",
+          "No vasculares": "197.578 cm²",
+          "Individuos vasculares": "3.794"
+        },
+        "charts": [
+          {
+            "t": "No vasculares en veda (%)",
+            "items": [
+              [
+                "Musgo",
+                "47,75 %"
+              ],
+              [
+                "Liquen",
+                "38,92 %"
+              ],
+              [
+                "Hepática",
+                "13,33 %"
+              ]
+            ]
+          },
+          {
+            "t": "Sustrato de epífitas (%)",
+            "items": [
+              [
+                "Epífito",
+                "98,56 %"
+              ],
+              [
+                "Rupícola",
+                "0,68 %"
+              ],
+              [
+                "Humícola",
+                "0,41 %"
+              ],
+              [
+                "Terrestre",
+                "0,35 %"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/flora_veda_no_vasculares.webp",
+            "titulo": "Sustrato de las especies no vasculares en veda"
+          },
+          {
+            "src": "assets/caracterizacion/flora_veda_1.webp",
+            "titulo": "Especies vasculares y no vasculares en veda"
+          },
+          {
+            "src": "assets/caracterizacion/flora_veda_2.svg",
+            "titulo": "Distribución de especies en veda"
+          },
+          {
+            "src": "assets/caracterizacion/flora_veda_3.webp",
+            "titulo": "Coberturas con presencia de especies en veda"
+          }
+        ]
+      },
+      {
+        "id": "fauna",
+        "title": "Fauna",
+        "code": "9.12 · Fauna",
+        "badge": "Fauna",
+        "desc": "Caracterización de herpetos (anfibios y reptiles), aves y mamíferos: riqueza, abundancia, esfuerzo de muestreo y especies de interés.",
+        "features": [
+          "Aves: 122 especies y 4.455 individuos (228 transectos y 195 redes de niebla)",
+          "Mamíferos: 45 especies y 815 individuos (cámaras trampa, Sherman, Tomahawk y audiomoth)",
+          "Herpetos: 12 anfibios (404 individuos) y 20 reptiles (288 individuos) en 314 transectos",
+          "Especies de interés: 5 anfibios y 9 reptiles; mamíferos con categoría VU (oso palmero)"
+        ],
+        "gdb": "T_21_FAUNA",
+        "videos": [
+          "uploads/carac_fauna_herpetos.mp4",
+          "uploads/carac_fauna_masto.mp4",
+          "uploads/carac_fauna_aves.mp4"
+        ],
+        "stats": {
+          "Aves": "122 spp",
+          "Mamíferos": "45 spp",
+          "Reptiles": "20 spp",
+          "Anfibios": "12 spp"
+        },
+        "charts": [
+          {
+            "t": "Riqueza por grupo",
+            "items": [
+              [
+                "Aves",
+                "122"
+              ],
+              [
+                "Mamíferos",
+                "45"
+              ],
+              [
+                "Reptiles",
+                "20"
+              ],
+              [
+                "Anfibios",
+                "12"
+              ]
+            ]
+          },
+          {
+            "t": "Abundancia por grupo",
+            "items": [
+              [
+                "Aves",
+                "4.455"
+              ],
+              [
+                "Mamíferos",
+                "815"
+              ],
+              [
+                "Anfibios",
+                "404"
+              ],
+              [
+                "Reptiles",
+                "288"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/fauna_aves_2.webp",
+            "titulo": "Aves: riqueza 122 y abundancia 4.455"
+          },
+          {
+            "src": "assets/caracterizacion/fauna_aves_1.webp",
+            "titulo": "Muestreo de aves (transectos y redes de niebla)"
+          },
+          {
+            "src": "assets/caracterizacion/fauna_herpetos_1.webp",
+            "titulo": "Transectos de herpetos (anfibios y reptiles)"
+          },
+          {
+            "src": "assets/caracterizacion/fauna_herpetos_2.webp",
+            "titulo": "Herpetos: anfibios y reptiles"
+          },
+          {
+            "src": "assets/caracterizacion/fauna_mamiferos_2.webp",
+            "titulo": "Mamíferos: riqueza 45 y abundancia 815"
+          },
+          {
+            "src": "assets/caracterizacion/fauna_mamiferos_1.webp",
+            "titulo": "Instalación de cámaras trampa"
+          }
+        ]
+      }
+    ],
+    "socioeconomico": [
+      {
+        "id": "socioeconomico",
+        "title": "Medio socioeconómico",
+        "code": "9.13 · Socioeconómico",
+        "badge": "Social",
+        "desc": "Proceso de participación y consulta previa, cartografía social, infraestructura comunitaria y ficha veredal del área de influencia.",
+        "features": [
+          "Consulta previa con el Resguardo Indígena El Médano (12 jornadas entre 2024 y 2025)",
+          "Primer propósito: 366 asistentes en 14 unidades territoriales; segundo propósito: 259 asistentes en 12",
+          "Cartografía social en El Pellizco, La Independencia y La Libertad: discrepancias de límites y equipamientos comunitarios",
+          "Más de 150 espacios comunitarios identificados y población del AIS de 2.397 habitantes"
+        ],
+        "gdb": "T_30_SOCIO",
+        "videos": [],
+        "stats": {
+          "Población AIS": "2.397",
+          "Asistentes (1.º + 2.º propósito)": "625",
+          "Espacios comunitarios": "+150"
+        },
+        "charts": [
+          {
+            "t": "Participación (asistentes)",
+            "items": [
+              [
+                "Primer propósito",
+                "366"
+              ],
+              [
+                "Segundo propósito",
+                "259"
+              ]
+            ]
+          },
+          {
+            "t": "Población del AIS",
+            "items": [
+              [
+                "Mujeres",
+                "1.229"
+              ],
+              [
+                "Hombres",
+                "1.168"
+              ]
+            ]
+          }
+        ],
+        "figuras": [
+          {
+            "src": "assets/caracterizacion/socio_cartografia_1.webp",
+            "titulo": "Cartografía social – vereda El Pellizco"
+          },
+          {
+            "src": "assets/caracterizacion/socio_cartografia_2.webp",
+            "titulo": "Cartografía social – vereda La Independencia"
+          },
+          {
+            "src": "assets/caracterizacion/socio_cartografia_3.webp",
+            "titulo": "Cartografía social – vereda La Libertad"
+          },
+          {
+            "src": "assets/caracterizacion/socio_participacion_1.webp",
+            "titulo": "Primer y segundo propósito de participación"
+          },
+          {
+            "src": "assets/caracterizacion/socio_consulta_previa_1.webp",
+            "titulo": "Consulta previa – Resguardo Indígena El Médano"
+          },
+          {
+            "src": "assets/caracterizacion/socio_ficha_veredal.webp",
+            "titulo": "Ficha veredal – población del AIS"
+          },
+          {
+            "src": "assets/caracterizacion/socio_infraestructura_1.webp",
+            "titulo": "Infraestructura social identificada"
+          },
+          {
+            "src": "assets/caracterizacion/socio_infraestructura_2.webp",
+            "titulo": "Equipamientos comunitarios"
+          }
+        ],
+        "portada": "assets/caracterizacion/socio_cartografia_3.webp"
+      }
+    ]
+  },
+  "permisos": [
+    {
+      "id": "U-01",
+      "catId": "1",
+      "catName": "1. Aguas Subterráneas / Superficiales",
+      "catClass": "cat-1",
+      "activity": "Pozos de agua subterránea (Jordán, Paravare y Sardinas)",
+      "request": "Modificar el artículo tercero, numeral 1 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de incluir dos (2) pozos de agua subterránea adicionales a los ya autorizados, uno (1) en la Subestación Jordán y uno (1) en la Subestación Paravare, con un caudal de 1,5 l/s; por otro lado, se solicita el aumento de caudal de captación del pozo de la Estación Sardinas a 1,5 l/s; esta concesión de aguas subterráneas se solicita con fines industriales y/o domésticos.",
+      "image": "uploads/img_1789680193281_Gemini_Generated_Image_s11f11s11f11s11f.webp"
+    },
+    {
+      "id": "U-02",
+      "catId": "1",
+      "catName": "1. Aguas Subterráneas / Superficiales",
+      "catClass": "cat-1",
+      "activity": "Captación de agua superficial (Tujua y Guanapalo)",
+      "request": "Modificar el artículo tercero, numeral 2 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de incluir dos (2) puntos de captación de agua superficial, uno (1) en el Caño Tujua y uno (1) en el río Guanapalo con un caudal de hasta 5 l/s.",
+      "image": "uploads/img_1789680173857_Gemini_Generated_Image_o1d56vo1d56vo1d5.webp"
+    },
+    {
+      "id": "U-03",
+      "catId": "2",
+      "catName": "2. Vertimientos e Inyección",
+      "catClass": "cat-2",
+      "activity": "Vertimientos de aguas residuales",
+      "request": "Modificar el artículo tercero de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar vertimiento de aguas residuales domésticas y no domésticas a través de pozo séptico y campo de aspersión o infiltración en la estación Sardinas y Subestaciones Jordán y Paravare.",
+      "image": "uploads/img_1789680138217_Gemini_Generated_Image_qfw6scqfw6scqfw6.webp"
+    },
+    {
+      "id": "U-04",
+      "catId": "2",
+      "catName": "2. Vertimientos e Inyección",
+      "catClass": "cat-2",
+      "activity": "Inyección y reinyección de aguas de producción (Waterflooding)",
+      "request": "Modificar el Artículo Tercero, numeral 3, literal C de la Resolución 0409 del 09 de marzo del 2007 (modificado por Res. 0163 del 2014), en el sentido de aumentar la capacidad de inyección/reinyección en 315.829 BWPD de aguas de producción en pozos nuevos, inactivos o no productores para contar con un caudal total de 467.329 BWPD, en las formaciones Carbonera (C1,C3,C5,C7), Guadalupe y Areniscas (LSS).",
+      "image": "uploads/img_1789680111888_Gemini_Generated_Image_67bqyc67bqyc67bq.webp"
+    },
+    {
+      "id": "U-05",
+      "catId": "3",
+      "catName": "3. Forestal y Cauces",
+      "catClass": "cat-3",
+      "activity": "Aprovechamiento forestal",
+      "request": "Modificar el artículo tercero de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar aprovechamiento forestal para el desarrollo de las actividades del proyecto, con un volumen total de 3172,91 m3.",
+      "image": "uploads/img_1789680337257_Gemini_Generated_Image_fy638pfy638pfy63.webp"
+    },
+    {
+      "id": "U-06",
+      "catId": "3",
+      "catName": "3. Forestal y Cauces",
+      "catClass": "cat-3",
+      "activity": "Ocupaciones de cauce",
+      "request": "Modificar el artículo tercero de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar 18 ocupaciones de cauce con una franja de movilidad de 100 metros aguas arriba y 100 metros aguas abajo.",
+      "image": "uploads/img_1789680435920_Gemini_Generated_Image_mhd7h1mhd7h1mhd7.webp"
+    },
+    {
+      "id": "U-07",
+      "catId": "4",
+      "catName": "4. Emisiones, Residuos y Materiales",
+      "catClass": "cat-4",
+      "activity": "Permiso de emisiones atmosféricas",
+      "request": "Modificar el artículo tercero, numeral 4 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de actualizar el permiso de emisiones atmosféricas del Área de Desarrollo Garcero C.",
+      "image": "uploads/img_1789680505520_Gemini_Generated_Image_p4gasap4gasap4ga.webp"
+    },
+    {
+      "id": "U-08",
+      "catId": "4",
+      "catName": "4. Emisiones, Residuos y Materiales",
+      "catClass": "cat-4",
+      "activity": "Clasificación y manejo de residuos sólidos",
+      "request": "Modificar el artículo sexto de la Resolución 0409 del 09 de marzo del 2007 en el sentido de actualizar la clasificación y manejo de los residuos sólidos a generar en las diferentes etapas del proyecto Área de Desarrollo Garcero C.",
+      "image": "uploads/img_1789680707103_Gemini_Generated_Image_y5ucmmy5ucmmy5uc.webp"
+    },
+    {
+      "id": "U-09",
+      "catId": "4",
+      "catName": "4. Emisiones, Residuos y Materiales",
+      "catClass": "cat-4",
+      "activity": "Adquisición de material de construcción (Préstamo lateral)",
+      "request": "Modificar el Artículo 12 de la Resolución 0409 del 2007 para incluir la adquisición de material de las áreas de préstamo lateral ubicadas en las vías y plataformas multipozo a construir además de la ampliación de Estación Sardinas, debido a las extensas distancias desde las fuentes de material externas.",
+      "image": "uploads/img_1789680787079_Gemini_Generated_Image_5vtphh5vtphh5vtp.webp"
+    }
+  ],
+  "video_uso_aprovechamiento": "uploads/video_usos_aprovechamiento.mp4",
+  "caracterizacion_version": 2
+}

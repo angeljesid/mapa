@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="estilos.css?v=12">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+  <title>Estrategias de Desarrollo - SIG • Perenco Garcero C</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="lib/lucide/lucide.min.js"></script>
+  <script src="sync_data.js"></script>
+
+  <style>
+    .card-cover-sinimg { background: rgba(9,12,16,0.55); }
+    .card-cover-placeholder {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 6px;
+      color: rgba(255,255,255,0.45); font-size: 0.85rem; letter-spacing: 0.4px;
+    }
+    .card-cover-placeholder i { opacity: 0.6; }
+
+    /* ============ FICHA DE LA ESTRATEGIA ============ */
+    /* La figura queda limpia (sin chip de ID ni velo) y debajo va el texto con
+       los artículos objeto de modificación y el comparativo autorizado vs solicitado. */
+    .card-ficha { display: flex; flex-direction: column; gap: 10px; }
+
+    .ficha-articulo {
+      display: flex; gap: 9px; align-items: flex-start;
+      background: rgba(141,180,226,0.08);
+      border: 1px solid rgba(141,180,226,0.28);
+      border-radius: 10px; padding: 9px 11px;
+    }
+    .ficha-articulo svg { width: 15px; height: 15px; color: var(--accent-blue); flex-shrink: 0; margin-top: 2px; }
+    .ficha-label {
+      display: block; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--text-muted); font-weight: 700; margin-bottom: 2px;
+    }
+    .ficha-articulo p { font-size: 0.8rem; font-weight: 600; color: var(--text-main); line-height: 1.4; margin: 0; }
+
+    .ficha-compare { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+    .ficha-col {
+      border-radius: 10px; padding: 9px 11px;
+      border: 1px solid var(--border-color); background: rgba(9,12,16,0.4);
+    }
+    .ficha-col-title {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 0.85rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.7px;
+      margin-bottom: 6px;
+    }
+    .ficha-col-title svg { width: 12px; height: 12px; }
+    .ficha-actual { border-color: rgba(0,176,80,0.28); }
+    .ficha-actual .ficha-col-title { color: var(--accent-green); }
+    .ficha-solicitado { border-color: rgba(255,170,0,0.32); }
+    .ficha-solicitado .ficha-col-title { color: var(--accent-amber); }
+    .ficha-col ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+    .ficha-col li {
+      font-size: 0.85rem; color: #cbd5e1; line-height: 1.45;
+      padding-left: 12px; position: relative;
+    }
+    .ficha-col li::before {
+      content: ''; position: absolute; left: 0; top: 6px;
+      width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: 0.55;
+    }
+    @media (max-width: 700px) {
+      .ficha-compare { grid-template-columns: 1fr; }
+    }
+  </style>
+  
+</head>
+<body data-page="p2">
+
+  <aside class="sidebar">
+    <div class="brand-logo">
+      <img src="assets/perenco-dark.webp" alt="Perenco" class="brand-logo-img">
+    </div>
+    <ul class="nav-list">
+      <a href="index.html" class="nav-item">
+        <i data-lucide="map"></i>
+        <span>Mapa</span>
+      </a>
+      <a href="index2.html" class="nav-item active">
+        <i data-lucide="layers"></i>
+        <span>Estrategias</span>
+      </a>
+      <a href="index3.html" class="nav-item">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Uso y Ap.</span>
+      </a>
+      <a href="index4.html" class="nav-item">
+        <i data-lucide="user-check"></i>
+        <span>Caracteriz.</span>
+      </a>
+      <a href="index5.html" class="nav-item">
+        <i data-lucide="git-fork"></i>
+        <span>Zonific.</span>
+      </a>
+      <a href="index6.html#tab-evaluacion" class="nav-item">
+        <i data-lucide="activity"></i>
+        <span>Eval. Imptos</span>
+      </a>
+      <a href="index6.html#tab-pma" class="nav-item">
+        <i data-lucide="shield-alert"></i>
+        <span>PMA &amp; PSM</span>
+      </a>
+      <a href="index6.html#tab-compensaciones" class="nav-item">
+        <i data-lucide="coins"></i>
+        <span>1% y Comp.</span>
+      </a>
+      <li class="nav-item" data-geo-ia style="margin-top: auto; margin-bottom: 20px; color: var(--accent-blue);" title="Abrir el asistente Geo-IA aquí mismo (se cierra con la X o con Esc)">
+        <i data-lucide="sparkles"></i>
+        <span>Geo-IA</span>
+      </li>
+    </ul>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-title">
+        <h1>Estrategias de Desarrollo del Proyecto</h1>
+        <p>Área de Desarrollo Garcero C • Solicitudes de Modificación de Licencia (Resolución 0409 de 2007)</p>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn-secondary" id="btn-export-excel">
+          <i data-lucide="file-spreadsheet"></i> Exportar a Excel
+        </button>
+        <button class="btn-primary" id="btn-open-modal">
+          <i data-lucide="plus"></i> Nueva Estrategia
+        </button>
+      </div>
+    </header>
+
+    <div class="content-container">
+      <div class="controls-panel">
+        <div class="category-buttons-grid" id="category-buttons-container">
+          <button class="cat-btn active" data-cat="todos" onclick="seleccionarCategoria('todos', this)">Todas</button>
+          <button class="cat-btn" data-cat="1" onclick="seleccionarCategoria('1', this)">1. Infraestructura Petrolera</button>
+          <button class="cat-btn" data-cat="2" onclick="seleccionarCategoria('2', this)">2. Suministro Energético</button>
+          <button class="cat-btn" data-cat="3" onclick="seleccionarCategoria('3', this)">3. Inyección / Reinyección</button>
+          <button class="cat-btn" data-cat="4" onclick="seleccionarCategoria('4', this)">4. Optimización de Procesos</button>
+        </div>
+
+        <div class="search-bar-wrapper">
+          <i data-lucide="search"></i>
+          <input type="text" id="filter-search" class="search-input" placeholder="Buscar actividad, solicitud o descripción..." oninput="filtrarTabla()">
+        </div>
+      </div>
+
+      <div class="strategies-header-banner">
+        <div class="banner-info">
+          <h2>Matriz Oficial de Requerimientos y Modificaciones</h2>
+          <p>Titular: PERENCO COLOMBIA LIMITED • Detalle técnico y legal de actividades proyectadas</p>
+        </div>
+        <div class="banner-badge" id="total-badge">14 Actividades Registradas</div>
+      </div>
+
+      <div class="carousel-frames">
+        <div class="carousel-container">
+          <button class="carousel-nav" id="carousel-prev" aria-label="Anterior">
+            <i data-lucide="chevron-left"></i>
+          </button>
+
+          <div class="carousel-viewport">
+            <div class="carousel-track" id="carousel-track">
+              <div class="empty-carousel" id="carousel-empty" style="display:none;">
+                <i data-lucide="search-x" style="width:34px;height:34px;"></i>
+                <p>No se encontraron estrategias con los filtros actuales.</p>
+              </div>
+            </div>
+          </div>
+
+          <button class="carousel-nav" id="carousel-next" aria-label="Siguiente">
+            <i data-lucide="chevron-right"></i>
+          </button>
+        </div>
+
+        <div style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+          <div class="carousel-dots" id="carousel-dots"></div>
+          <div class="carousel-counter" id="carousel-counter">
+            Tarjeta <strong>1</strong> / <span id="carousel-total">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para zoom de imagen -->
+    <div class="modal-overlay" id="image-zoom-modal">
+      <div class="zoom-modal-card">
+        <div class="modal-header">
+          <h3><i data-lucide="image"></i> Vista Ampliada de la Imagen</h3>
+          <button id="btn-close-zoom"><i data-lucide="x"></i></button>
+        </div>
+        <div class="zoom-modal-body">
+          <img id="zoom-modal-img" src="" alt="Imagen ampliada">
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="add-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3><i data-lucide="file-plus"></i> Solicitar / Añadir Nueva Estrategia</h3>
+          <button id="btn-close-modal"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+          <!-- El identificador interno de cada estrategia es automático y no se muestra al usuario. -->
+          <input type="hidden" id="new-id">
+          <div class="form-group">
+            <label for="new-category">Categoría Estratégica</label>
+            <select id="new-category">
+              <option value="1">1. Desarrollo de Infraestructura Petrolera</option>
+              <option value="2">2. Suministro Energético</option>
+              <option value="3">3. Inyección / Reinyección</option>
+              <option value="4">4. Optimización de Procesos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="new-activity">Nombre de la Actividad</label>
+            <input type="text" id="new-activity" placeholder="Ej: Ampliación de bodega de almacenamiento">
+          </div>
+          <div class="form-group">
+            <label for="new-request">Solicitud / Detalle de Autorización</label>
+            <textarea id="new-request" placeholder="Descripción técnica y legal de la solicitud ante la autoridad ambiental..."></textarea>
+          </div>
+          <div class="form-group">
+            <label for="new-image">Imagen / Foto Referencia (Subir a /uploads)</label>
+            <input type="file" id="new-image" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="btn-cancel-modal">Cancelar</button>
+          <button class="btn-primary" id="btn-submit-strategy"><i data-lucide="check"></i> Guardar Estrategia</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="detail-edit-modal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3><i data-lucide="file-text"></i>Edición de Estrategia</h3>
+          <button id="btn-close-detail"><i data-lucide="x"></i></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="edit-index">
+          <!-- El identificador interno de cada estrategia es automático y no se muestra al usuario. -->
+          <input type="hidden" id="edit-id">
+          <div class="form-group">
+            <label for="edit-category">Categoría Estratégica</label>
+            <select id="edit-category">
+              <option value="1">1. Desarrollo de Infraestructura Petrolera</option>
+              <option value="2">2. Suministro Energético</option>
+              <option value="3">3. Inyección / Reinyección</option>
+              <option value="4">4. Optimización de Procesos</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="edit-activity">Nombre de la Actividad</label>
+            <input type="text" id="edit-activity">
+          </div>
+          <div class="form-group">
+            <label for="edit-request">Texto Completo de la Solicitud</label>
+            <textarea id="edit-request"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Imagen Actual</label>
+            <div class="preview-img-container" id="edit-img-preview-box">
+              <span class="no-img">Sin imagen</span>
+            </div>
+          </div>
+          <div class="form-group" style="margin-top: 8px;">
+            <label for="edit-image">Cambiar / Agregar Imagen (Guardar en /uploads)</label>
+            <input type="file" id="edit-image" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" id="btn-cancel-detail">Cancelar</button>
+          <button class="btn-primary" id="btn-save-changes"><i data-lucide="save"></i> Guardar Cambios</button>
+        </div>
+      </div>
+    </div>
+
+    
+
+    <footer class="bottom-bar">
+      <div class="metrics-group">
+        <div class="metric-item">
+          <span>Categorías:</span>
+          <strong>4 Principales</strong>
+        </div>
+        <div class="metric-item">
+          <span>Actividades:</span>
+          <strong id="footer-count">14 Solicitudes</strong>
+        </div>
+        <div class="metric-item">
+          <span>Área:</span>
+          <strong>Garcero C</strong>
+        </div>
+      </div>
+      <div class="crs-tag">
+        PERENCO COLOMBIA LIMITED • EIA 2026 • Expediente LAM 0165
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // Sube una imagen al servidor y la guarda en la carpeta /uploads
+    async function subirImagen(file) {
+      const nombre = 'img_' + Date.now() + '_' + (file.name || 'archivo').replace(/[^a-zA-Z0-9._-]/g, '_');
+      const res = await fetch('/api/upload?nombre=' + encodeURIComponent(nombre), {
+        method: 'POST',
+        headers: { 'Content-Type': file.type || 'application/octet-stream' },
+        body: file
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error((data && data.error) || 'Error al subir la imagen');
+      return data.ruta; // ej: uploads/img_1689000000000_foto.jpg
+    }
+
+    const STORAGE_KEY_ESTRATEGIAS = 'estrategias_perenco_data';
+
+    function limpiarImagenesPorDefecto(data) {
+      return (data || []).map(s => {
+        if (s.image && s.image.indexOf('images.unsplash.com') !== -1) s.image = '';
+        return s;
+      });
+    }
+
+    function cargarEstrategiasGuardadas() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_ESTRATEGIAS);
+        if (!raw) return null;
+        const data = JSON.parse(raw);
+        if (!Array.isArray(data)) return null;
+        return limpiarImagenesPorDefecto(data);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function guardarEstrategias() {
+      try {
+        localStorage.setItem(STORAGE_KEY_ESTRATEGIAS, JSON.stringify(strategiesData));
+      } catch (e) {}
+      guardarEstadoServidor({ estrategias: strategiesData });
+    }
+
+    const DEFAULT_ESTRATEGIAS = [
+      {
+        id: "0",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Actualización de Coordenadas del Bloque Garcero C",
+        request: "PERENCO COLOMBIA LIMITED solicita la modificación del Artículo Primero de la Resolución 0409 del 09 de marzo del 2007 en el sentido de actualizar las coordenadas que conforman el Bloque Garcero C (Área de Desarrollo Garcero C con 19.872,68 ha en sistema MAGNA-SIRGAS Origen Único Nacional), en jurisdicción de los municipios de Orocué y San Luis de Palenque, Departamento de Casanare.",
+        image: "assets/estrategias/est_coordenadas_bloque.webp"
+      },
+      {
+        id: "1",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Construcción de Vías Nuevas (Accesos)",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 6 (y Numeral 7) de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la construcción de hasta 100 kilómetros de nuevos accesos viales, con una longitud máxima de hasta 10 kilómetros cada uno, para el acceso a las 13 plataformas multipozos, adicionales a los ya autorizados.",
+        image: "assets/estrategias/est_vias_nuevas.webp"
+      },
+      {
+        id: "1.1",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Adecuación de Vías Existentes",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la inclusión de adecuación de hasta 100 km de vías existentes que sean utilizadas por el proyecto, al interior del Área de Desarrollo Garcero C.",
+        image: "assets/estrategias/est_vias_adecuacion.webp"
+      },
+      {
+        id: "1.2",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Mantenimiento de Vías",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la inclusión de la actividad de mantenimiento de las vías existentes y/o a construir que sean objeto del uso por el proyecto Área de Desarrollo Garcero C.",
+        image: "assets/estrategias/est_vias_mantenimiento.webp"
+      },
+      {
+        id: "2",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Ampliación del Derecho de Vía (DDV)",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 6 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la ampliación hasta los 35 metros de los derechos de vía (DDV) de las vías existentes y nuevas a construir, que dan acceso a las plataformas, estaciones y subestaciones dentro del Área de Desarrollo Garcero C.",
+        image: "assets/estrategias/est_ddv_35m.webp"
+      },
+      {
+        id: "3",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Construcción de Plataformas Multipozo",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 7 (y Numeral 9) de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la construcción de 13 plataformas multipozos con un área de hasta 2,5 ha (hasta 5 pozos de desarrollo y/o de inyección/reinyección por plataforma), adicionales a las ya autorizadas.",
+        image: "assets/estrategias/est_plataformas_multipozo.webp"
+      },
+      {
+        id: "4",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Ampliación de Facilidades (Estación Sardinas)",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 1 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la ampliación de la Estación Sardinas hasta un área de 9 ha más de las actualmente autorizadas.",
+        image: "assets/estrategias/est_facilidades_produccion.webp"
+      },
+      {
+        id: "5",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Perforación de Pozos Nuevos",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 5 de la Resolución 0409 del 09 de marzo del 2007 en el sentido de solicitar la perforación de hasta 65 pozos nuevos, de desarrollo y/o de inyección/reinyección distribuidos en las 13 plataformas nuevas, con un máximo de 5 pozos por cada una.",
+        image: "assets/estrategias/est_perforacion_pozos.webp"
+      },
+      {
+        id: "6",
+        catId: "1",
+        catName: "1. Desarrollo de Infraestructura Petrolera",
+        catClass: "cat-1",
+        activity: "Construcción de Líneas de Flujo",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo Numeral 4 y Numeral 11 de la Resolución 0409 del 09 de marzo del 2007 para la construcción de 100 kilómetros de nuevas líneas de flujo de hasta 10” de diámetro con una longitud máxima de hasta 15 km cada una, conectando plataformas nuevas, existentes, facilidades de producción y subestaciones.",
+        image: "assets/estrategias/est_lineas_flujo.webp"
+      },
+      {
+        id: "7",
+        catId: "2",
+        catName: "2. Suministro Energético",
+        catClass: "cat-2",
+        activity: "Granjas Solares Fotovoltaicas",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo de la Resolución 0409 de 2007 en el sentido de solicitar la construcción de dos (2) Granjas Solares Fotovoltaicas, en un área de hasta 20 hectáreas y una capacidad de hasta 9,9 MW cada una.",
+        image: "assets/estrategias/est_granja_solar.webp"
+      },
+      {
+        id: "8",
+        catId: "2",
+        catName: "2. Suministro Energético",
+        catClass: "cat-2",
+        activity: "Líneas Eléctricas de Media Tensión y Subestaciones",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Segundo de la Resolución 0409 del 09 de marzo del 2007 para la construcción de hasta 100 kilómetros de líneas eléctricas de media tensión (con longitud máxima de hasta 15 km cada una) para interconectar Granjas Solares, plataformas, facilidades y subestaciones, así como la construcción, instalación y operación de subestaciones eléctricas elevadoras y/o reductoras.",
+        image: "assets/estrategias/est_lineas_electricas.webp"
+      },
+      {
+        id: "9",
+        catId: "2",
+        catName: "2. Suministro Energético",
+        catClass: "cat-2",
+        activity: "Interconexión a Redes Eléctricas",
+        request: "PERENCO COLOMBIA LIMITED solicita autorización para la interconexión a redes del sistema nacional y/o privado existentes y/o a construir a futuro dentro del Área de Influencia del Área de Desarrollo Garcero C.",
+        image: "assets/estrategias/est_interconexion_redes.webp"
+      },
+      {
+        id: "10",
+        catId: "3",
+        catName: "3. Inyección / Reinyección",
+        catClass: "cat-3",
+        activity: "Inyección y Reinyección de Aguas de Producción",
+        request: "PERENCO COLOMBIA LIMITED solicita modificar el Artículo Tercero Numeral 3 Literal c de la Resolución 0409 del 2007 (modificada por Res. 0163 de 2014) en el sentido de aumentar la capacidad de inyección/reinyección en 315.829 BWPD de aguas de producción en pozos nuevos, inactivos o no productores para contar con un caudal total de 467.329 BWPD (151.500 BWPD autorizados + 315.829 BWPD solicitados) en las formaciones Carbonera (unidades C1, C3, C5, C7), Guadalupe y Areniscas (LSS).",
+        image: "assets/estrategias/est_inyeccion_reinyeccion.webp"
+      },
+      {
+        id: "11",
+        catId: "4",
+        catName: "4. Optimización de Procesos",
+        catClass: "cat-4",
+        activity: "Sinergia entre Campos y Transporte de Fluidos",
+        request: "PERENCO COLOMBIA LIMITED solicita la conexión a infraestructura de transferencia existente o proyectada (oleoductos/gasoductos) dentro del Área de Desarrollo Garcero C, así como la entrega y/o recepción de fluidos de producción con otros campos para tratamiento, almacenamiento y/o comercialización (vía líneas de flujo o carrotanque), previo acuerdo entre titulares.",
+        image: "assets/estrategias/est_sinergia_campos.webp"
+      }
+    ];
+
+    let strategiesData = limpiarImagenesPorDefecto(DEFAULT_ESTRATEGIAS);
+
+    let currentCategoryFilter = 'todos';
+
+    // ==========================================
+    // FICHAS DE PRESENTACIÓN POR ESTRATEGIA
+    // Artículos objeto de modificación y comparativo «Actualmente autorizado»
+    // vs «Solicitado», tomados de la solicitud de modificación y del cuadro
+    // comparativo del EIA (Tabla 1.4 / Tabla 2-4, Res. 0409 de 2007 y sus
+    // modificaciones). Cada estrategia se presenta con su figura + este texto.
+    // ==========================================
+    const FICHAS_ESTRATEGIA = {
+      "0": {
+        actividad: "Actualización de Coordenadas del Bloque Garcero C",
+        articulos: "Artículo Primero de la Resolución 0409 de 2007 (modificada por las Resoluciones 1972 de 2007, 0163 de 2014, 0312 de 2016 y 2102 de 2020)",
+        actual: [
+          "Coordenadas del Bloque Garcero C otorgadas en la Resolución 0409 de 2007.",
+          "Jurisdicción: municipios de San Luis de Palenque y Orocué, Casanare."
+        ],
+        solicitado: [
+          "Actualizar las coordenadas que conforman el Bloque Garcero C.",
+          "Área de Desarrollo Garcero C: 19.872,68 ha (MAGNA-SIRGAS Origen Único Nacional)."
+        ]
+      },
+      "1": {
+        actividad: "Construcción de Vías Nuevas (Accesos)",
+        articulos: "Artículo Segundo, Numerales 6 y 7 de la Resolución 0409 de 2007",
+        actual: [
+          "Accesos a los pozos autorizados en la licencia vigente, con sus especificaciones técnicas."
+        ],
+        solicitado: [
+          "Hasta 100 km de nuevos accesos viales.",
+          "Longitud máxima: hasta 10 km por acceso.",
+          "Para las 13 plataformas multipozos (adicionales a los ya autorizados)."
+        ]
+      },
+      "1.1": {
+        actividad: "Adecuación de Vías Existentes",
+        articulos: "Artículo Segundo de la Resolución 0409 de 2007",
+        actual: [
+          "No cuantificado en la licencia vigente (Res. 0409 de 2007 y sus modificaciones)."
+        ],
+        solicitado: [
+          "Inclusión de la adecuación de hasta 100 km de vías existentes.",
+          "Tramo: al interior del Área de Desarrollo Garcero C."
+        ]
+      },
+      "1.2": {
+        actividad: "Mantenimiento de Vías",
+        articulos: "Artículo Segundo de la Resolución 0409 de 2007",
+        actual: [
+          "No cuantificado en la licencia vigente (Res. 0409 de 2007 y sus modificaciones)."
+        ],
+        solicitado: [
+          "Inclusión del mantenimiento de las vías existentes y/o a construir.",
+          "Tramo: vías utilizadas por el proyecto Área de Desarrollo Garcero C."
+        ]
+      },
+      "2": {
+        actividad: "Ampliación del Derecho de Vía (DDV)",
+        articulos: "Artículo Segundo, Numeral 6 de la Resolución 0409 de 2007",
+        actual: [
+          "Derechos de vía de las vías existentes y nuevas autorizadas en la licencia vigente."
+        ],
+        solicitado: [
+          "Ampliación de los derechos de vía (DDV) hasta 35 metros.",
+          "Aplica a las vías que dan acceso a plataformas, estaciones y subestaciones."
+        ]
+      },
+      "3": {
+        actividad: "Construcción de Plataformas Multipozo",
+        articulos: "Artículo Segundo, Numerales 7 y 9 de la Resolución 0409 de 2007",
+        actual: [
+          "3 locaciones: Jordán 5 (Jrd-5), Sardinas 8 (Sad-8) y Guasar 2 (Gsr-2).",
+          "Área máxima por locación: 1,2 ha."
+        ],
+        solicitado: [
+          "13 plataformas multipozo nuevas.",
+          "Área de hasta 2,5 ha por plataforma.",
+          "Hasta 5 pozos de desarrollo y/o inyección-reinyección por plataforma."
+        ]
+      },
+      "4": {
+        actividad: "Ampliación de Facilidades (Estación Sardinas)",
+        articulos: "Artículo Segundo, Numeral 1 de la Resolución 0409 de 2007",
+        actual: [
+          "Operación de la Estación Sardinas en el área actualmente autorizada."
+        ],
+        solicitado: [
+          "Ampliación de la Estación Sardinas: 9 ha adicionales a las actualmente autorizadas."
+        ]
+      },
+      "5": {
+        actividad: "Perforación de Pozos Nuevos",
+        articulos: "Artículo Segundo, Numeral 5 de la Resolución 0409 de 2007",
+        actual: [
+          "3 pozos de desarrollo: Jordán 5 (Jrd-5), Sardinas 8 (Sad-8) y Guasar 2 (Gsr-2).",
+          "Perforación convencional por rotación, entre 5.385 y 5.530 pies, con lodos base agua."
+        ],
+        solicitado: [
+          "Hasta 65 pozos nuevos (de desarrollo y/o de inyección-reinyección).",
+          "Distribuidos en las 13 plataformas nuevas, máximo 5 pozos por plataforma."
+        ]
+      },
+      "6": {
+        actividad: "Construcción de Líneas de Flujo",
+        articulos: "Artículo Segundo, Numerales 4 y 11 de la Resolución 0409 de 2007",
+        actual: [
+          "Líneas de flujo de los pozos de desarrollo a la Estación Sardinas, en el mismo derecho de vía de los accesos autorizados.",
+          "Diámetro autorizado: 4 pulgadas."
+        ],
+        solicitado: [
+          "100 km de nuevas líneas de flujo.",
+          "Diámetro: hasta 10 pulgadas; longitud máxima de 15 km por línea.",
+          "Conexión entre plataformas (nuevas y existentes), facilidades de producción y subestaciones."
+        ]
+      },
+      "7": {
+        actividad: "Granjas Solares Fotovoltaicas",
+        articulos: "Artículo Segundo de la Resolución 0409 de 2007",
+        actual: [
+          "No contemplado en la licencia vigente (actividad nueva)."
+        ],
+        solicitado: [
+          "2 granjas solares fotovoltaicas.",
+          "Área: hasta 20 ha cada una.",
+          "Capacidad: hasta 9,9 MW cada una."
+        ]
+      },
+      "8": {
+        actividad: "Líneas Eléctricas de Media Tensión y Subestaciones",
+        articulos: "Artículo Segundo de la Resolución 0409 de 2007",
+        actual: [
+          "No contemplado en la licencia vigente (actividad nueva)."
+        ],
+        solicitado: [
+          "Hasta 100 km de líneas eléctricas de media tensión.",
+          "Longitud máxima: 15 km por línea.",
+          "Incluye subestaciones eléctricas elevadoras y/o reductoras y su operación."
+        ]
+      },
+      "9": {
+        actividad: "Interconexión a Redes Eléctricas",
+        articulos: "Artículo Segundo de la Resolución 0409 de 2007 (inclusión de la actividad)",
+        actual: [
+          "No contemplado en la licencia vigente (actividad nueva)."
+        ],
+        solicitado: [
+          "Interconexión a redes del sistema nacional y/o privado existentes y/o a construir a futuro.",
+          "Dentro del Área de Influencia del Área de Desarrollo Garcero C."
+        ]
+      },
+      "10": {
+        actividad: "Inyección y Reinyección de Aguas de Producción",
+        articulos: "Artículo Tercero, Numeral 3, Literal C de la Resolución 0409 de 2007 (modificado por el Artículo Primero de la Resolución 0163 de 2014)",
+        actual: [
+          "151.500 BWPD de capacidad de inyección/reinyección autorizada."
+        ],
+        solicitado: [
+          "Aumento de 315.829 BWPD.",
+          "Caudal total: 467.329 BWPD.",
+          "En pozos nuevos, inactivos o no productores; formaciones Carbonera (C1, C3, C5 y C7), Guadalupe y Areniscas (LSS)."
+        ]
+      },
+      "11": {
+        actividad: "Sinergia entre Campos y Transporte de Fluidos",
+        articulos: "Artículo Segundo de la Resolución 0409 de 2007 (inclusión de la actividad)",
+        actual: [
+          "No contemplado en la licencia vigente (actividad nueva)."
+        ],
+        solicitado: [
+          "Conexión a infraestructura de transferencia existente o proyectada (oleoductos/gasoductos).",
+          "Entrega y/o recepción de fluidos de producción con otros campos para tratamiento, almacenamiento y/o comercialización.",
+          "Transporte por líneas de flujo o carrotanque, previo acuerdo entre titulares."
+        ]
+      }
+    };
+
+    const _FICHAS_POR_ACTIVIDAD = {};
+    Object.keys(FICHAS_ESTRATEGIA).forEach(function(k) {
+      const f = FICHAS_ESTRATEGIA[k];
+      if (f && f.actividad) _FICHAS_POR_ACTIVIDAD[f.actividad.toLowerCase()] = f;
+    });
+
+    function obtenerFicha(item) {
+      if (!item) return null;
+      return FICHAS_ESTRATEGIA[item.id] ||
+        _FICHAS_POR_ACTIVIDAD[String(item.activity || '').trim().toLowerCase()] || null;
+    }
+
+    function escFicha(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // Ficha de la estrategia: se conserva el recuadro de artículos objeto de
+    // modificación y, debajo, el texto predeterminado de la solicitud.
+    // (Se retiraron los cuadros comparativos "Act. autorizado" y "Solicitado".)
+    function fichaHTML(ficha, item) {
+      const texto = escFicha((item && item.request) || '');
+      return '<div class="card-ficha">' +
+        '<div class="ficha-articulo"><i data-lucide="scale"></i><div>' +
+        '<span class="ficha-label">Artículos objeto de modificación</span>' +
+        '<p>' + escFicha(ficha.articulos) + '</p></div></div>' +
+        '<p class="card-request">' + texto + '</p>' +
+        '</div>';
+    }
+
+    function seleccionarCategoria(catId, btnElement) {
+      currentCategoryFilter = catId;
+      document.querySelectorAll('.cat-btn').forEach(btn => btn.classList.remove('active'));
+      btnElement.classList.add('active');
+      filtrarTabla();
+    }
+
+    function renderTable(data, focusCard) {
+      const track = document.getElementById('carousel-track');
+      const dotsContainer = document.getElementById('carousel-dots');
+
+      document.querySelectorAll('#carousel-track .carousel-slide').forEach(s => s.remove());
+      document.querySelectorAll('#carousel-track .empty-carousel').forEach(e => e.remove());
+      dotsContainer.innerHTML = '';
+      currentCard = 0;
+
+      const total = data.length;
+      const carouselTotalEl = document.getElementById('carousel-total');
+      if (carouselTotalEl) carouselTotalEl.textContent = String(total);
+
+      if (total === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'empty-carousel';
+        empty.style.display = 'flex';
+        empty.style.flexDirection = 'column';
+        empty.style.alignItems = 'center';
+        empty.style.gap = '10px';
+        empty.innerHTML = `<i data-lucide="search-x" style="width:34px;height:34px;"></i><p>No se encontraron estrategias con los filtros actuales.</p>`;
+        track.appendChild(empty);
+        document.getElementById('total-badge').textContent = `0 Registros`;
+        document.getElementById('footer-count').textContent = `0 Solicitudes`;
+        document.getElementById('carousel-prev').disabled = true;
+        document.getElementById('carousel-next').disabled = true;
+        lucide.createIcons();
+        return;
+      }
+
+      data.forEach((item, i) => {
+        const originalIndex = strategiesData.findIndex(s => s.id === item.id && s.activity === item.activity);
+        const imgSrc = item.image || '';
+        const ficha = obtenerFicha(item);
+
+        const coverImgHtml = imgSrc
+          ? `<img src="${imgSrc}" alt="${item.activity}" onerror="this.onerror=null; this.parentElement.classList.add('card-cover-sinimg'); this.remove();">`
+          : `<div class="card-cover-placeholder"><i data-lucide="image" style="width:30px;height:30px;"></i><span>Sin imagen</span></div>`;
+        const zoomAttr = imgSrc ? `onclick="abrirZoomImagen('${imgSrc}')" title="Clic para ampliar la figura"` : '';
+
+        const slide = document.createElement('div');
+        slide.className = 'carousel-slide';
+        slide.innerHTML = `
+          <article class="strategy-card ${item.catClass}">
+            <div class="card-cover ${imgSrc ? '' : 'card-cover-sinimg'}" ${zoomAttr}>
+              ${coverImgHtml}
+            </div>
+
+            <div class="card-body">
+              <span class="strategy-category-badge ${item.catClass}">${item.catName}</span>
+              <h3 class="card-title"><i data-lucide="target" style="width:20px;height:20px;color:var(--accent-green);"></i>${item.activity}</h3>
+              ${ficha ? fichaHTML(ficha, item) : `<p class="card-request">${escFicha(item.request)}</p>`}
+            </div>
+
+          </article>
+        `;
+        track.appendChild(slide);
+      });
+
+      lucide.createIcons();
+      document.getElementById('total-badge').textContent = `${total} Actividades Registradas`;
+      document.getElementById('footer-count').textContent = `${total} Solicitudes`;
+
+      if (focusCard) {
+        const focusIndex = data.findIndex(x => x.id === focusCard.id && x.activity === focusCard.activity);
+        if (focusIndex !== -1) currentCard = focusIndex;
+      }
+
+      updateCarousel();
+    }
+
+    function filtrarTabla(focusCard) {
+      const searchVal = document.getElementById('filter-search').value.toLowerCase();
+
+      const textoFicha = item => {
+        const f = obtenerFicha(item);
+        if (!f) return '';
+        return [f.articulos].concat(f.actual || [], f.solicitado || []).join(' ');
+      };
+
+      const filtered = strategiesData.filter(item => {
+        const matchCat = (currentCategoryFilter === 'todos' || item.catId === currentCategoryFilter);
+        const matchSearch = item.activity.toLowerCase().includes(searchVal) || 
+                            item.request.toLowerCase().includes(searchVal) ||
+                            item.catName.toLowerCase().includes(searchVal) ||
+                            textoFicha(item).toLowerCase().includes(searchVal);
+        return matchCat && matchSearch;
+      });
+
+      renderTable(filtered, focusCard);
+    }
+
+    // ============ CARRUSEL ============
+    let currentCard = 0;
+
+    function updateCarousel() {
+      const track = document.getElementById('carousel-track');
+      const slides = track.querySelectorAll('.carousel-slide');
+      const total = slides.length;
+      const prevBtn = document.getElementById('carousel-prev');
+      const nextBtn = document.getElementById('carousel-next');
+      const dotsContainer = document.getElementById('carousel-dots');
+      const maxPos = Math.max(0, total - 3);
+
+      if (currentCard > maxPos) currentCard = maxPos;
+      if (currentCard < 0) currentCard = 0;
+
+      track.style.transform = `translateX(-${currentCard * (100 / 3)}%)`;
+
+      prevBtn.disabled = (total === 0 || currentCard === 0);
+      nextBtn.disabled = (total === 0 || currentCard >= maxPos);
+
+      const pages = Math.max(1, maxPos + 1);
+      dotsContainer.innerHTML = '';
+      for (let i = 0; i < pages; i++) {
+        const dot = document.createElement('button');
+        dot.className = 'carousel-dot' + (i === currentCard ? ' active' : '');
+        dot.setAttribute('aria-label', 'Ir a tarjeta ' + (i + 1));
+        dot.addEventListener('click', () => irACarta(i));
+        dotsContainer.appendChild(dot);
+      }
+
+      const counter = document.getElementById('carousel-counter');
+      if (total === 0) {
+        counter.innerHTML = `Tarjetas <strong>0</strong> / <span id="carousel-total">0</span>`;
+      } else if (total === 1) {
+        counter.innerHTML = `Tarjeta <strong>1</strong> / <span id="carousel-total">1</span>`;
+      } else {
+        counter.innerHTML = `Tarjetas <strong>${currentCard + 1}–${Math.min(total, currentCard + 3)}</strong> / <span id="carousel-total">${total}</span>`;
+      }
+    }
+
+    function irACarta(i) {
+      currentCard = i;
+      updateCarousel();
+    }
+
+    function moverCarrusel(dir) {
+      const total = document.querySelectorAll('#carousel-track .carousel-slide').length;
+      if (total === 0) return;
+      const maxPos = Math.max(0, total - 3);
+      let nueva = currentCard + dir;
+      if (nueva < 0) nueva = maxPos;
+      else if (nueva > maxPos) nueva = 0;
+      irACarta(nueva);
+      restartAutoplay();
+    }
+
+    document.getElementById('carousel-prev').addEventListener('click', () => moverCarrusel(-1));
+    document.getElementById('carousel-next').addEventListener('click', () => moverCarrusel(1));
+
+    // ============ TECLADO + AUTOPLAY (20 s) ============
+    let autoplayTimer = null;
+    const AUTOPLAY_MS = 20000;
+
+    function startAutoplay() {
+      stopAutoplay();
+      autoplayTimer = setInterval(() => {
+        const modalOpen = document.querySelector('.modal-overlay.open') !== null;
+        if (!modalOpen) moverCarrusel(1);
+      }, AUTOPLAY_MS);
+    }
+
+    function stopAutoplay() {
+      if (autoplayTimer) {
+        clearInterval(autoplayTimer);
+        autoplayTimer = null;
+      }
+    }
+
+    function restartAutoplay() {
+      const frames = document.querySelector('.carousel-frames');
+      const hovered = frames && frames.matches(':hover');
+      if (!hovered) startAutoplay();
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const tag = (e.target.tagName || '').toLowerCase();
+      const typing = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+      if (typing) return;
+      e.preventDefault();
+      moverCarrusel(e.key === 'ArrowLeft' ? -1 : 1);
+    });
+
+    const carouselFrames = document.querySelector('.carousel-frames');
+    if (carouselFrames) {
+      carouselFrames.addEventListener('mouseenter', stopAutoplay);
+      carouselFrames.addEventListener('mouseleave', startAutoplay);
+    }
+
+    startAutoplay();
+
+    // Carga portable: el servidor (data/estado_app.json) manda; si no hay aun,
+    // se usan los datos del navegador y se siembran al servidor para que viajen.
+    async function inicializarEstrategias() {
+      const server = await cargarEstadoServidor();
+      const local = cargarEstrategiasGuardadas();
+
+      if (server && Array.isArray(server.estrategias) && server.estrategias.length) {
+        strategiesData = limpiarImagenesPorDefecto(server.estrategias);
+        try { localStorage.setItem(STORAGE_KEY_ESTRATEGIAS, JSON.stringify(strategiesData)); } catch (e) {}
+      } else if (Array.isArray(local) && local.length) {
+        strategiesData = limpiarImagenesPorDefecto(local);
+        guardarEstadoServidor({ estrategias: strategiesData });
+      }
+
+      renderTable(strategiesData);
+    }
+
+    inicializarEstrategias();
+
+    // Lógica del modal de Zoom de Imagen
+    const imageZoomModal = document.getElementById('image-zoom-modal');
+    const zoomModalImg = document.getElementById('zoom-modal-img');
+    const btnCloseZoom = document.getElementById('btn-close-zoom');
+
+    function abrirZoomImagen(url) {
+      zoomModalImg.src = url;
+      imageZoomModal.classList.add('open');
+    }
+
+    function cerrarZoomImagen() {
+      imageZoomModal.classList.remove('open');
+      zoomModalImg.src = '';
+    }
+
+    btnCloseZoom.addEventListener('click', cerrarZoomImagen);
+    imageZoomModal.addEventListener('click', (e) => {
+      if (e.target === imageZoomModal) cerrarZoomImagen();
+    });
+
+    const addModal = document.getElementById('add-modal');
+    const btnOpenModal = document.getElementById('btn-open-modal');
+    const btnCloseModal = document.getElementById('btn-close-modal');
+    const btnCancelModal = document.getElementById('btn-cancel-modal');
+    const btnSubmitStrategy = document.getElementById('btn-submit-strategy');
+
+    btnOpenModal.addEventListener('click', () => {
+      addModal.classList.add('open');
+      document.getElementById('new-id').value = (strategiesData.length + 1);
+      document.getElementById('new-activity').focus();
+    });
+
+    function closeAddModal() {
+      addModal.classList.remove('open');
+      document.getElementById('new-activity').value = '';
+      document.getElementById('new-request').value = '';
+      document.getElementById('new-image').value = '';
+    }
+
+    btnCloseModal.addEventListener('click', closeAddModal);
+    btnCancelModal.addEventListener('click', closeAddModal);
+    addModal.addEventListener('click', (e) => {
+      if (e.target === addModal) closeAddModal();
+    });
+
+    btnSubmitStrategy.addEventListener('click', async () => {
+      const id = document.getElementById('new-id').value.trim() || String(strategiesData.length + 1);
+      const catId = document.getElementById('new-category').value;
+      const activity = document.getElementById('new-activity').value.trim();
+      const request = document.getElementById('new-request').value.trim();
+      const imageInput = document.getElementById('new-image');
+
+      if (!activity || !request) {
+        alert("Por favor completa el nombre de la actividad y la descripción de la solicitud.");
+        return;
+      }
+
+      let catName = "";
+      let catClass = "";
+      if (catId === "1") { catName = "1. Desarrollo de Infraestructura Petrolera"; catClass = "cat-1"; }
+      else if (catId === "2") { catName = "2. Suministro Energético"; catClass = "cat-2"; }
+      else if (catId === "3") { catName = "3. Inyección / Reinyección"; catClass = "cat-3"; }
+      else if (catId === "4") { catName = "4. Optimización de Procesos"; catClass = "cat-4"; }
+
+      let imagePath = "";
+      if (imageInput.files && imageInput.files[0]) {
+        try {
+          imagePath = await subirImagen(imageInput.files[0]);
+        } catch (err) {
+          alert("No se pudo guardar la imagen en /uploads: " + err.message);
+          return;
+        }
+      }
+
+      const newStrategy = {
+        id: id,
+        catId: catId,
+        catName: catName,
+        catClass: catClass,
+        activity: activity,
+        request: request,
+        image: imagePath
+      };
+
+      strategiesData.push(newStrategy);
+      guardarEstrategias();
+      filtrarTabla({ id: newStrategy.id, activity: newStrategy.activity });
+      closeAddModal();
+    });
+
+    const detailEditModal = document.getElementById('detail-edit-modal');
+    const btnCloseDetail = document.getElementById('btn-close-detail');
+    const btnCancelDetail = document.getElementById('btn-cancel-detail');
+    const btnSaveChanges = document.getElementById('btn-save-changes');
+
+    function abrirDetalleEditar(index) {
+      const item = strategiesData[index];
+      document.getElementById('edit-index').value = index;
+      document.getElementById('edit-id').value = item.id;
+      document.getElementById('edit-category').value = item.catId;
+      document.getElementById('edit-activity').value = item.activity;
+      document.getElementById('edit-request').value = item.request;
+      document.getElementById('edit-image').value = '';
+
+      const previewBox = document.getElementById('edit-img-preview-box');
+      if (item.image) {
+        const imgSrc = item.image;
+        previewBox.innerHTML = `<img src="${imgSrc}" alt="Foto" onclick="abrirZoomImagen('${imgSrc}')" onerror="this.onerror=null; this.remove();"><span style="font-size:0.85rem; color: var(--text-muted);">Imagen actual cargada</span>`;
+      } else {
+        previewBox.innerHTML = `<span class="no-img">Sin imagen registrada</span>`;
+      }
+
+      detailEditModal.classList.add('open');
+    }
+
+    function closeDetailModal() {
+      detailEditModal.classList.remove('open');
+    }
+
+    btnCloseDetail.addEventListener('click', closeDetailModal);
+    btnCancelDetail.addEventListener('click', closeDetailModal);
+    detailEditModal.addEventListener('click', (e) => {
+      if (e.target === detailEditModal) closeDetailModal();
+    });
+
+    btnSaveChanges.addEventListener('click', async () => {
+      const index = parseInt(document.getElementById('edit-index').value);
+      const id = document.getElementById('edit-id').value.trim();
+      const catId = document.getElementById('edit-category').value;
+      const activity = document.getElementById('edit-activity').value.trim();
+      const request = document.getElementById('edit-request').value.trim();
+      const imageInput = document.getElementById('edit-image');
+
+      if (!activity || !request) {
+        alert("La actividad y la solicitud no pueden estar vacías.");
+        return;
+      }
+
+      let catName = "";
+      let catClass = "";
+      if (catId === "1") { catName = "1. Desarrollo de Infraestructura Petrolera"; catClass = "cat-1"; }
+      else if (catId === "2") { catName = "2. Suministro Energético"; catClass = "cat-2"; }
+      else if (catId === "3") { catName = "3. Inyección / Reinyección"; catClass = "cat-3"; }
+      else if (catId === "4") { catName = "4. Optimización de Procesos"; catClass = "cat-4"; }
+
+      strategiesData[index].id = id;
+      strategiesData[index].catId = catId;
+      strategiesData[index].catName = catName;
+      strategiesData[index].catClass = catClass;
+      strategiesData[index].activity = activity;
+      strategiesData[index].request = request;
+
+      if (imageInput.files && imageInput.files[0]) {
+        try {
+          strategiesData[index].image = await subirImagen(imageInput.files[0]);
+        } catch (err) {
+          alert("No se pudo guardar la imagen en /uploads: " + err.message);
+          return;
+        }
+      }
+
+      const savedRef = { id: strategiesData[index].id, activity: strategiesData[index].activity };
+      guardarEstrategias();
+      filtrarTabla(savedRef);
+      closeDetailModal();
+    });
+
+    // ==========================================
+    // EXPORTAR A EXCEL (.xls) COLORIDO
+    // Genera un libro Excel (XML Spreadsheet 2003) con colores de identidad,
+    // sin librerías externas y 100% offline.
+    // ==========================================
+    function escapeXml(s) {
+      return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function generarExcelColorido(opciones) {
+      const catColores = { '1': '#00B050', '2': '#FFAA00', '3': '#8DB4E2', '4': '#CC99FF' };
+      const x = [];
+      x.push('<?xml version="1.0" encoding="UTF-8"?>');
+      x.push('<?mso-application progid="Excel.Sheet"?>');
+      x.push('<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">');
+      x.push('<Styles>');
+      x.push('<Style ss:ID="Titulo"><Font ss:Bold="1" ss:Size="14" ss:Color="#FFFFFF"/><Interior ss:Color="#0F141D" ss:Pattern="Solid"/><Alignment ss:Vertical="Center"/></Style>');
+      x.push('<Style ss:ID="SubTitulo"><Font ss:Size="9" ss:Italic="1" ss:Color="#94A3B8"/><Interior ss:Color="#0F141D" ss:Pattern="Solid"/></Style>');
+      x.push('<Style ss:ID="Encabezado"><Font ss:Bold="1" ss:Color="#FFFFFF" ss:Size="10"/><Interior ss:Color="#043154" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1"/></Borders></Style>');
+      x.push('<Style ss:ID="FilaPar"><Font ss:Color="#0F172A" ss:Size="9"/><Interior ss:Color="#F8FAFC" ss:Pattern="Solid"/><Alignment ss:Vertical="Top" ss:WrapText="1"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/></Borders></Style>');
+      x.push('<Style ss:ID="FilaImpar"><Font ss:Color="#0F172A" ss:Size="9"/><Interior ss:Color="#DBEAFE" ss:Pattern="Solid"/><Alignment ss:Vertical="Top" ss:WrapText="1"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#BFDBFE"/></Borders></Style>');
+      Object.keys(catColores).forEach(function (k) {
+        x.push('<Style ss:ID="Cat' + k + '"><Font ss:Bold="1" ss:Color="#0F172A" ss:Size="9"/><Interior ss:Color="' + catColores[k] + '" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/></Borders></Style>');
+      });
+      x.push('</Styles>');
+      x.push('<Worksheet ss:Name="' + escapeXml(opciones.hoja) + '">');
+      x.push('<Table>');
+      opciones.anchos.forEach(function (w) { x.push('<Column ss:Width="' + w + '"/>'); });
+      x.push('<Row ss:Height="26">');
+      x.push('<Cell ss:MergeAcross="' + (opciones.headers.length - 1) + '" ss:StyleID="Titulo"><Data ss:Type="String">' + escapeXml(opciones.titulo) + '</Data></Cell>');
+      x.push('</Row>');
+      x.push('<Row ss:Height="16">');
+      x.push('<Cell ss:MergeAcross="' + (opciones.headers.length - 1) + '" ss:StyleID="SubTitulo"><Data ss:Type="String">' + escapeXml(opciones.subtitulo) + '</Data></Cell>');
+      x.push('</Row>');
+      x.push('<Row ss:Height="20">');
+      opciones.headers.forEach(function (h) {
+        x.push('<Cell ss:StyleID="Encabezado"><Data ss:Type="String">' + escapeXml(h) + '</Data></Cell>');
+      });
+      x.push('</Row>');
+      opciones.filas.forEach(function (fila, i) {
+        const estiloBase = (i % 2 === 0) ? 'FilaPar' : 'FilaImpar';
+        x.push('<Row ss:AutoFitHeight="1">');
+        fila.celdas.forEach(function (celda, c) {
+          const estilo = (c === 1 && fila.cat) ? 'Cat' + fila.cat : estiloBase;
+          x.push('<Cell ss:StyleID="' + estilo + '"><Data ss:Type="String">' + escapeXml(celda) + '</Data></Cell>');
+        });
+        x.push('</Row>');
+      });
+      x.push('</Table>');
+      x.push('<WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel"><FreezePanes><FrozenPanes/><SplitHorizontal>3</SplitHorizontal><TopRowBottomPane>3</TopRowBottomPane></FreezePanes></WorksheetOptions>');
+      x.push('</Worksheet>');
+      x.push('</Workbook>');
+      return '\ufeff' + x.join('\n');
+    }
+
+    document.getElementById('btn-export-excel').addEventListener('click', () => {
+      // Se exporta la información de la ficha (artículos y comparativo autorizado
+      // vs solicitado) en lugar del ID interno, que no se muestra al usuario.
+      const listaTexto = (items) => (items || []).map(t => '• ' + t).join('\n');
+      const filas = strategiesData.map(item => {
+        const f = obtenerFicha(item);
+        return {
+          cat: item.catId,
+          celdas: [
+            item.catName,
+            item.activity,
+            f ? f.articulos : '',
+            f ? listaTexto(f.actual) : '',
+            f ? listaTexto(f.solicitado) : ''
+          ]
+        };
+      });
+      const contenido = generarExcelColorido({
+        hoja: 'Estrategias',
+        titulo: 'ESTRATEGIAS DE DESARROLLO DEL PROYECTO · AD GARCERO C',
+        subtitulo: 'PERENCO COLOMBIA LIMITED · EIA Bloque Garcero C · Exportado el ' + new Date().toLocaleDateString('es-CO'),
+        headers: ['Categoría', 'Actividad', 'Artículos objeto de modificación', 'Actualmente autorizado', 'Solicitado'],
+        anchos: [30, 38, 55, 55, 55],
+        filas: filas
+      });
+      const blob = new Blob([contenido], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Estrategias_Perenco_Garcero_C_${new Date().toISOString().slice(0,10)}.xls`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
+  </script>
+  <script src="ia_geo.js"></script>
+</body>
+</html>

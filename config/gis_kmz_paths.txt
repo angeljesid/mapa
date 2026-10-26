@@ -1,0 +1,9 @@
+# Rutas de carpetas (o archivos) donde buscar capas tematicas KMZ locales para el panel "KMZ EIA".
+# Escribe una ruta por línea. Las líneas que empiecen con # se ignoran.
+# Las rutas que no existan en ese equipo se ignoran sin error.
+
+D:\INSUMOS KML
+
+# Ejemplos:
+# E:\datos\kml
+# D:\archivos\cobertura.kmz

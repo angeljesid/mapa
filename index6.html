@@ -1,0 +1,2449 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <link rel="stylesheet" href="estilos.css?v=12">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+  <title>Evaluación Ambiental - Área de Desarrollo Garcero C</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="lib/lucide/lucide.min.js"></script>
+  <script src="lib/chart/chart.umd.min.js"></script>
+  <script src="sync_data.js"></script>
+
+  <style>
+    /* Chips para medidas de manejo y componentes */
+    .chip-medida {
+      display: inline-block; padding: 3px 9px; margin: 2px 5px 2px 0; border-radius: 6px;
+      background: rgba(141, 180, 226, 0.10); border: 1px solid var(--border-color);
+      font-size: 0.9rem; color: var(--text-main);
+    }
+    .chips-wrap { display: flex; flex-wrap: wrap; gap: 6px; }
+    /* Selector de escenario (sin proyecto / con proyecto) */
+    .escenario-switch { display: flex; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+    .escenario-btn {
+      padding: 10px 18px; border-radius: 10px; border: 1px solid var(--border-color);
+      background: var(--bg-card); color: var(--text-muted); font-size: 0.98rem; font-weight: 600;
+      cursor: pointer; font-family: 'Inter', sans-serif;
+    }
+    .escenario-btn.active { border-color: var(--accent-green); color: #fff; background: rgba(0, 176, 80, 0.14); }
+
+    /* ---------- Vista PMA & PSM (guía de presentación) ---------- */
+    #tab-pma { gap: 14px; }
+    #tab-pma .kpi-card { padding: 13px 15px; gap: 6px; }
+    #tab-pma .kpi-header { font-size: 0.68rem; }
+    #tab-pma .kpi-value { font-size: 1.45rem; }
+    #tab-pma .kpi-sub { font-size: 0.76rem; line-height: 1.35; }
+
+    /* Tarjetas KPI clicables y panel de claves */
+    #tab-pma .kpi-clickable {
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
+    }
+    #tab-pma .kpi-clickable:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.3);
+      background-color: rgba(30, 41, 59, 0.78);
+    }
+    #tab-pma .kpi-clickable:focus-visible {
+      outline: 2px solid var(--accent-green);
+      outline-offset: 2px;
+    }
+    #tab-pma .kpi-card.green { --kpi-accent: 0, 176, 80; }
+    #tab-pma .kpi-card.blue { --kpi-accent: 141, 180, 226; }
+    #tab-pma .kpi-card.amber { --kpi-accent: 255, 170, 0; }
+    #tab-pma .kpi-card.purple { --kpi-accent: 204, 153, 255; }
+    #tab-pma .kpi-clickable.abierto {
+      border-color: rgba(var(--kpi-accent), 0.65);
+      box-shadow: 0 0 0 1px rgba(var(--kpi-accent), 0.28), var(--glass-shadow);
+    }
+    #tab-pma .kpi-more {
+      display: flex; align-items: center; gap: 4px; margin-top: 2px;
+      font-size: 0.72rem; font-weight: 600; color: var(--text-muted);
+    }
+    #tab-pma .kpi-card.green .kpi-more { color: var(--accent-green); }
+    #tab-pma .kpi-card.blue .kpi-more { color: var(--accent-blue); }
+    #tab-pma .kpi-card.amber .kpi-more { color: var(--accent-amber); }
+    #tab-pma .kpi-card.purple .kpi-more { color: var(--accent-purple); }
+    #tab-pma .kpi-more svg { width: 14px; height: 14px; transition: transform 0.15s ease; }
+    #tab-pma .kpi-clickable.abierto .kpi-more svg { transform: rotate(180deg); }
+
+    #tab-pma .kpi-clave {
+      --clave-color: var(--accent-green);
+      padding: 14px 18px;
+      background: rgba(10, 15, 23, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-left: 4px solid var(--clave-color);
+      border-radius: 12px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+      animation: kpiClaveIn 0.18s ease-out;
+    }
+    @keyframes kpiClaveIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: none; }
+    }
+    #tab-pma .kpi-clave-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 12px; margin-bottom: 10px;
+    }
+    #tab-pma .kpi-clave-eyebrow {
+      display: block; font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.6px; color: var(--text-muted);
+    }
+    #tab-pma .kpi-clave-title {
+      display: block; margin-top: 2px; color: #fff; font-size: 1rem;
+    }
+    #tab-pma .kpi-clave-close {
+      width: 28px; height: 28px; flex: 0 0 28px; border-radius: 8px;
+      border: 1px solid var(--border-color); background: transparent;
+      color: var(--text-muted); cursor: pointer; font-size: 1.1rem; line-height: 1;
+    }
+    #tab-pma .kpi-clave-close:hover {
+      color: #fff; border-color: rgba(255, 255, 255, 0.3); background: rgba(255, 255, 255, 0.06);
+    }
+    #tab-pma .kpi-clave-list {
+      list-style: none; margin: 0; padding: 0;
+      display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px 22px;
+    }
+    #tab-pma .kpi-clave-list li {
+      position: relative; padding-left: 18px; color: var(--text-main);
+      font-size: 0.88rem; line-height: 1.45;
+    }
+    #tab-pma .kpi-clave-list li::before {
+      content: '▸'; position: absolute; left: 0; top: 0; color: var(--clave-color);
+    }
+    #tab-pma .kpi-clave-list strong { color: #fff; }
+
+    /* Selector PMA / PSM como tarjeta segmented, con contraste sobre el fondo */
+    .plan-switch {
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px;
+      width: fit-content; max-width: 100%; margin-bottom: 0;
+      background: rgba(8, 13, 21, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.42);
+    }
+    .plan-switch .escenario-btn {
+      padding: 9px 16px; border-radius: 8px; border: 1px solid rgba(255, 255, 255, 0.07);
+      background: transparent; color: #cdd9e8; font-size: 0.95rem;
+    }
+    .plan-switch .escenario-btn:hover {
+      background: rgba(255, 255, 255, 0.08); color: #fff;
+    }
+    .plan-switch .escenario-btn.active {
+      background: #00b050; border-color: #00b050; color: #04130a; font-weight: 700;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.22), 0 4px 14px rgba(0, 0, 0, 0.35);
+    }
+
+    .pma-source {
+      display: flex; align-items: flex-start; gap: 12px; padding: 10px 14px;
+      background: var(--bg-card); border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-blue); border-radius: 10px;
+    }
+    .pma-source > i { color: var(--accent-blue); width: 20px; height: 20px; margin-top: 2px; flex: 0 0 auto; }
+    .pma-source strong { display: block; color: #fff; font-size: 0.92rem; line-height: 1.35; }
+    .pma-source span { display: block; color: var(--text-muted); font-size: 0.8rem; margin-top: 3px; }
+
+    .pma-block { display: flex; flex-direction: column; gap: 14px; }
+    .pma-block-head {
+      display: flex; justify-content: space-between; align-items: flex-end; gap: 16px;
+      padding-bottom: 10px; border-bottom: 1px solid var(--border-color);
+    }
+    .pma-block-head h3 {
+      margin: 0; font-size: 1.2rem; color: #fff; display: flex; align-items: center; gap: 8px;
+    }
+    .pma-block-head h3 i { color: var(--accent-green); }
+    .pma-block-head p { margin: 3px 0 0; font-size: 0.82rem; color: var(--text-muted); }
+    .pma-block-head .code-tag {
+      white-space: nowrap; color: #e9d5ff; background: rgba(15, 20, 29, 0.82);
+      border: 1px solid rgba(204, 153, 255, 0.35); padding: 5px 10px; border-radius: 6px;
+    }
+
+    .pma-card.pma-ab { border-top: 3px solid var(--accent-blue); }
+    .pma-card.pma-bio { border-top: 3px solid var(--accent-green); }
+    .pma-card.pma-se { border-top: 3px solid var(--accent-amber); }
+    .psm-card { background-image: linear-gradient(180deg, rgba(255, 170, 0, 0.05), transparent 60%); }
+
+    .pma-count {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 700;
+      color: var(--accent-green); background: rgba(0, 176, 80, 0.12);
+      border: 1px solid rgba(0, 176, 80, 0.35); border-radius: 999px;
+      padding: 3px 8px; white-space: nowrap;
+    }
+    .pma-count.amber {
+      color: var(--accent-amber); background: rgba(255, 170, 0, 0.12);
+      border-color: rgba(255, 170, 0, 0.35);
+    }
+    .pma-lead { margin: 0; color: var(--text-muted); font-size: 0.82rem; line-height: 1.45; }
+    .chip-medida b { color: #fff; font-weight: 700; margin-right: 2px; }
+
+    .pma-tipos {
+      display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      width: fit-content; max-width: 100%; margin-top: -2px; padding: 6px 10px;
+      background: rgba(8, 13, 21, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.42);
+    }
+    .pma-tipos-label {
+      font-size: 0.78rem; color: #cdd9e8; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.4px; margin-right: 2px;
+    }
+    .pma-tipos .badge-medida {
+      font-size: 0.72rem; padding: 5px 10px; border-radius: 7px;
+      background-color: rgba(255, 255, 255, 0.06);
+    }
+
+    .fichas-details { border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: auto; }
+    .fichas-details summary {
+      cursor: pointer; list-style: none; display: flex; align-items: center; gap: 6px;
+      color: var(--accent-blue); font-size: 0.8rem; font-weight: 600;
+    }
+    .fichas-details summary::-webkit-details-marker { display: none; }
+    .fichas-details summary::before {
+      content: '+'; display: inline-grid; place-items: center; width: 16px; height: 16px;
+      border: 1px solid currentColor; border-radius: 4px; font-size: 0.75rem; line-height: 1;
+    }
+    .fichas-details[open] summary::before { content: '−'; }
+    .psm-card .fichas-details summary { color: var(--accent-amber); }
+    .ficha-list {
+      list-style: none; margin: 10px 0 0; padding: 0 6px 0 0; max-height: 230px;
+      overflow: auto; display: flex; flex-direction: column; gap: 6px;
+    }
+    .ficha-list li {
+      display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; align-items: start;
+      font-size: 0.74rem; line-height: 1.35; color: var(--text-main);
+    }
+    .ficha-code {
+      font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--accent-blue);
+      background: rgba(141, 180, 226, 0.08); border: 1px solid var(--border-color);
+      border-radius: 4px; padding: 1px 4px; text-align: center; white-space: nowrap;
+    }
+    .psm-card .ficha-code { color: var(--accent-amber); background: rgba(255, 170, 0, 0.08); }
+
+    .pma-flow-key { font-size: 0.82rem; color: var(--text-muted); max-width: 48%; text-align: right; }
+    .pma-flow { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+    .pma-step {
+      flex: 1 1 180px; display: flex; gap: 10px; align-items: flex-start;
+      background: rgba(141, 180, 226, 0.06); border: 1px solid var(--border-color);
+      border-radius: 10px; padding: 12px;
+    }
+    .pma-step > span {
+      width: 26px; height: 26px; flex: 0 0 26px; border-radius: 50%; display: grid; place-items: center;
+      background: rgba(0, 176, 80, 0.15); color: var(--accent-green);
+      font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 700;
+    }
+    .pma-step strong { display: block; color: #fff; font-size: 0.9rem; }
+    .pma-step small { display: block; color: var(--text-muted); font-size: 0.75rem; line-height: 1.35; margin-top: 2px; }
+    .pma-flow > i { align-self: center; color: var(--text-muted); flex: 0 0 auto; }
+
+    /* ---------- Vista 1% y Compensación ---------- */
+    #tab-compensaciones { gap: 14px; }
+    #tab-compensaciones .kpi-card { padding: 13px 15px; gap: 6px; }
+    #tab-compensaciones .kpi-header { font-size: 0.68rem; }
+    #tab-compensaciones .kpi-value { font-size: 1.45rem !important; }
+    #tab-compensaciones .kpi-value.money { font-size: 1.15rem !important; letter-spacing: -0.01em; }
+    #tab-compensaciones .kpi-sub { font-size: 0.76rem; line-height: 1.35; }
+
+    .pct-flow { display: flex; align-items: stretch; gap: 10px; flex-wrap: wrap; }
+    .pct-step { flex: 1 1 220px; padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border-color); background: rgba(141, 180, 226, 0.06); }
+    .pct-step.highlight { border-color: rgba(0, 176, 80, 0.55); background: rgba(0, 176, 80, 0.08); box-shadow: 0 0 0 1px rgba(0, 176, 80, 0.15); }
+    .pct-label { display: block; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
+    .pct-value { display: block; margin: 4px 0 2px; font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; color: #fff; }
+    .pct-value.text { font-family: 'Inter', sans-serif; font-size: 1rem; }
+    .pct-step small { display: block; color: var(--text-muted); font-size: 0.76rem; line-height: 1.35; }
+    .pct-flow > i { align-self: center; color: var(--text-muted); flex: 0 0 auto; }
+
+    .info-two-col { display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 16px; align-items: start; }
+    .prog-list { display: flex; flex-direction: column; }
+    .prog-item { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border-color); }
+    .prog-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .prog-code { height: fit-content; padding: 3px 4px; border-radius: 6px; border: 1px solid rgba(0, 176, 80, 0.35); background: rgba(0, 176, 80, 0.1); color: var(--accent-green); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; text-align: center; }
+    .prog-item strong { display: block; color: #fff; font-size: 0.9rem; line-height: 1.3; }
+    .prog-item p { margin: 3px 0; color: var(--text-muted); font-size: 0.82rem; line-height: 1.4; }
+    .prog-item small { color: var(--text-muted); font-size: 0.72rem; line-height: 1.35; }
+
+    .req-list { display: flex; flex-direction: column; gap: 10px; }
+    .req-item { padding-left: 10px; border-left: 3px solid var(--accent-blue); }
+    .req-item strong { display: block; color: #fff; font-size: 0.85rem; }
+    .req-item p { margin: 2px 0 0; color: var(--text-muted); font-size: 0.82rem; line-height: 1.4; }
+
+    .figure-layout { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(300px, 0.85fr); gap: 18px; align-items: start; }
+    .figure-img-wrap { display: block; overflow: hidden; border: 1px solid var(--border-color); border-radius: 10px; background: #fff; }
+    .figure-img-wrap img { display: block; width: 100%; height: auto; }
+    .figure-kicker { display: block; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted); }
+    .figure-legend h4 { margin: 4px 0 10px; color: #fff; font-size: 1.05rem; }
+    .figure-legend ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+    .figure-legend li { display: flex; align-items: flex-start; gap: 8px; color: var(--text-main); font-size: 0.82rem; line-height: 1.4; }
+    .legend-dot { width: 10px; height: 10px; flex: 0 0 10px; margin-top: 5px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.2); }
+    .figure-note { margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; }
+    .figure-zoom { display: inline-flex; align-items: center; gap: 4px; color: var(--accent-blue); font-size: 0.8rem; font-weight: 600; text-decoration: none; }
+    .figure-zoom:hover { color: #fff; }
+
+    .req-bar { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; width: fit-content; max-width: 100%; padding: 6px 10px; background: rgba(8, 13, 21, 0.94); border: 1px solid rgba(255,255,255,0.18); border-radius: 12px; box-shadow: 0 10px 26px rgba(0,0,0,0.42); }
+    .req-bar-label { margin-right: 2px; color: #cdd9e8; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+    .req-chip { padding: 5px 10px; border-radius: 7px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.06); color: var(--text-main); font-size: 0.72rem; }
+    .req-note { margin: 0; color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; }
+    .req-note strong { color: var(--text-main); }
+
+    .comp-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .comp-card { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px; border: 1px solid var(--border-color); border-top: 3px solid var(--accent-blue); border-radius: 12px; background: var(--bg-card); box-shadow: var(--glass-shadow); }
+    .comp-card.highlight { border-top-color: var(--accent-green); background-image: linear-gradient(180deg, rgba(0,176,80,0.07), transparent 60%); }
+    .comp-q { color: var(--text-muted); font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    .comp-a { color: #fff; font-family: 'JetBrains Mono', monospace; font-size: 1.35rem; line-height: 1.15; }
+    .comp-a.text { font-family: 'Inter', sans-serif; font-size: 1.02rem; }
+    .comp-a.money { color: var(--accent-amber); font-size: 1.02rem; }
+    .comp-card p { margin: 0; color: var(--text-muted); font-size: 0.8rem; line-height: 1.4; }
+    .comp-note { margin: 0; color: var(--text-muted); font-size: 0.74rem; line-height: 1.4; }
+
+    .acciones-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .accion-card { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-card); overflow: hidden; }
+    .accion-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--accent-green); }
+    .accion-card.rehabilitar::before { background: var(--accent-amber); }
+    .accion-card.recuperar::before { background: var(--accent-blue); }
+    .accion-num { color: var(--text-muted); font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; }
+    .accion-card h4 { margin: 0; color: #fff; font-size: 1rem; }
+    .accion-card p { margin: 0; color: var(--text-muted); font-size: 0.82rem; line-height: 1.4; }
+    .accion-tag { margin-top: auto; padding-top: 6px; color: var(--accent-green); font-size: 0.72rem; font-weight: 600; }
+    .accion-card.rehabilitar .accion-tag { color: var(--accent-amber); }
+    .accion-card.recuperar .accion-tag { color: var(--accent-blue); }
+
+    .comp-bar { display: flex; height: 36px; margin-top: 4px; overflow: hidden; border: 1px solid var(--border-color); border-radius: 8px; }
+    .comp-bar-seg { display: flex; align-items: center; justify-content: center; color: #04130a; font-size: 0.75rem; font-weight: 700; white-space: nowrap; }
+    .comp-bar-seg.natural { background: #00B050; }
+    .comp-bar-seg.transformed { background: #FFAA00; }
+    .comp-bar-legend { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 8px; }
+    .comp-bar-legend span { display: inline-flex; align-items: center; gap: 6px; color: var(--text-muted); font-size: 0.78rem; }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
+    .dot.natural { background: #00B050; }
+    .dot.transformed { background: #FFAA00; }
+    .comp-bar-note { margin: 8px 0 0; color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; }
+
+    @media (max-width: 1200px) {
+      #tab-compensaciones .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #tab-compensaciones .comp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #tab-compensaciones .acciones-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .info-two-col, .figure-layout { grid-template-columns: 1fr; }
+      .pct-flow > i { display: none; }
+    }
+    @media (max-width: 800px) {
+      #tab-compensaciones .kpi-grid { grid-template-columns: 1fr; }
+      #tab-compensaciones .comp-grid { grid-template-columns: 1fr; }
+      #tab-compensaciones .acciones-grid { grid-template-columns: 1fr; }
+      .req-bar { width: 100%; }
+    }
+
+    @media (max-width: 1200px) {
+      .pma-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      #tab-pma .kpi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .pma-flow > i { display: none; }
+    }
+    @media (max-width: 800px) {
+      .pma-grid { grid-template-columns: 1fr; }
+      #tab-pma .kpi-grid { grid-template-columns: 1fr; }
+      .pma-source, .pma-block-head { flex-direction: column; align-items: flex-start; }
+      .pma-flow-key { max-width: 100%; text-align: left; }
+      .plan-switch { width: 100%; }
+      .plan-switch .escenario-btn { flex: 1 1 0; padding: 9px 10px; font-size: 0.85rem; }
+      #tab-pma .pma-tipos { width: 100%; }
+      #tab-pma .kpi-clave-list { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  
+</head>
+<body data-page="p6">
+
+  <aside class="sidebar">
+    <div class="brand-logo">
+      <img src="assets/perenco-dark.webp" alt="Perenco" class="brand-logo-img">
+    </div>
+    <ul class="nav-list">
+      <a href="index.html" class="nav-item">
+        <i data-lucide="map"></i>
+        <span>Mapa</span>
+      </a>
+      <a href="index2.html" class="nav-item">
+        <i data-lucide="layers"></i>
+        <span>Estrategias</span>
+      </a>
+      <a href="index3.html" class="nav-item">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Uso y Ap.</span>
+      </a>
+      <a href="index4.html" class="nav-item">
+        <i data-lucide="user-check"></i>
+        <span>Caracteriz.</span>
+      </a>
+      <a href="index5.html" class="nav-item">
+        <i data-lucide="git-fork"></i>
+        <span>Zonific.</span>
+      </a>
+      <li class="nav-item active" data-tab-target="tab-evaluacion" onclick="switchTab('tab-evaluacion')">
+        <i data-lucide="activity"></i>
+        <span>Eval. Imptos</span>
+      </li>
+      <li class="nav-item" data-tab-target="tab-pma" onclick="switchTab('tab-pma')">
+        <i data-lucide="shield-alert"></i>
+        <span>PMA &amp; PSM</span>
+      </li>
+      <li class="nav-item" data-tab-target="tab-compensaciones" onclick="switchTab('tab-compensaciones')">
+        <i data-lucide="coins"></i>
+        <span>1% y Comp.</span>
+      </li>
+      
+      <li class="nav-item" data-geo-ia style="margin-top: auto; margin-bottom: 20px; color: var(--accent-blue);" title="Abrir el asistente Geo-IA aquí mismo (se cierra con la X o con Esc)">
+        <i data-lucide="sparkles"></i>
+        <span>Geo-IA</span>
+      </li>
+    </ul>
+  </aside>
+
+  <div class="main-wrapper">
+    <header class="top-header">
+      <div class="header-title">
+        <h1 id="main-header-title">Evaluación Ambiental - Área de Desarrollo Garcero C</h1>
+        <p id="main-header-sub">Escenarios sin y con proyecto · Matriz Conesa · 15 y 80 actividades</p>
+      </div>
+    </header>
+
+
+    <div id="tab-evaluacion" class="tab-content active">
+
+      <div class="escenario-switch">
+        <button id="btn-esc-sin" class="escenario-btn active" onclick="cambiarEscenario('sin')">Sin proyecto — 15 actividades · 139 interacciones</button>
+        <button id="btn-esc-con" class="escenario-btn" onclick="cambiarEscenario('con')">Con proyecto — 80 actividades · 420 interacciones</button>
+      </div>
+
+      <div id="escenario-sin">
+
+      <section class="kpi-grid">
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <span>Actividades Evaluadas</span>
+            <i data-lucide="clipboard-list"></i>
+          </div>
+          <div class="kpi-value">15</div>
+          <div class="kpi-sub">34 impactos identificados: 12 abióticos · 7 bióticos · 15 socioeconómicos</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-header">
+            <span>Interacciones Evaluadas</span>
+            <i data-lucide="activity"></i>
+          </div>
+          <div class="kpi-value">139</div>
+          <div class="kpi-sub">Impacto × actividad calificados con la metodología Conesa</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-header">
+            <span>Interacciones Negativas</span>
+            <i data-lucide="arrow-down-circle"></i>
+          </div>
+          <div class="kpi-value">127</div>
+          <div class="kpi-sub">91,4 % del total de la matriz</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <span>Interacciones Positivas</span>
+            <i data-lucide="arrow-up-circle"></i>
+          </div>
+          <div class="kpi-value">12</div>
+          <div class="kpi-sub">8,6 % del total de la matriz</div>
+        </div>
+      </section>
+
+      <section class="charts-grid">
+        <div class="chart-card col-4">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="pie-chart"></i> Naturaleza de las interacciones
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartNaturaleza"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-8">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="bar-chart-2"></i> Interacciones por nivel de importancia
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">139 en total</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartImportancia"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-8">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="layers"></i> Importancia negativa por actividad
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">127 interacciones negativas</span>
+          </div>
+          <div class="chart-container" style="min-height: 430px;">
+            <canvas id="chartPorActividad"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-4">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="pie-chart"></i> Acumulación
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartAcumulacion"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="pie-chart"></i> Sinergia
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartSinergia"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="bar-chart-2"></i> Importancia global por medio
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Índice Conesa</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartMedio"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="chart-card col-12">
+        <div class="chart-header">
+          <div class="chart-title">
+            <i data-lucide="table-2"></i> Resumen de importancia por actividad
+          </div>
+          <span style="font-size: 0.9rem; color: var(--text-muted);">Escenario sin proyecto</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th rowspan="2">Actividad</th>
+                <th colspan="3" style="text-align: center;">Negativas</th>
+                <th colspan="2" style="text-align: center;">Positivas</th>
+                <th rowspan="2" style="text-align: right;">Total</th>
+              </tr>
+              <tr>
+                <th>Irrelevante</th>
+                <th>Moderado</th>
+                <th>Severo</th>
+                <th>Leve</th>
+                <th>Poco importante</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyActividades"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="chart-card col-12">
+        <div class="chart-header">
+          <div class="chart-title">
+            <i data-lucide="list-checks"></i> Impactos significativos por medio
+          </div>
+          <span style="font-size: 0.9rem; color: var(--text-muted);">Más significativos de cada medio (negativos y positivos)</span>
+        </div>
+        <div id="impactosDestacados" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;"></div>
+      </section>
+
+      </div>
+
+      <div id="escenario-con" style="display: none;">
+
+      <section class="kpi-grid">
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <span>Actividades Evaluadas</span>
+            <i data-lucide="clipboard-list"></i>
+          </div>
+          <div class="kpi-value">80</div>
+          <div class="kpi-sub">5 etapas: pre-operativa · transversales · construcción · operación · post-operativa</div>
+        </div>
+        <div class="kpi-card blue">
+          <div class="kpi-header">
+            <span>Interacciones Evaluadas</span>
+            <i data-lucide="activity"></i>
+          </div>
+          <div class="kpi-value">420</div>
+          <div class="kpi-sub">Impacto × actividad calificados con la metodología Conesa</div>
+        </div>
+        <div class="kpi-card amber">
+          <div class="kpi-header">
+            <span>Interacciones Negativas</span>
+            <i data-lucide="arrow-down-circle"></i>
+          </div>
+          <div class="kpi-value">337</div>
+          <div class="kpi-sub">80,2 % del total de la matriz</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-header">
+            <span>Interacciones Positivas</span>
+            <i data-lucide="arrow-up-circle"></i>
+          </div>
+          <div class="kpi-value">83</div>
+          <div class="kpi-sub">19,8 % del total de la matriz</div>
+        </div>
+      </section>
+
+      <section class="charts-grid">
+        <div class="chart-card col-4">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="pie-chart"></i> Naturaleza de las interacciones
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartNaturalezaCon"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-8">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="bar-chart-2"></i> Interacciones por nivel de importancia
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">420 en total</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartImportanciaCon"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-8">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="layers"></i> Naturaleza de las interacciones por etapa
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">80 actividades · 420 interacciones</span>
+          </div>
+          <div class="chart-container" style="min-height: 300px;">
+            <canvas id="chartEtapasCon"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-4">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="pie-chart"></i> Acumulación
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartAcumulacionCon"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="pie-chart"></i> Sinergia
+            </div>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartSinergiaCon"></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card col-6">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="bar-chart-2"></i> Importancia global por medio
+            </div>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Índice Conesa</span>
+          </div>
+          <div class="chart-container">
+            <canvas id="chartMedioCon"></canvas>
+          </div>
+        </div>
+      </section>
+
+      <section class="chart-card col-12">
+        <div class="chart-header">
+          <div class="chart-title">
+            <i data-lucide="table-2"></i> Resumen por etapa
+          </div>
+          <span style="font-size: 0.9rem; color: var(--text-muted);">Escenario con proyecto</span>
+        </div>
+        <div class="table-wrapper">
+          <table class="matrix-table">
+            <thead>
+              <tr>
+                <th>Etapa</th>
+                <th style="text-align: right;">Actividades</th>
+                <th style="text-align: right;">Negativas</th>
+                <th style="text-align: right;">Positivas</th>
+                <th style="text-align: right;">Total</th>
+                <th style="text-align: right;">% del total</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyEtapasCon"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="chart-card col-12">
+        <div class="chart-header">
+          <div class="chart-title">
+            <i data-lucide="list-checks"></i> Impactos significativos por medio
+          </div>
+          <span style="font-size: 0.9rem; color: var(--text-muted);">Más significativos de cada medio (negativos y positivos)</span>
+        </div>
+        <div id="impactosDestacadosCon" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;"></div>
+      </section>
+
+      </div>
+
+      <section class="chart-card col-12">
+        <div class="chart-header">
+          <div class="chart-title">
+            <i data-lucide="video"></i> Video del trabajo de campo — Evaluación ambiental (actividades antrópicas)
+          </div>
+          <span style="font-size: 0.9rem; color: var(--text-muted);">Registro de campo del EIA · AD Garcero C</span>
+        </div>
+        <video src="uploads/video_ambiental.mp4" controls preload="metadata" playsinline
+               style="width:100%;max-height:520px;border-radius:10px;background:#000;display:block;"></video>
+      </section>
+
+    </div>
+
+    <div id="tab-pma" class="tab-content">
+
+      <section class="pma-source">
+        <i data-lucide="file-text"></i>
+        <div>
+          <strong>Fuente: EIA AD Garcero C (PERENCO) — Cap. 7 Plan de Manejo Ambiental y Cap. 8 Plan de Seguimiento y Monitoreo</strong>
+          <span>ASI S.A.S., 2026 · 45 fichas de manejo y 19 fichas de seguimiento</span>
+        </div>
+      </section>
+
+      <section class="kpi-grid">
+        <div class="kpi-card green kpi-clickable" data-clave="pma" role="button" tabindex="0" aria-expanded="false">
+          <div class="kpi-header">
+            <span>PMA · Cap. 7</span>
+            <i data-lucide="clipboard-list"></i>
+          </div>
+          <div class="kpi-value">45 fichas</div>
+          <div class="kpi-sub">27 abiótico · 13 biótico · 5 socioeconómico</div>
+          <div class="kpi-more"><span>Ver claves</span><i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="kpi-card blue kpi-clickable" data-clave="programas" role="button" tabindex="0" aria-expanded="false">
+          <div class="kpi-header">
+            <span>Programas de manejo</span>
+            <i data-lucide="layers"></i>
+          </div>
+          <div class="kpi-value">13</div>
+          <div class="kpi-sub">4 abiótico · 7 biótico · 2 socioeconómico</div>
+          <div class="kpi-more"><span>Ver claves</span><i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="kpi-card amber kpi-clickable" data-clave="psm" role="button" tabindex="0" aria-expanded="false">
+          <div class="kpi-header">
+            <span>PSM · Cap. 8</span>
+            <i data-lucide="activity"></i>
+          </div>
+          <div class="kpi-value">19 fichas</div>
+          <div class="kpi-sub">6 abiótico · 8 biótico · 5 socioeconómico</div>
+          <div class="kpi-more"><span>Ver claves</span><i data-lucide="chevron-down"></i></div>
+        </div>
+        <div class="kpi-card purple kpi-clickable" data-clave="ficha" role="button" tabindex="0" aria-expanded="false">
+          <div class="kpi-header">
+            <span>Ficha PMA</span>
+            <i data-lucide="file-text"></i>
+          </div>
+          <div class="kpi-value">18 campos</div>
+          <div class="kpi-sub">Objetivo, meta, impacto, acciones, indicadores y presupuesto</div>
+          <div class="kpi-more"><span>Ver claves</span><i data-lucide="chevron-down"></i></div>
+        </div>
+      </section>
+
+      <div id="kpi-clave" class="kpi-clave" hidden>
+        <div class="kpi-clave-head">
+          <div>
+            <span class="kpi-clave-eyebrow">Claves para la presentación</span>
+            <strong id="kpi-clave-title" class="kpi-clave-title"></strong>
+          </div>
+          <button type="button" class="kpi-clave-close" onclick="cerrarClave()" aria-label="Cerrar">×</button>
+        </div>
+        <ul id="kpi-clave-list" class="kpi-clave-list"></ul>
+      </div>
+
+      <div class="plan-switch">
+        <button id="btn-plan-pma" class="escenario-btn active" onclick="mostrarPlan('pma')">PMA · Plan de Manejo — 45 fichas</button>
+        <button id="btn-plan-psm" class="escenario-btn" onclick="mostrarPlan('psm')">PSM · Seguimiento — 19 fichas</button>
+      </div>
+
+      <section id="bloque-pma" class="pma-block">
+        <div class="pma-block-head">
+          <div>
+            <h3><i data-lucide="clipboard-list"></i> Plan de Manejo Ambiental</h3>
+            <p>Qué se hace, dónde, cuándo, quién lo ejecuta y cuánto cuesta.</p>
+          </div>
+          <span class="code-tag">Cap. 7 · 13 programas · 45 fichas</span>
+        </div>
+
+        <div class="pma-tipos">
+          <span class="pma-tipos-label">Tipo de medida</span>
+          <span class="badge-medida medida-prev">Prevención (P)</span>
+          <span class="badge-medida medida-mit">Mitigación (M)</span>
+          <span class="badge-medida medida-cor">Corrección (C)</span>
+          <span class="badge-medida medida-com">Compensación (CP)</span>
+        </div>
+
+        <div class="pma-grid">
+          <article class="pma-card pma-ab">
+            <div class="pma-card-header">
+              <span class="pma-title"><i data-lucide="box"></i> Medio abiótico</span>
+              <span class="pma-count">27 fichas</span>
+            </div>
+            <p class="pma-lead">Suelo, recurso hídrico, aire y compensación.</p>
+            <div class="chips-wrap">
+              <span class="chip-medida"><b>19</b> Suelo</span>
+              <span class="chip-medida"><b>5</b> Recurso hídrico</span>
+              <span class="chip-medida"><b>1</b> Aire</span>
+              <span class="chip-medida"><b>2</b> Compensación</span>
+            </div>
+            <details class="fichas-details">
+              <summary>Ver las 27 fichas</summary>
+              <ol class="ficha-list">
+                <li><span class="ficha-code">GA-PM-F01</span><span>Manejo de residuos sólidos</span></li>
+                <li><span class="ficha-code">GA-PM-F02</span><span>Manejo de residuos líquidos</span></li>
+                <li><span class="ficha-code">GA-PM-F03</span><span>Mantenimiento y/o restitución de la geomembrana en las piscinas</span></li>
+                <li><span class="ficha-code">GA-PM-F04</span><span>Manejo paisajístico</span></li>
+                <li><span class="ficha-code">GA-PM-F05</span><span>Manejo y disposición de materiales sobrantes</span></li>
+                <li><span class="ficha-code">GA-PM-F06</span><span>Manejo de taludes</span></li>
+                <li><span class="ficha-code">GA-PM-F07</span><span>Manejo de procesos erosivos</span></li>
+                <li><span class="ficha-code">GA-PM-F08</span><span>Manejo de áreas de préstamo lateral</span></li>
+                <li><span class="ficha-code">GA-PM-F09</span><span>Manejo de materiales de construcción</span></li>
+                <li><span class="ficha-code">GA-PM-F10</span><span>Mantenimiento vial</span></li>
+                <li><span class="ficha-code">GA-PM-F11</span><span>Movilización de equipos y materiales</span></li>
+                <li><span class="ficha-code">GA-PM-F12</span><span>Manejo de lodos y cortes de perforación</span></li>
+                <li><span class="ficha-code">GA-PM-F13</span><span>Construcción y adecuación de accesos y locaciones</span></li>
+                <li><span class="ficha-code">GA-PM-F14</span><span>Instalación y operación de campamentos</span></li>
+                <li><span class="ficha-code">GA-PM-F15</span><span>Almacenamiento y manejo de combustibles y productos químicos</span></li>
+                <li><span class="ficha-code">GA-PM-F16</span><span>Manejo ambiental de la perforación de pozos</span></li>
+                <li><span class="ficha-code">GA-PM-F17</span><span>Manejo ambiental de las pruebas de producción</span></li>
+                <li><span class="ficha-code">GA-PM-F18</span><span>Manejo ambiental del material radioactivo</span></li>
+                <li><span class="ficha-code">GA-PM-F19</span><span>Manejo ambiental de la construcción de líneas de flujo y de la prueba hidrostática</span></li>
+                <li><span class="ficha-code">GA-PM-F20</span><span>Manejo de escorrentía</span></li>
+                <li><span class="ficha-code">GA-PM-F21</span><span>Manejo de la captación</span></li>
+                <li><span class="ficha-code">GA-PM-F22</span><span>Manejo de cruces de cuerpos de agua</span></li>
+                <li><span class="ficha-code">GA-PM-F23</span><span>Manejo de aguas subterráneas</span></li>
+                <li><span class="ficha-code">GA-PM-F24</span><span>Manejo de inyección / reinyección</span></li>
+                <li><span class="ficha-code">GA-PM-F25</span><span>Manejo de fuentes de emisiones y ruido</span></li>
+                <li><span class="ficha-code">GA-PM-F26</span><span>Proyecto de recuperación de suelos</span></li>
+                <li><span class="ficha-code">GA-PM-F27</span><span>Proyecto de compensación asociado al recurso hídrico</span></li>
+              </ol>
+            </details>
+          </article>
+
+          <article class="pma-card pma-bio">
+            <div class="pma-card-header">
+              <span class="pma-title"><i data-lucide="feather"></i> Medio biótico</span>
+              <span class="pma-count">13 fichas</span>
+            </div>
+            <p class="pma-lead">Flora, fauna, hábitats, especies en veda y compensación.</p>
+            <div class="chips-wrap">
+              <span class="chip-medida"><b>3</b> Suelo</span>
+              <span class="chip-medida"><b>1</b> Protección biótica</span>
+              <span class="chip-medida"><b>1</b> Revegetalización</span>
+              <span class="chip-medida"><b>1</b> Recurso hídrico</span>
+              <span class="chip-medida"><b>2</b> Especies amenazadas</span>
+              <span class="chip-medida"><b>3</b> Flora en veda</span>
+              <span class="chip-medida"><b>2</b> Compensación</span>
+            </div>
+            <details class="fichas-details">
+              <summary>Ver las 13 fichas</summary>
+              <ol class="ficha-list">
+                <li><span class="ficha-code">GA-PM-B01</span><span>Manejo de la remoción de cobertura vegetal y descapote</span></li>
+                <li><span class="ficha-code">GA-PM-B02</span><span>Manejo de flora</span></li>
+                <li><span class="ficha-code">GA-PM-B03</span><span>Manejo de fauna</span></li>
+                <li><span class="ficha-code">GA-PM-B04</span><span>Protección y conservación de hábitats</span></li>
+                <li><span class="ficha-code">GA-PM-B05</span><span>Manejo de revegetalización</span></li>
+                <li><span class="ficha-code">GA-PM-B06</span><span>Manejo de ecosistemas acuáticos</span></li>
+                <li><span class="ficha-code">GA-PM-B07</span><span>Manejo y conservación de ecosistemas estratégicos, áreas sensibles y/o áreas naturales protegidas</span></li>
+                <li><span class="ficha-code">GA-PM-B08</span><span>Manejo para la conservación de especies vegetales, y faunísticas, endémicas, con alguna categoría de amenaza en peligro crítico y/o en veda</span></li>
+                <li><span class="ficha-code">GA-PM-B09</span><span>Manejo de especies vasculares en veda (epífitas y en otros sustratos) y de epífitas en categorías de amenaza</span></li>
+                <li><span class="ficha-code">GA-PM-B10</span><span>Manejo de especies no vasculares en veda (epífitas y en otros sustratos)</span></li>
+                <li><span class="ficha-code">GA-PM-B11</span><span>Manejo de Helechos Arborescentes</span></li>
+                <li><span class="ficha-code">GA-PM-B12</span><span>Compensación por aprovechamiento forestal</span></li>
+                <li><span class="ficha-code">GA-PM-B13</span><span>Compensación por fauna, flora y protección y conservación de hábitats</span></li>
+              </ol>
+            </details>
+          </article>
+
+          <article class="pma-card pma-se">
+            <div class="pma-card-header">
+              <span class="pma-title"><i data-lucide="users"></i> Medio socioeconómico</span>
+              <span class="pma-count">5 fichas</span>
+            </div>
+            <p class="pma-lead">Dos programas y cinco fichas de gestión social.</p>
+            <div class="chips-wrap">
+              <span class="chip-medida">Capacitación del personal</span>
+              <span class="chip-medida">Información y participación</span>
+              <span class="chip-medida">Reasentamiento</span>
+              <span class="chip-medida">Gestión institucional</span>
+              <span class="chip-medida">Comunidad aledaña</span>
+            </div>
+            <details class="fichas-details">
+              <summary>Ver las 5 fichas</summary>
+              <ol class="ficha-list">
+                <li><span class="ficha-code">GA-PM-S01</span><span>Programa de educación y capacitación al personal vinculado al proyecto</span></li>
+                <li><span class="ficha-code">GA-PM-S02</span><span>Programa de información y participación comunitaria</span></li>
+                <li><span class="ficha-code">GA-PM-S03</span><span>Programa de reasentamiento de la población afectada</span></li>
+                <li><span class="ficha-code">GA-PM-S04</span><span>Programa de apoyo a la capacidad de gestión institucional</span></li>
+                <li><span class="ficha-code">GA-PM-S05</span><span>Programa de capacitación, educación y concientización a la comunidad aledaña al proyecto</span></li>
+              </ol>
+            </details>
+          </article>
+        </div>
+      </section>
+
+      <section id="bloque-psm" class="pma-block psm-block" style="display: none;">
+        <div class="pma-block-head">
+          <div>
+            <h3><i data-lucide="gauge"></i> Plan de Seguimiento y Monitoreo</h3>
+            <p>Comprueba que cada medida del PMA se ejecute y sea eficaz.</p>
+          </div>
+          <span class="code-tag">Cap. 8 · 3 programas · 19 fichas</span>
+        </div>
+
+        <div class="pma-grid">
+          <article class="pma-card psm-card pma-ab">
+            <div class="pma-card-header">
+              <span class="pma-title"><i data-lucide="box"></i> Medio abiótico</span>
+              <span class="pma-count amber">6 fichas · 1 programa</span>
+            </div>
+            <p class="pma-lead">Suelo, residuos, aguas, emisiones y ruido.</p>
+            <div class="chips-wrap">
+              <span class="chip-medida">Aguas residuales</span>
+              <span class="chip-medida">Emisiones y ruido</span>
+              <span class="chip-medida">Suelo</span>
+              <span class="chip-medida">Residuos sólidos</span>
+              <span class="chip-medida">Aguas subterráneas</span>
+              <span class="chip-medida">Aguas superficiales</span>
+            </div>
+            <details class="fichas-details">
+              <summary>Ver las 6 fichas</summary>
+              <ol class="ficha-list">
+                <li><span class="ficha-code">GA-SM-F01</span><span>Aguas residuales y corrientes receptoras</span></li>
+                <li><span class="ficha-code">GA-SM-F02</span><span>Emisiones atmosféricas y ruido</span></li>
+                <li><span class="ficha-code">GA-SM-F03</span><span>Monitoreo de suelo</span></li>
+                <li><span class="ficha-code">GA-SM-F04</span><span>Monitoreo del sistema de gestión de residuos sólidos</span></li>
+                <li><span class="ficha-code">GA-SM-F05</span><span>Aguas subterráneas</span></li>
+                <li><span class="ficha-code">GA-SM-F06</span><span>Aguas superficiales</span></li>
+              </ol>
+            </details>
+          </article>
+
+          <article class="pma-card psm-card pma-bio">
+            <div class="pma-card-header">
+              <span class="pma-title"><i data-lucide="feather"></i> Medio biótico</span>
+              <span class="pma-count amber">8 fichas · 1 programa</span>
+            </div>
+            <p class="pma-lead">Flora y fauna, revegetalización, compensación y veda.</p>
+            <div class="chips-wrap">
+              <span class="chip-medida">Flora y fauna</span>
+              <span class="chip-medida">Revegetalización</span>
+              <span class="chip-medida">Compensación + 1%</span>
+              <span class="chip-medida">Recurso hídrico</span>
+              <span class="chip-medida">Flora en veda</span>
+            </div>
+            <details class="fichas-details">
+              <summary>Ver las 8 fichas</summary>
+              <ol class="ficha-list">
+                <li><span class="ficha-code">GA-SM-B01</span><span>Seguimiento y monitoreo al manejo de flora y fauna</span></li>
+                <li><span class="ficha-code">GA-SM-B02</span><span>Seguimiento y monitoreo de revegetalización</span></li>
+                <li><span class="ficha-code">GA-SM-B03</span><span>Seguimiento y monitoreo al Plan de compensación</span></li>
+                <li><span class="ficha-code">GA-SM-B04</span><span>Seguimiento y monitoreo al plan de inversión del 1%</span></li>
+                <li><span class="ficha-code">GA-SM-B05</span><span>Manejo del recurso hídrico</span></li>
+                <li><span class="ficha-code">GA-SM-B06</span><span>Seguimiento y monitoreo al manejo de especies vasculares en veda</span></li>
+                <li><span class="ficha-code">GA-SM-B07</span><span>Seguimiento y monitoreo al manejo de especies no vasculares en veda</span></li>
+                <li><span class="ficha-code">GA-SM-B08</span><span>Seguimiento y monitoreo al manejo de helechos arborescentes</span></li>
+              </ol>
+            </details>
+          </article>
+
+          <article class="pma-card psm-card pma-se">
+            <div class="pma-card-header">
+              <span class="pma-title"><i data-lucide="users"></i> Medio socioeconómico</span>
+              <span class="pma-count amber">5 fichas · 1 programa</span>
+            </div>
+            <p class="pma-lead">Conflictos, efectividad, impactos, PQR y participación.</p>
+            <div class="chips-wrap">
+              <span class="chip-medida">Conflictos sociales</span>
+              <span class="chip-medida">Efectividad del PMA</span>
+              <span class="chip-medida">Impactos sociales</span>
+              <span class="chip-medida">PQR</span>
+              <span class="chip-medida">Participación</span>
+            </div>
+            <details class="fichas-details">
+              <summary>Ver las 5 fichas</summary>
+              <ol class="ficha-list">
+                <li><span class="ficha-code">GA-SM-S01</span><span>Conflictos sociales generados durante las diferentes etapas del proyecto</span></li>
+                <li><span class="ficha-code">GA-SM-S02</span><span>Efectividad de los programas del PMA para el medio socioeconómico</span></li>
+                <li><span class="ficha-code">GA-SM-S03</span><span>Manejo de los impactos sociales del proyecto</span></li>
+                <li><span class="ficha-code">GA-SM-S04</span><span>Atención de inquietudes, peticiones, quejas o reclamos de las comunidades</span></li>
+                <li><span class="ficha-code">GA-SM-S05</span><span>Participación e información oportuna de las comunidades</span></li>
+              </ol>
+            </details>
+          </article>
+        </div>
+      </section>
+
+      <section id="bloque-flujo" class="chart-card col-12" style="display: none;">
+        <div class="chart-header">
+          <div class="chart-title">
+            <i data-lucide="git-commit"></i> Cómo se conecta el PMA con el PSM
+          </div>
+          <span class="pma-flow-key">El PSM no repite las medidas: verifica su cumplimiento y eficacia.</span>
+        </div>
+        <div class="pma-flow">
+          <div class="pma-step">
+            <span>1</span>
+            <div><strong>Impacto</strong><small>Evaluación ambiental · Cap. 5</small></div>
+          </div>
+          <i data-lucide="arrow-right"></i>
+          <div class="pma-step">
+            <span>2</span>
+            <div><strong>Medida de manejo</strong><small>Ficha PMA · Cap. 7</small></div>
+          </div>
+          <i data-lucide="arrow-right"></i>
+          <div class="pma-step">
+            <span>3</span>
+            <div><strong>Seguimiento</strong><small>Ficha PSM · Cap. 8</small></div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <div id="tab-compensaciones" class="tab-content">
+
+      <section class="pma-source">
+        <i data-lucide="file-text"></i>
+        <div>
+          <strong>Fuente: EIA AD Garcero C (PERENCO) — Cap. 11 Plan de Inversión del 1% y Cap. 12 Plan de Compensación</strong>
+          <span>ASI S.A.S., 2026 · Inversión forzosa del 1% y compensación del medio biótico</span>
+        </div>
+      </section>
+
+      <div class="plan-switch">
+        <button id="btn-comp-inv" class="escenario-btn active" onclick="mostrarComp('inversion')">  Inversión 1%  </button>
+        <button id="btn-comp-comp" class="escenario-btn" onclick="mostrarComp('compensacion')">   Compensación  </button>
+      </div>
+
+      <section id="bloque-inversion" class="pma-block">
+        <div class="pma-block-head">
+          <div>
+            <h3><i data-lucide="droplets"></i> Plan de Inversión del 1%</h3>
+            <p>Un porcentaje del valor del proyecto se invierte en la misma subzona hidrográfica, en predios y acciones de conservación.</p>
+          </div>
+          <span class="code-tag">Cap. 11 · 3 proyectos</span>
+        </div>
+
+        <div class="info-two-col">
+          <section class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">
+                <i data-lucide="list-checks"></i> Proyectos articulados al 1%
+              </div>
+              <span class="code-tag">Tabla 11.9</span>
+            </div>
+            <div class="prog-list">
+              <article class="prog-item">
+                <span class="prog-code">3203</span>
+                <div>
+                  <strong>Gestión Integral del Recurso Hídrico</strong>
+                  <p>Sistemas de uso eficiente del agua, reservorios y cosecha de agua en la zona rural de Casanare.</p>
+                  <small>Casanare, Territorio, Agua y Biodiversidad · Ambiente y Desarrollo Sostenible</small>
+                </div>
+              </article>
+              <article class="prog-item">
+                <span class="prog-code">3202</span>
+                <div>
+                  <strong>Conservación de la biodiversidad y sus servicios ecosistémicos</strong>
+                  <p>Protección y restauración de áreas de importancia hídrica; compra y gestión de predios en cuencas abastecedoras de acueductos.</p>
+                  <small>Casanare, Territorio, Agua y Biodiversidad · Ambiente y Desarrollo Sostenible</small>
+                </div>
+              </article>
+              <article class="prog-item">
+                <span class="prog-code">1702</span>
+                <div>
+                  <strong>Inclusión Productiva de Pequeños Productores Rurales</strong>
+                  <p>Activos productivos, capacitación y apoyo a cadenas agrícolas, forestales, pecuarias, pesqueras y acuícolas.</p>
+                  <small>Casanare, Agroindustria y Economía · Agricultura y Desarrollo Rural</small>
+                </div>
+              </article>
+            </div>
+            <p class="comp-note">Solo se relacionan los proyectos vinculados al recurso hídrico, la restauración, la conservación y el uso sostenible.</p>
+          </section>
+
+          <section class="chart-card">
+            <div class="chart-header">
+              <div class="chart-title">
+                <i data-lucide="map"></i> Selección de áreas · 11.4.4
+              </div>
+              <span class="code-tag">Criterios</span>
+            </div>
+            <div class="req-list">
+              <div class="req-item">
+                <strong>Ámbito</strong>
+                <p>Subzona hidrográfica Caño Guanápalo y otros directos al Meta (mi).</p>
+              </div>
+              <div class="req-item">
+                <strong>Priorización</strong>
+                <p>Coberturas asociadas a cuerpos de agua, rondas hídricas de los EOT de Orocué y San Luis de Palenque, y áreas APIC.</p>
+              </div>
+              <div class="req-item">
+                <strong>Acciones</strong>
+                <p>Conservación de cobertura vegetal, enriquecimiento vegetal y aislamiento para facilitar la sucesión.</p>
+              </div>
+              <div class="req-item">
+                <strong>Articulación</strong>
+                <p>Plan Departamental 2024-2027 y Plan de Acción de Corporinoquia 2024-2027; proyectos de restauración, conservación y uso sostenible.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <section class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="map"></i> Figura 11.6 · Áreas finales por acción propuesta
+            </div>
+            <a class="figure-zoom" href="assets/figura_11_6.webp" target="_blank" rel="noopener">Clic para ampliar <i data-lucide="external-link"></i></a>
+          </div>
+          <div class="figure-layout">
+            <a class="figure-img-wrap" href="assets/figura_11_6.webp" target="_blank" rel="noopener">
+              <img src="assets/figura_11_6.webp" alt="Figura 11.6. Áreas finales por acción propuesta: AD Garcero C, área de influencia físico-biótica, subzona hidrográfica Caño Guanápalo y áreas APIC" width="1351" height="909">
+            </a>
+            <div class="figure-legend">
+              <span class="figure-kicker">Cómo leer la figura</span>
+              <h4>El área donde se destinará el 1%</h4>
+              <ul>
+                <li><span class="legend-dot" style="background:#111111;"></span><span>Polígono negro: Área de Desarrollo Garcero C.</span></li>
+                <li><span class="legend-dot" style="background:#ff00ff;"></span><span>Línea magenta: área de influencia físico-biótica.</span></li>
+                <li><span class="legend-dot" style="background:#00b050;"></span><span>Relleno verde: subzona hidrográfica Caño Guanápalo y otros directos al Meta.</span></li>
+                <li><span class="legend-dot" style="background:#ff8a8a;"></span><span>Zonas rosadas: rondas de ríos y bosques (APIC – EOT Orocué y San Luis de Palenque).</span></li>
+              </ul>
+              <p class="figure-note">La figura articula las áreas APIC con las rondas hídricas y los bosques priorizados para conservación.<br><strong>Fuente:</strong> ASI S.A.S., 2026.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="req-bar">
+          <span class="req-bar-label">Requisitos clave</span>
+          <span class="req-chip">Mínimo 1% del valor global</span>
+          <span class="req-chip">Misma subzona hidrográfica</span>
+          <span class="req-chip">Predios y/o mejoras para conservación</span>
+          <span class="req-chip">Ley 99/1993 · Decreto 2099/2016</span>
+        </div>
+        <p class="req-note"><strong>Liquidación:</strong> adquisición de terrenos, obras civiles, maquinaria/equipo y servidumbres (Art. 321, Ley 1955/2019).</p>
+      </section>
+
+      <section id="bloque-compensacion" class="pma-block" style="display: none;">
+        <div class="pma-block-head">
+          <div>
+            <h3><i data-lucide="trees"></i> Plan de Compensación</h3>
+            <p>Compensa los impactos residuales del medio biótico con preservación, rehabilitación y recuperación.</p>
+          </div>
+          <span class="code-tag">Cap. 12 · 1.513,43 ha · 8 años</span>
+        </div>
+
+        <div class="comp-grid">
+          <article class="comp-card">
+            <span class="comp-q">¿Qué compensar?</span>
+            <strong class="comp-a">362,60 ha</strong>
+            <p>216,68 ha naturales/seminaturales + 145,92 ha transformadas.</p>
+          </article>
+          <article class="comp-card highlight">
+            <span class="comp-q">¿Cuánto compensar?</span>
+            <strong class="comp-a">1.513,43 ha</strong>
+            <p>Área máxima bajo el rango geográfico 1.</p>
+          </article>
+          <article class="comp-card">
+            <span class="comp-q">¿Dónde compensar?</span>
+            <strong class="comp-a text">Caño Guanápalo</strong>
+            <p>Subzona hidrográfica y otros directos al Meta; áreas ecológicamente equivalentes.</p>
+          </article>
+          <article class="comp-card">
+            <span class="comp-q">¿Cómo compensar?</span>
+            <strong class="comp-a text">3 acciones</strong>
+            <p>Preservación, rehabilitación y recuperación con uso sostenible.</p>
+          </article>
+          <article class="comp-card">
+            <span class="comp-q">Modo · mecanismo · forma</span>
+            <strong class="comp-a text">Acuerdos de conservación</strong>
+            <p>Compensación directa · forma individual.</p>
+          </article>
+        </div>
+        <p class="comp-note"><strong>Nota de verificación:</strong> la Tabla 12.2 registra $59.788.243.826,56; el presupuesto detallado (Tabla 12.35) totaliza $58.298.743.826,56. Se muestra este último.</p>
+
+        <section class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="layers"></i> Las 3 acciones del plan
+            </div>
+            <span class="code-tag">Tabla 12.1 / 12.2</span>
+          </div>
+          <div class="acciones-grid">
+            <article class="accion-card">
+              <span class="accion-num">01</span>
+              <h4>Preservar</h4>
+              <p>Aislamiento y control de tensionantes en herbazales, bosques de galería y palmares de Attalea.</p>
+              <span class="accion-tag">88,53 ha</span>
+            </article>
+            <article class="accion-card rehabilitar">
+              <span class="accion-num">02</span>
+              <h4>Rehabilitar</h4>
+              <p>Núcleos de sombrío, siembra de moriche y enriquecimiento forestal en herbazales y vegetación secundaria.</p>
+              <span class="accion-tag">Vegetación secundaria y herbazales</span>
+            </article>
+            <article class="accion-card recuperar">
+              <span class="accion-num">03</span>
+              <h4>Recuperar y usar sosteniblemente</h4>
+              <p>Núcleos y arreglos silvopastoriles/agroforestales en pastos y arroz.</p>
+              <span class="accion-tag">145,92 ha transformadas</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="chart-card">
+          <div class="chart-header">
+            <div class="chart-title">
+              <i data-lucide="pie-chart"></i> Composición de la intervención estimada
+            </div>
+            <span class="code-tag">362,60 ha</span>
+          </div>
+          <div class="comp-bar">
+            <div class="comp-bar-seg natural" style="width:59.8%;"><span>216,68 ha · 59,8%</span></div>
+            <div class="comp-bar-seg transformed" style="width:40.2%;"><span>145,92 ha · 40,2%</span></div>
+          </div>
+          <div class="comp-bar-legend">
+            <span><i class="dot natural"></i> Ecosistemas naturales y seminaturales</span>
+            <span><i class="dot transformed"></i> Ecosistemas transformados</span>
+          </div>
+          <p class="comp-bar-note">Área de intervención estimada. El área a compensar es 1.513,43 ha (rango geográfico 1).</p>
+        </section>
+
+        <div class="req-bar">
+          <span class="req-bar-label">Requisitos clave</span>
+          <span class="req-chip">Solo impactos residuales</span>
+          <span class="req-chip">No pérdida neta de biodiversidad</span>
+          <span class="req-chip">Áreas ecológicamente equivalentes</span>
+          <span class="req-chip">Actualización según intervención real</span>
+        </div>
+        <p class="req-note"><strong>Modo:</strong> acuerdos de conservación · <strong>Mecanismo:</strong> compensación directa · <strong>Forma:</strong> individual · <strong>Plazo:</strong> 8 años.</p>
+        <p class="comp-note"><strong>Fuente:</strong> Tablas 12.1, 12.2 y 12.35; texto 12.4. Cifras sujetas a actualización según las áreas efectivamente intervenidas.</p>
+      </section>
+
+    </div>
+
+    <footer class="bottom-bar">
+      <div id="bottom-status">Estado de Evaluación: <strong style="color:var(--accent-green);">EIA VIGENTE - ÁREA GARCERO C (PERENCO)</strong></div>
+      <div id="bottom-system" style="font-family: 'JetBrains Mono', monospace; font-size: 0.9rem; color: var(--text-muted);">SISTEMA DE EVALUACIÓN AMBIENTAL | AD GARCERO C</div>
+    </footer>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    Chart.defaults.color = '#8395a7';
+    Chart.defaults.borderColor = '#242f42';
+    Chart.defaults.font.family = "'Inter', sans-serif";
+    Chart.defaults.font.size = 16;
+    Chart.defaults.animation = false;
+
+    const COLOR_TXT = '#f0f4f8';
+    const miles = (n) => n.toLocaleString('es-CO');
+    const haFmt = (v) => v.toLocaleString('es-CO', { minimumFractionDigits: 2 });
+    const pct = (n, total) => {
+      const p = 100 * n / total;
+      return (p >= 1 ? p.toFixed(1) : p.toFixed(2)).replace('.', ',') + ' %';
+    };
+    const valorConesa = (v) => (v < 0 ? '−' : '') + Math.abs(v).toFixed(2).replace('.', ',');
+
+    /* Elige texto oscuro o claro según la luminosidad del color de fondo del segmento */
+    function colorTextoContraste(hexFondo) {
+      if (typeof hexFondo !== 'string' || hexFondo.charAt(0) !== '#' || hexFondo.length < 7) return COLOR_TXT;
+      const r = parseInt(hexFondo.substr(1, 2), 16);
+      const g = parseInt(hexFondo.substr(3, 2), 16);
+      const b = parseInt(hexFondo.substr(5, 2), 16);
+      const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      return lum > 165 ? '#22303f' : COLOR_TXT;
+    }
+
+    /* Plugin: escribe cifras y porcentajes directamente sobre las gráficas. */
+    function pluginEtiquetas(textos, opts) {
+      opts = opts || {};
+      pluginEtiquetas._n = (pluginEtiquetas._n || 0) + 1;
+      return {
+        id: 'etiquetas_' + (opts.tipo || 'bar') + '_' + pluginEtiquetas._n,
+        afterDatasetsDraw(chart) {
+          const ctx = chart.ctx;
+          const meta = chart.getDatasetMeta(opts.dataset || 0);
+          ctx.save();
+          ctx.font = "700 13px 'Inter', sans-serif";
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          meta.data.forEach((el, i) => {
+            const txt = textos[i];
+            if (!txt) return;
+            const lineas = String(txt).split('\n');
+            let x, y;
+            let dentroDeSegmento = false;
+            if (opts.tipo === 'doughnut') {
+              const mid = (el.innerRadius + el.outerRadius) / 2;
+              const ang = (el.startAngle + el.endAngle) / 2;
+              const largoArco = mid * (el.endAngle - el.startAngle);
+              const anchoTxt = Math.max.apply(null, lineas.map(l => ctx.measureText(l).width));
+              if (largoArco < anchoTxt + 14) return; /* no cabe: el % ya está en la leyenda */
+              x = el.x + Math.cos(ang) * mid;
+              y = el.y + Math.sin(ang) * mid;
+              ctx.textAlign = 'center';
+              dentroDeSegmento = true;
+            } else if (opts.tipo === 'barHDentro') {
+              x = (el.base + el.x) / 2;
+              y = el.y;
+              ctx.textAlign = 'center';
+              dentroDeSegmento = true;
+            } else if (opts.tipo === 'barH') {
+              x = el.x + 8;
+              y = el.y;
+              ctx.textAlign = 'left';
+            } else {
+              x = el.x;
+              const positivo = el.base >= el.y;
+              y = positivo ? el.y - 14 : el.y + 14;
+              ctx.textAlign = 'center';
+            }
+            /* Texto de contraste según el color del segmento subyacente */
+            let colorTexto = COLOR_TXT;
+            if (dentroDeSegmento) {
+              const fondos = (chart.data.datasets[opts.dataset || 0].backgroundColor) || [];
+              colorTexto = colorTextoContraste(fondos[i]);
+            }
+            ctx.fillStyle = colorTexto;
+            ctx.shadowBlur = (colorTexto === COLOR_TXT) ? 4 : 0;
+            ctx.textBaseline = 'middle';
+            const dy0 = -((lineas.length - 1) / 2) * 15;
+            lineas.forEach((l, k) => ctx.fillText(l, x, y + dy0 + k * 15));
+          });
+          ctx.restore();
+        }
+      };
+    }
+
+    /* Plugin: texto central para los anillos (cifra principal + etiqueta corta). */
+    function pluginCentroDona(linea1, linea2) {
+      pluginEtiquetas._n = (pluginEtiquetas._n || 0) + 1;
+      return {
+        id: 'centro_' + pluginEtiquetas._n,
+        afterDraw(chart) {
+          const meta = chart.getDatasetMeta(0);
+          const el = meta.data[0];
+          if (!el || !el.innerRadius) return;
+          const ctx = chart.ctx;
+          const hueco = el.innerRadius * 1.9;
+          ctx.save();
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#ffffff';
+          ctx.font = "700 22px 'Inter', sans-serif";
+          if (ctx.measureText(linea1).width <= hueco) {
+            ctx.fillText(linea1, el.x, el.y - 7);
+            if (linea2) {
+              ctx.font = "600 11.5px 'Inter', sans-serif";
+              ctx.fillStyle = '#a9b7c9';
+              if (ctx.measureText(linea2).width <= hueco) ctx.fillText(linea2, el.x, el.y + 14);
+            }
+          }
+          ctx.restore();
+        }
+      };
+    }
+
+    /* ====================================================================
+       DATOS — 01. Matriz Escenario Sin Proyecto GARCERO C_V1.xlsx
+       (hojas GRÁFICAS, IMPORTANCIA e IMPACTOS A EVALUAR · ASI S.A.S., 2025-09-01)
+       ==================================================================== */
+
+    const INTERACCIONES_TOTAL = 139;
+    const NATURALEZA_NEGATIVAS = 127;
+    const NATURALEZA_POSITIVAS = 12;
+
+    /* Paleta de clasificación Conesa — colores exactos del anexo (formatos condicionales
+       de las matrices 01 y 02). El anexo usa #B97135 para los RANGOS numéricos de
+       severidad, pero la clasificación "SEVERO" está rotulada en #E26B0A. */
+    const PALETA_CLASES = {
+      'Irrelevante':     '#00B050',
+      'Leve':            '#8DB4E2',
+      'Poco importante': '#BFBFBF',
+      'Moderado':        '#FFFF00',
+      'Importante':      '#B1A0C7',
+      'Severo':          '#E26B0A',
+      'Crítico':         '#FF0000',
+      'Muy importante':  '#7030A0'
+    };
+
+    /* Colores de naturaleza (matriz cualitativa del anexo: NEGATIVO / POSITIVO) */
+    const COLOR_NEGATIVO = '#FFCCCC';
+    const COLOR_POSITIVO = '#D7E4BD';
+
+    /* Interacciones por nivel de importancia (totales de la matriz) */
+    const IMPORTANCIA_MATRIZ = [
+      { nombre: 'Irrelevante',     n: 52, color: PALETA_CLASES['Irrelevante'] },
+      { nombre: 'Moderado',        n: 63, color: PALETA_CLASES['Moderado'] },
+      { nombre: 'Severo',          n: 12, color: PALETA_CLASES['Severo'] },
+      { nombre: 'Leve',            n: 4,  color: PALETA_CLASES['Leve'] },
+      { nombre: 'Poco importante', n: 8,  color: PALETA_CLASES['Poco importante'] }
+    ];
+
+    /* Interacciones negativas por nivel de importancia y por actividad */
+    const IMP_NEG_POR_ACTIVIDAD = {
+      irrelevante: [8, 5, 5, 1, 6, 8, 1, 4, 2, 1, 1, 6, 4, 0, 0],
+      moderado:    [6, 11, 1, 5, 5, 19, 7, 0, 1, 2, 0, 4, 2, 0, 0],
+      severo:      [1, 1, 0, 4, 2, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0]
+    };
+
+    /* Interacciones positivas por nivel de importancia y por actividad */
+    const IMP_POS_POR_ACTIVIDAD = {
+      leve:            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2],
+      pocoImportante:  [2, 2, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 1, 0]
+    };
+
+    /* Actividades evaluadas (nombre corto para gráficas / nombre oficial para tablas) */
+    const ACTIVIDADES = [
+      { corta: 'Actividades pecuarias',           larga: 'Actividades Pecuarias' },
+      { corta: 'Actividades agrícolas',           larga: 'Actividades Agrícolas' },
+      { corta: 'Cultivos de pancoger',            larga: 'Cultivos tradicionales y de subsistencia (Pancoger)' },
+      { corta: 'Quemas',                          larga: 'Quemas' },
+      { corta: 'Tala y rocería',                  larga: 'Tala y Rocería' },
+      { corta: 'Infraestructura petrolera',       larga: 'Actividad de infraestructura Petrolera' },
+      { corta: 'Transporte terrestre',            larga: 'Transporte Terrestre' },
+      { corta: 'Captación hídrica superficial',   larga: 'Captación del recurso hídrico superficial' },
+      { corta: 'Captación hídrica subterránea',   larga: 'Captación del recurso hídrico subterráneo' },
+      { corta: 'Caza de fauna silvestre',         larga: 'Caza y domesticación de fauna silvestre' },
+      { corta: 'Pesca artesanal',                 larga: 'Pesca artesanal' },
+      { corta: 'Residuos sólidos domésticos',     larga: 'Disposición de residuos sólidos domésticos y no domésticas (quema y entierro)' },
+      { corta: 'Residuos líquidos domésticos',    larga: 'Disposición de residuos líquidos domésticos y no domésticas' },
+      { corta: 'Actividades turísticas',          larga: 'Actividades Turísticas' },
+      { corta: 'Actividades comerciales',         larga: 'Actividades Comerciales' }
+    ];
+
+    /* Interacciones acumulativas y simples */
+    const ACUMULACION = { acumulativas: 42, simples: 97 };
+
+    /* Interacciones sinérgicas — sin proyecto (conteos verificados en la Matriz Cualitativa;
+       porcentajes corregidos sobre las 139 interacciones) */
+    const SINERGIA = [
+      { nombre: 'Sin sinergia o simple', n: 59, pct: '42,4 %', color: '#8DB4E2' },
+      { nombre: 'Sinergismo moderado',   n: 74, pct: '53,2 %', color: '#FFFF00' },
+      { nombre: 'Muy sinérgico',         n: 6,  pct: '4,3 %',  color: '#E26B0A' }
+    ];
+
+    /* Importancia global por medio (índice Conesa) */
+    const IMPORTANCIA_MEDIO = [
+      { nombre: 'Abiótico (−)',          v: -29.94, color: COLOR_NEGATIVO },
+      { nombre: 'Biótico (−)',           v: -30.05, color: COLOR_NEGATIVO },
+      { nombre: 'Socioeconómico (−)',    v: -27.47, color: COLOR_NEGATIVO },
+      { nombre: 'Socioeconómico (+)',    v: 31.38,  color: COLOR_POSITIVO }
+    ];
+
+    /* Impactos más importantes por medio (índice IMImp de la matriz sin proyecto) */
+    const IMPACTOS_DESTACADOS = [
+      {
+        titulo: 'Medio Abiótico', color: '#8DB4E2',
+        negativos: [
+          { id: 'ABIO-5',  nombre: 'Alteración de la geoforma del terreno', v: -40 },
+          { id: 'ABIO-12', nombre: 'Alteración a la calidad del suelo', v: -34 },
+          { id: 'ABIO-8',  nombre: 'Alteración en la oferta y/o disponibilidad del recurso hídrico subterráneo', v: -31 },
+          { id: 'ABIO-9',  nombre: 'Alteración hidrogeomorfológica de la dinámica fluvial y/o del régimen sedimentológico', v: -29 }
+        ],
+        positivos: []
+      },
+      {
+        titulo: 'Medio Biótico', color: '#00B050',
+        negativos: [
+          { id: 'BIO-2', nombre: 'Alteración de la estructura ecológica del paisaje', v: -45 },
+          { id: 'BIO-1', nombre: 'Alteración a ecosistemas y hábitats terrestres', v: -42 },
+          { id: 'BIO-3', nombre: 'Alteración a comunidades de flora', v: -41 },
+          { id: 'BIO-4', nombre: 'Alteración a comunidades de fauna terrestre', v: -32 }
+        ],
+        positivos: []
+      },
+      {
+        titulo: 'Medio Socioeconómico', color: '#FFAA00',
+        negativos: [
+          { id: 'SOC-11', nombre: 'Alteración en la percepción visual del paisaje', v: -38 },
+          { id: 'SOC-2',  nombre: 'Modificación de la accesibilidad, movilidad y conectividad local', v: -31 },
+          { id: 'SOC-13', nombre: 'Generación y/o alteración de conflictos sociales', v: -31 },
+          { id: 'SOC-9',  nombre: 'Aumento y/o disminución del costo de vida', v: -28 }
+        ],
+        positivos: [
+          { id: 'SOC-15', nombre: 'Cambio en la organización comunitaria', v: 41 },
+          { id: 'SOC-11', nombre: 'Alteración en la percepción visual del paisaje', v: 34 },
+          { id: 'SOC-7',  nombre: 'Cambio en la dinámica del empleo', v: 33 },
+          { id: 'SOC-6',  nombre: 'Cambio en la oferta y demanda de bienes y servicios locales', v: 30 }
+        ]
+      }
+    ];
+
+    /* ====================================================================
+       DATOS — 02. Matriz Escenario Con Proyecto GARCERO C_V1.xlsx
+       (hojas GRÁFICAS e IMPORTANCIA · ASI S.A.S., 2025-09-01)
+       ==================================================================== */
+
+    const CON_INTERACCIONES = 420;
+    const CON_NEGATIVAS = 337;
+    const CON_POSITIVAS = 83;
+
+    const CON_IMPORTANCIA_MATRIZ = [
+      { nombre: 'Irrelevante',     n: 123, color: PALETA_CLASES['Irrelevante'] },
+      { nombre: 'Moderado',        n: 191, color: PALETA_CLASES['Moderado'] },
+      { nombre: 'Severo',          n: 23,  color: PALETA_CLASES['Severo'] },
+      { nombre: 'Leve',            n: 10,  color: PALETA_CLASES['Leve'] },
+      { nombre: 'Poco importante', n: 66,  color: PALETA_CLASES['Poco importante'] },
+      { nombre: 'Importante',      n: 7,   color: PALETA_CLASES['Importante'] }
+    ];
+
+    /* Interacciones negativas/positivas por etapa (agregadas de la matriz) */
+    const ETAPAS_CON = [
+      { nombre: 'Pre-operativa',  actividades: 2,  neg: 7,   pos: 1 },
+      { nombre: 'Transversales',  actividades: 13, neg: 71,  pos: 9 },
+      { nombre: 'Construcción',   actividades: 33, neg: 198, pos: 31 },
+      { nombre: 'Operación',      actividades: 23, neg: 51,  pos: 12 },
+      { nombre: 'Post-operativa', actividades: 9,  neg: 10,  pos: 30 }
+    ];
+
+    /* Acumulación y sinergia con proyecto — conteos completos verificados en la Matriz
+       Cualitativa (se excluyen 2 bloques incompletos de AC_80 en SOC-10/SOC-11) */
+    const CON_ACUMULACION = { acumulativas: 146, pctAcumulativas: '34,8 %', simples: 274, pctSimples: '65,2 %' };
+    const CON_SINERGIA = [
+      { nombre: 'Sin sinergia o simple', n: 192, pct: '45,7 %', color: '#8DB4E2' },
+      { nombre: 'Sinergismo moderado',   n: 212, pct: '50,5 %', color: '#FFFF00' },
+      { nombre: 'Muy sinérgico',         n: 16,  pct: '3,8 %',  color: '#E26B0A' }
+    ];
+
+    /* Importancia global por medio (índice Conesa) */
+    const CON_IMPORTANCIA_MEDIO = [
+      { nombre: 'Abiótico (−)',        v: -27.97, color: COLOR_NEGATIVO },
+      { nombre: 'Biótico (−)',         v: -29.4,  color: COLOR_NEGATIVO },
+      { nombre: 'Socioeconómico (−)',  v: -32.08, color: COLOR_NEGATIVO },
+      { nombre: 'Abiótico (+)',        v: 37.25,  color: COLOR_POSITIVO },
+      { nombre: 'Biótico (+)',         v: 27.55,  color: COLOR_POSITIVO },
+      { nombre: 'Socioeconómico (+)',  v: 29.33,  color: COLOR_POSITIVO }
+    ];
+
+    /* Impactos más significativos por medio (índice IMImp de la matriz con proyecto) */
+    const IMPACTOS_DESTACADOS_CON = [
+      {
+        titulo: 'Medio Abiótico', color: '#8DB4E2',
+        negativos: [
+          { id: 'ABIO-12', nombre: 'Alteración a la calidad del suelo', v: -52 },
+          { id: 'ABIO-5',  nombre: 'Alteración de la geoforma del terreno', v: -26 },
+          { id: 'ABIO-1',  nombre: 'Alteración a la calidad del aire', v: -25 }
+        ],
+        positivos: [
+          { id: 'ABIO-6',  nombre: 'Alteración de las condiciones geotécnicas', v: 42 },
+          { id: 'ABIO-12', nombre: 'Alteración a la calidad del suelo', v: 41 },
+          { id: 'ABIO-5',  nombre: 'Alteración de la geoforma del terreno', v: 38 },
+          { id: 'ABIO-1',  nombre: 'Alteración a la calidad del aire', v: 28 }
+        ]
+      },
+      {
+        titulo: 'Medio Biótico', color: '#00B050',
+        negativos: [
+          { id: 'BIO-2', nombre: 'Alteración de la estructura ecológica del paisaje', v: -41 },
+          { id: 'BIO-3', nombre: 'Alteración a comunidades de flora', v: -40 },
+          { id: 'BIO-1', nombre: 'Alteración a ecosistemas y hábitats terrestres', v: -36 },
+          { id: 'BIO-5', nombre: 'Desplazamiento y ahuyentamiento de fauna', v: -29 }
+        ],
+        positivos: [
+          { id: 'BIO-2', nombre: 'Alteración de la estructura ecológica del paisaje', v: 40 },
+          { id: 'BIO-1', nombre: 'Alteración a ecosistemas y hábitats terrestres', v: 36 },
+          { id: 'BIO-3', nombre: 'Alteración a comunidades de flora', v: 35 },
+          { id: 'BIO-5', nombre: 'Desplazamiento y ahuyentamiento de fauna', v: 30 }
+        ]
+      },
+      {
+        titulo: 'Medio Socioeconómico', color: '#FFAA00',
+        negativos: [
+          { id: 'SOC-12', nombre: 'Alteración en el entorno cultural', v: -39 },
+          { id: 'SOC-13', nombre: 'Generación y/o alteración de conflictos sociales', v: -37 },
+          { id: 'SOC-14', nombre: 'Generación de expectativas en la población', v: -36 },
+          { id: 'SOC-1',  nombre: 'Cambio en las variables demográficas', v: -33 }
+        ],
+        positivos: [
+          { id: 'SOC-7',  nombre: 'Cambio en la dinámica del empleo', v: 33 },
+          { id: 'SOC-6',  nombre: 'Cambio en la oferta y demanda de bienes y servicios locales', v: 32 },
+          { id: 'SOC-15', nombre: 'Cambio en la organización comunitaria', v: 31 },
+          { id: 'SOC-2',  nombre: 'Modificación de la accesibilidad, movilidad y conectividad local', v: 29 }
+        ]
+      }
+    ];
+
+    /* ---------------- Gráficas: Evaluación de impactos ---------------- */
+
+    new Chart(document.getElementById('chartNaturaleza'), {
+      type: 'doughnut',
+      data: {
+        labels: [
+          'Negativas · ' + NATURALEZA_NEGATIVAS + ' (' + pct(NATURALEZA_NEGATIVAS, INTERACCIONES_TOTAL) + ')',
+          'Positivas · ' + NATURALEZA_POSITIVAS + ' (' + pct(NATURALEZA_POSITIVAS, INTERACCIONES_TOTAL) + ')'
+        ],
+        datasets: [{
+          data: [NATURALEZA_NEGATIVAS, NATURALEZA_POSITIVAS],
+          backgroundColor: [COLOR_NEGATIVO, COLOR_POSITIVO],
+          borderWidth: 2,
+          borderColor: '#161d2a'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, color: COLOR_TXT, font: { size: 16 } } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.raw + ' interacciones · ' + pct(context.raw, INTERACCIONES_TOTAL) + ' de 139';
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        [NATURALEZA_NEGATIVAS + '\n' + pct(NATURALEZA_NEGATIVAS, INTERACCIONES_TOTAL), NATURALEZA_POSITIVAS + '\n' + pct(NATURALEZA_POSITIVAS, INTERACCIONES_TOTAL)],
+        { tipo: 'doughnut' }
+      ), pluginCentroDona('127', 'negativas')]
+    });
+
+    new Chart(document.getElementById('chartImportancia'), {
+      type: 'bar',
+      data: {
+        labels: IMPORTANCIA_MATRIZ.map(c => c.nombre),
+        datasets: [{
+          data: IMPORTANCIA_MATRIZ.map(c => c.n),
+          backgroundColor: IMPORTANCIA_MATRIZ.map(c => c.color),
+          borderRadius: 6,
+          maxBarThickness: 70
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 16 } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 15 } } },
+          y: { beginAtZero: true, suggestedMax: 72, display: false }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const c = IMPORTANCIA_MATRIZ[context.dataIndex];
+                return c.n + ' interacciones · ' + pct(c.n, INTERACCIONES_TOTAL) + ' de 139';
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        IMPORTANCIA_MATRIZ.map(c => c.n + '\n' + pct(c.n, INTERACCIONES_TOTAL)),
+        { tipo: 'bar' }
+      )]
+    });
+
+    new Chart(document.getElementById('chartPorActividad'), {
+      type: 'bar',
+      data: {
+        labels: ACTIVIDADES.map(a => a.corta),
+        datasets: [
+          { label: 'Irrelevante', data: IMP_NEG_POR_ACTIVIDAD.irrelevante, backgroundColor: PALETA_CLASES['Irrelevante'], stack: 'neg', borderRadius: 3, maxBarThickness: 22 },
+          { label: 'Moderado',    data: IMP_NEG_POR_ACTIVIDAD.moderado,    backgroundColor: PALETA_CLASES['Moderado'], stack: 'neg', borderRadius: 3, maxBarThickness: 22 },
+          { label: 'Severo',      data: IMP_NEG_POR_ACTIVIDAD.severo,      backgroundColor: PALETA_CLASES['Severo'], stack: 'neg', borderRadius: 3, maxBarThickness: 22 }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true, display: false, max: 34 },
+          y: { stacked: true, grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 14 } } }
+        },
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, color: COLOR_TXT, font: { size: 16 } } },
+          tooltip: {
+            callbacks: {
+              title: function(items) { return ACTIVIDADES[items[0].dataIndex].larga; },
+              label: function(context) { return context.dataset.label + ': ' + context.raw; },
+              afterBody: function(items) {
+                const i = items[0].dataIndex;
+                const total = IMP_NEG_POR_ACTIVIDAD.irrelevante[i] + IMP_NEG_POR_ACTIVIDAD.moderado[i] + IMP_NEG_POR_ACTIVIDAD.severo[i];
+                return 'Total negativas: ' + total + ' (' + pct(total, INTERACCIONES_TOTAL) + ' de 139)';
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        ACTIVIDADES.map((a, i) => {
+          const total = IMP_NEG_POR_ACTIVIDAD.irrelevante[i] + IMP_NEG_POR_ACTIVIDAD.moderado[i] + IMP_NEG_POR_ACTIVIDAD.severo[i];
+          return total ? String(total) : '';
+        }),
+        { tipo: 'barH', dataset: 2 }
+      )]
+    });
+
+    new Chart(document.getElementById('chartAcumulacion'), {
+      type: 'doughnut',
+      data: {
+        labels: [
+          'Acumulativas · ' + ACUMULACION.acumulativas + ' (' + pct(ACUMULACION.acumulativas, INTERACCIONES_TOTAL) + ')',
+          'Simples · ' + ACUMULACION.simples + ' (' + pct(ACUMULACION.simples, INTERACCIONES_TOTAL) + ')'
+        ],
+        datasets: [{
+          data: [ACUMULACION.acumulativas, ACUMULACION.simples],
+          backgroundColor: ['#FFFF00', '#8DB4E2'],
+          borderWidth: 2,
+          borderColor: '#161d2a'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, color: COLOR_TXT, font: { size: 16 } } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.raw + ' interacciones · ' + pct(context.raw, INTERACCIONES_TOTAL) + ' de 139';
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        [ACUMULACION.acumulativas + '\n' + pct(ACUMULACION.acumulativas, INTERACCIONES_TOTAL), ACUMULACION.simples + '\n' + pct(ACUMULACION.simples, INTERACCIONES_TOTAL)],
+        { tipo: 'doughnut' }
+      ), pluginCentroDona('42', 'acumulativas')]
+    });
+
+    new Chart(document.getElementById('chartSinergia'), {
+      type: 'doughnut',
+      data: {
+        labels: SINERGIA.map(c => c.nombre + ' · ' + c.n + ' (' + c.pct + ')'),
+        datasets: [{
+          data: SINERGIA.map(c => c.n),
+          backgroundColor: SINERGIA.map(c => c.color),
+          borderWidth: 2,
+          borderColor: '#161d2a'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, color: COLOR_TXT, font: { size: 16 } } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const c = SINERGIA[context.dataIndex];
+                return c.n + ' interacciones · ' + c.pct;
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        SINERGIA.map(c => c.n + '\n' + c.pct),
+        { tipo: 'doughnut' }
+      ), pluginCentroDona('74', 'sinergismo')]
+    });
+
+    new Chart(document.getElementById('chartMedio'), {
+      type: 'bar',
+      data: {
+        labels: IMPORTANCIA_MEDIO.map(c => c.nombre),
+        datasets: [{
+          data: IMPORTANCIA_MEDIO.map(c => c.v),
+          backgroundColor: IMPORTANCIA_MEDIO.map(c => c.color),
+          borderRadius: 6,
+          maxBarThickness: 70
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 16, bottom: 16 } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 15 } } },
+          y: {
+            min: -38, max: 38,
+            ticks: { color: '#8395a7', font: { size: 14 }, callback: v => String(v).replace('.', ',') },
+            grid: {
+              color: (ctx) => (ctx.tick && Math.abs(ctx.tick.value) < 0.001) ? 'rgba(240, 244, 248, 0.9)' : '#242f42',
+              lineWidth: (ctx) => (ctx.tick && Math.abs(ctx.tick.value) < 0.001) ? 2 : 1
+            }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Índice de importancia: ' + valorConesa(context.raw);
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        IMPORTANCIA_MEDIO.map(c => valorConesa(c.v)),
+        { tipo: 'bar' }
+      )]
+    });
+
+    /* ---------------- Gráficas: escenario con proyecto ---------------- */
+
+    new Chart(document.getElementById('chartNaturalezaCon'), {
+      type: 'doughnut',
+      data: {
+        labels: [
+          'Negativas · ' + CON_NEGATIVAS + ' (' + pct(CON_NEGATIVAS, CON_INTERACCIONES) + ')',
+          'Positivas · ' + CON_POSITIVAS + ' (' + pct(CON_POSITIVAS, CON_INTERACCIONES) + ')'
+        ],
+        datasets: [{
+          data: [CON_NEGATIVAS, CON_POSITIVAS],
+          backgroundColor: [COLOR_NEGATIVO, COLOR_POSITIVO],
+          borderWidth: 2,
+          borderColor: '#161d2a'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, color: COLOR_TXT, font: { size: 16 } } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return context.raw + ' interacciones · ' + pct(context.raw, CON_INTERACCIONES) + ' de 420';
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        [CON_NEGATIVAS + '\n' + pct(CON_NEGATIVAS, CON_INTERACCIONES), CON_POSITIVAS + '\n' + pct(CON_POSITIVAS, CON_INTERACCIONES)],
+        { tipo: 'doughnut' }
+      ), pluginCentroDona('337', 'negativas')]
+    });
+
+    new Chart(document.getElementById('chartImportanciaCon'), {
+      type: 'bar',
+      data: {
+        labels: CON_IMPORTANCIA_MATRIZ.map(c => c.nombre),
+        datasets: [{
+          data: CON_IMPORTANCIA_MATRIZ.map(c => c.n),
+          backgroundColor: CON_IMPORTANCIA_MATRIZ.map(c => c.color),
+          borderRadius: 6,
+          maxBarThickness: 70
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 16 } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 15 } } },
+          y: { beginAtZero: true, suggestedMax: 215, display: false }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const c = CON_IMPORTANCIA_MATRIZ[context.dataIndex];
+                return c.n + ' interacciones · ' + pct(c.n, CON_INTERACCIONES) + ' de 420';
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        CON_IMPORTANCIA_MATRIZ.map(c => c.n + '\n' + pct(c.n, CON_INTERACCIONES)),
+        { tipo: 'bar' }
+      )]
+    });
+
+    new Chart(document.getElementById('chartEtapasCon'), {
+      type: 'bar',
+      data: {
+        labels: ETAPAS_CON.map(e => e.nombre + ' (' + e.actividades + ')'),
+        datasets: [
+          { label: 'Negativas', data: ETAPAS_CON.map(e => e.neg), backgroundColor: COLOR_NEGATIVO, stack: 'etapa', borderRadius: 3, maxBarThickness: 26 },
+          { label: 'Positivas', data: ETAPAS_CON.map(e => e.pos), backgroundColor: COLOR_POSITIVO, stack: 'etapa', borderRadius: 3, maxBarThickness: 26 }
+        ]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { stacked: true, display: false, max: 262 },
+          y: { stacked: true, grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 15 } } }
+        },
+        plugins: {
+          legend: { position: 'top', labels: { boxWidth: 12, color: COLOR_TXT, font: { size: 16 } } },
+          tooltip: {
+            callbacks: {
+              title: function(items) { return ETAPAS_CON[items[0].dataIndex].nombre; },
+              label: function(context) { return context.dataset.label + ': ' + context.raw; },
+              afterBody: function(items) {
+                const e = ETAPAS_CON[items[0].dataIndex];
+                return 'Total: ' + (e.neg + e.pos) + ' (' + pct(e.neg + e.pos, CON_INTERACCIONES) + ' de 420)';
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        ETAPAS_CON.map(e => String(e.neg + e.pos)),
+        { tipo: 'barH', dataset: 1 }
+      )]
+    });
+
+    new Chart(document.getElementById('chartAcumulacionCon'), {
+      type: 'doughnut',
+      data: {
+        labels: [
+          'Acumulativas · ' + CON_ACUMULACION.acumulativas + ' (' + CON_ACUMULACION.pctAcumulativas + ')',
+          'Simples · ' + CON_ACUMULACION.simples + ' (' + CON_ACUMULACION.pctSimples + ')'
+        ],
+        datasets: [{
+          data: [CON_ACUMULACION.acumulativas, CON_ACUMULACION.simples],
+          backgroundColor: ['#FFFF00', '#8DB4E2'],
+          borderWidth: 2,
+          borderColor: '#161d2a'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, color: COLOR_TXT, font: { size: 16 } } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const esAcum = context.dataIndex === 0;
+                return context.raw + ' interacciones · ' + (esAcum ? CON_ACUMULACION.pctAcumulativas : CON_ACUMULACION.pctSimples);
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        [CON_ACUMULACION.acumulativas + '\n' + CON_ACUMULACION.pctAcumulativas, CON_ACUMULACION.simples + '\n' + CON_ACUMULACION.pctSimples],
+        { tipo: 'doughnut' }
+      ), pluginCentroDona('146', 'acumulativas')]
+    });
+
+    new Chart(document.getElementById('chartSinergiaCon'), {
+      type: 'doughnut',
+      data: {
+        labels: CON_SINERGIA.map(c => c.nombre + ' · ' + c.n + ' (' + c.pct + ')'),
+        datasets: [{
+          data: CON_SINERGIA.map(c => c.n),
+          backgroundColor: CON_SINERGIA.map(c => c.color),
+          borderWidth: 2,
+          borderColor: '#161d2a'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        cutout: '58%',
+        plugins: {
+          legend: { position: 'bottom', labels: { boxWidth: 12, color: COLOR_TXT, font: { size: 16 } } },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                const c = CON_SINERGIA[context.dataIndex];
+                return c.n + ' interacciones · ' + c.pct;
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        CON_SINERGIA.map(c => c.n + '\n' + c.pct),
+        { tipo: 'doughnut' }
+      ), pluginCentroDona('212', 'sinergismo')]
+    });
+
+    new Chart(document.getElementById('chartMedioCon'), {
+      type: 'bar',
+      data: {
+        labels: CON_IMPORTANCIA_MEDIO.map(c => c.nombre),
+        datasets: [{
+          data: CON_IMPORTANCIA_MEDIO.map(c => c.v),
+          backgroundColor: CON_IMPORTANCIA_MEDIO.map(c => c.color),
+          borderRadius: 6,
+          maxBarThickness: 60
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { top: 16, bottom: 16 } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#cbd5e1', font: { size: 14 } } },
+          y: {
+            min: -36, max: 40,
+            ticks: { color: '#8395a7', font: { size: 14 }, callback: v => String(v).replace('.', ',') },
+            grid: {
+              color: (ctx) => (ctx.tick && Math.abs(ctx.tick.value) < 0.001) ? 'rgba(240, 244, 248, 0.9)' : '#242f42',
+              lineWidth: (ctx) => (ctx.tick && Math.abs(ctx.tick.value) < 0.001) ? 2 : 1
+            }
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function(context) {
+                return 'Índice de importancia: ' + valorConesa(context.raw);
+              }
+            }
+          }
+        }
+      },
+      plugins: [pluginEtiquetas(
+        CON_IMPORTANCIA_MEDIO.map(c => valorConesa(c.v)),
+        { tipo: 'bar' }
+      )]
+    });
+
+    /* ---------------- Tabla resumen por actividad ---------------- */
+
+    // Color de cada número según la clase Conesa de su columna: el mismo
+    // color de la matriz oficial (verde, amarillo, naranja, azul, gris...).
+    function celdaConteo(n, clase) {
+      const color = n > 0 ? (PALETA_CLASES[clase] || 'var(--text-main)') : 'var(--text-muted)';
+      const peso = n > 0 ? 'font-weight:700;' : '';
+      return '<td style="color:' + color + ';' + peso + '">' + n + '</td>';
+    }
+
+    (function construirTablaActividades() {
+      const tbody = document.getElementById('tbodyActividades');
+      let filas = '';
+      ACTIVIDADES.forEach(function(a, i) {
+        const irr = IMP_NEG_POR_ACTIVIDAD.irrelevante[i];
+        const mod = IMP_NEG_POR_ACTIVIDAD.moderado[i];
+        const sev = IMP_NEG_POR_ACTIVIDAD.severo[i];
+        const lev = IMP_POS_POR_ACTIVIDAD.leve[i];
+        const poc = IMP_POS_POR_ACTIVIDAD.pocoImportante[i];
+        const total = irr + mod + sev + lev + poc;
+        filas += '<tr>'
+          + '<td>' + a.larga + '</td>'
+          + celdaConteo(irr, 'Irrelevante')
+          + celdaConteo(mod, 'Moderado')
+          + celdaConteo(sev, 'Severo')
+          + celdaConteo(lev, 'Leve')
+          + celdaConteo(poc, 'Poco importante')
+          + '<td><strong>' + total + '</strong></td>'
+          + '</tr>';
+      });
+      filas += '<tr>'
+        + '<td><strong>Total</strong></td>'
+        + '<td><strong style="color:' + PALETA_CLASES['Irrelevante'] + ';">' + IMPORTANCIA_MATRIZ[0].n + '</strong></td>'
+        + '<td><strong style="color:' + PALETA_CLASES['Moderado'] + ';">' + IMPORTANCIA_MATRIZ[1].n + '</strong></td>'
+        + '<td><strong style="color:' + PALETA_CLASES['Severo'] + ';">' + IMPORTANCIA_MATRIZ[2].n + '</strong></td>'
+        + '<td><strong style="color:' + PALETA_CLASES['Leve'] + ';">' + IMPORTANCIA_MATRIZ[3].n + '</strong></td>'
+        + '<td><strong style="color:' + PALETA_CLASES['Poco importante'] + ';">' + IMPORTANCIA_MATRIZ[4].n + '</strong></td>'
+        + '<td><strong>' + INTERACCIONES_TOTAL + '</strong></td>'
+        + '</tr>';
+      tbody.innerHTML = filas;
+    })();
+
+    /* ---------------- Impactos más significativos por medio ---------------- */
+
+    function claseSignificancia(v) {
+      if (v < 0) {
+        return v > -25 ? 'Irrelevante' : (v > -50 ? 'Moderado' : (v > -75 ? 'Severo' : 'Crítico'));
+      }
+      return v < 25 ? 'Leve' : (v < 50 ? 'Poco importante' : (v <= 75 ? 'Importante' : 'Muy importante'));
+    }
+
+    function chipClaseSignificancia(v) {
+      const clase = claseSignificancia(v);
+      const color = PALETA_CLASES[clase] || '#cbd5e1';
+      const fondo = color + '29';
+      return '<span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:0.9rem;font-weight:700;background:' + fondo + ';color:' + color + ';border:1px solid ' + color + ';">' + clase + '</span>';
+    }
+
+    function filaDestacada(im) {
+      const signo = im.v < 0 ? '−' : '+';
+      const clase = claseSignificancia(im.v);
+      const colorValor = PALETA_CLASES[clase] || '#cbd5e1';
+      return '<tr>'
+        + '<td style="white-space:nowrap;vertical-align:top;"><span class="code-tag">' + im.id + '</span></td>'
+        + '<td>' + im.nombre + '</td>'
+        + '<td style="text-align:right;white-space:nowrap;vertical-align:top;">'
+        + '<strong style="color:' + colorValor + ';font-size:1.1rem;">' + signo + Math.abs(im.v) + '</strong><br>'
+        + chipClaseSignificancia(im.v)
+        + '</td>'
+        + '</tr>';
+    }
+
+    function construirDestacados(contId, grupos) {
+      const cont = document.getElementById(contId);
+      if (!cont) return;
+      let html = '';
+      grupos.forEach(function(g) {
+        html += '<div>'
+          + '<div style="font-weight:700;font-size:1.05rem;margin-bottom:8px;color:' + g.color + ';">' + g.titulo + '</div>';
+        if (g.negativos.length) {
+          html += '<div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;">Más significativos (negativos)</div>'
+            + '<table class="matrix-table"><tbody>' + g.negativos.map(filaDestacada).join('') + '</tbody></table>';
+        }
+        if (g.positivos.length) {
+          html += '<div style="font-size:0.82rem;color:var(--text-muted);margin:12px 0 4px;">Más significativos (positivos)</div>'
+            + '<table class="matrix-table"><tbody>' + g.positivos.map(filaDestacada).join('') + '</tbody></table>';
+        }
+        html += '</div>';
+      });
+      cont.innerHTML = html;
+    }
+
+    construirDestacados('impactosDestacados', IMPACTOS_DESTACADOS);
+    construirDestacados('impactosDestacadosCon', IMPACTOS_DESTACADOS_CON);
+
+    /* ---------------- Tabla resumen por etapa (con proyecto) ---------------- */
+
+    (function construirTablaEtapasCon() {
+      const tbody = document.getElementById('tbodyEtapasCon');
+      if (!tbody) return;
+      let filas = '';
+      let tAct = 0, tNeg = 0, tPos = 0;
+      ETAPAS_CON.forEach(function(e) {
+        const total = e.neg + e.pos;
+        tAct += e.actividades;
+        tNeg += e.neg;
+        tPos += e.pos;
+        filas += '<tr>'
+          + '<td><span class="code-tag">' + e.nombre + '</span></td>'
+          + '<td style="text-align:right;">' + e.actividades + '</td>'
+          + '<td style="text-align:right;">' + e.neg + '</td>'
+          + '<td style="text-align:right;">' + e.pos + '</td>'
+          + '<td style="text-align:right;"><strong>' + total + '</strong></td>'
+          + '<td style="text-align:right;">' + pct(total, CON_INTERACCIONES) + '</td>'
+          + '</tr>';
+      });
+      filas += '<tr>'
+        + '<td><strong>Total</strong></td>'
+        + '<td style="text-align:right;"><strong>' + tAct + '</strong></td>'
+        + '<td style="text-align:right;"><strong>' + tNeg + '</strong></td>'
+        + '<td style="text-align:right;"><strong>' + tPos + '</strong></td>'
+        + '<td style="text-align:right;"><strong>' + (tNeg + tPos) + '</strong></td>'
+        + '<td style="text-align:right;"><strong>100 %</strong></td>'
+        + '</tr>';
+      tbody.innerHTML = filas;
+    })();
+
+    /* ---------------- Navegación entre pestañas ---------------- */
+
+    /* Selector de escenario en Evaluación: sin proyecto / con proyecto */
+    function cambiarEscenario(cual) {
+      const sin = document.getElementById('escenario-sin');
+      const con = document.getElementById('escenario-con');
+      if (!sin || !con) return;
+      sin.style.display = (cual === 'sin') ? '' : 'none';
+      con.style.display = (cual === 'con') ? '' : 'none';
+      const bSin = document.getElementById('btn-esc-sin');
+      const bCon = document.getElementById('btn-esc-con');
+      if (bSin) bSin.classList.toggle('active', cual === 'sin');
+      if (bCon) bCon.classList.toggle('active', cual === 'con');
+      const cont = document.getElementById(cual === 'sin' ? 'escenario-sin' : 'escenario-con');
+      if (cont && window.Chart) {
+        cont.querySelectorAll('canvas').forEach(function (cv) {
+          const ch = Chart.getChart ? Chart.getChart(cv) : null;
+          if (ch) { ch.stop(); ch.resize(); ch.draw(); }
+        });
+      }
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    /* Alternar entre la vista resumida del PMA y la del PSM */
+    function mostrarPlan(cual) {
+      const pma = document.getElementById('bloque-pma');
+      const psm = document.getElementById('bloque-psm');
+      const flujo = document.getElementById('bloque-flujo');
+      if (!pma || !psm) return;
+      pma.style.display = (cual === 'pma') ? '' : 'none';
+      psm.style.display = (cual === 'psm') ? '' : 'none';
+      if (flujo) flujo.style.display = (cual === 'psm') ? '' : 'none';
+      const bPma = document.getElementById('btn-plan-pma');
+      const bPsm = document.getElementById('btn-plan-psm');
+      if (bPma) bPma.classList.toggle('active', cual === 'pma');
+      if (bPsm) bPsm.classList.toggle('active', cual === 'psm');
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    /* Alternar entre Inversión 1% y Compensación */
+    function mostrarComp(cual) {
+      const inv = document.getElementById('bloque-inversion');
+      const comp = document.getElementById('bloque-compensacion');
+      if (!inv || !comp) return;
+      inv.style.display = (cual === 'inversion') ? '' : 'none';
+      comp.style.display = (cual === 'compensacion') ? '' : 'none';
+      const bInv = document.getElementById('btn-comp-inv');
+      const bComp = document.getElementById('btn-comp-comp');
+      if (bInv) bInv.classList.toggle('active', cual === 'inversion');
+      if (bComp) bComp.classList.toggle('active', cual === 'compensacion');
+      window.dispatchEvent(new Event('resize'));
+    }
+
+    /* Claves resumidas de las tarjetas KPI (3 a 5 ideas por tarjeta) */
+    const CLAVES = {
+      pma: {
+        titulo: 'PMA · Cap. 7 — 45 fichas de manejo',
+        color: '#00B050',
+        items: [
+          '<strong>27 abióticas:</strong> suelo (19), recurso hídrico (5), aire (1) y compensación (2).',
+          '<strong>13 bióticas:</strong> flora, fauna, hábitats, revegetalización, veda y compensación.',
+          '<strong>5 socioeconómicas:</strong> capacitación, participación, reasentamiento, gestión institucional y comunidad.',
+          '<strong>13 programas:</strong> cada ficha define objetivo, meta, impacto, acciones, responsable y presupuesto.'
+        ]
+      },
+      programas: {
+        titulo: 'Programas de manejo — 13 en total',
+        color: '#8DB4E2',
+        items: [
+          '<strong>Abiótico · 4 programas / 27 fichas:</strong> suelo (19), agua (5), aire (1) y compensación (2).',
+          '<strong>Biótico · 7 programas / 13 fichas:</strong> flora, fauna, hábitats, revegetalización, veda y compensación.',
+          '<strong>Socioeconómico · 2 programas / 5 fichas:</strong> gestión social y capacitación del personal.'
+        ]
+      },
+      psm: {
+        titulo: 'PSM · Cap. 8 — 19 fichas de seguimiento',
+        color: '#FFAA00',
+        items: [
+          '<strong>6 abióticas:</strong> aguas residuales, emisiones y ruido, suelo, residuos, aguas subterráneas y superficiales.',
+          '<strong>8 bióticas:</strong> flora y fauna, revegetalización, compensación, 1%, recurso hídrico y veda.',
+          '<strong>5 socioeconómicas:</strong> conflictos, efectividad del PMA, impactos, PQR y participación.',
+          '<strong>Función:</strong> verifica el cumplimiento y la eficacia; no repite las medidas del PMA.'
+        ]
+      },
+      ficha: {
+        titulo: 'Ficha PMA — 18 campos',
+        color: '#CC99FF',
+        items: [
+          '<strong>Objetivo y meta:</strong> qué se quiere lograr y cómo se mide.',
+          '<strong>Impacto, etapa y actividad:</strong> por qué, cuándo y dónde se aplica.',
+          '<strong>Tipo de medida y acciones:</strong> P, M, C o CP y qué se hará concretamente.',
+          '<strong>Indicadores, responsable y cronograma:</strong> cómo se controla y quién ejecuta.',
+          '<strong>Presupuesto:</strong> cuánto cuesta implementar la medida.'
+        ]
+      }
+    };
+
+    function toggleClave(cual) {
+      const panel = document.getElementById('kpi-clave');
+      const title = document.getElementById('kpi-clave-title');
+      const list = document.getElementById('kpi-clave-list');
+      if (!panel || !title || !list || !CLAVES[cual]) return;
+
+      if (panel.dataset.clave === cual && !panel.hidden) {
+        cerrarClave();
+        return;
+      }
+
+      const data = CLAVES[cual];
+      panel.dataset.clave = cual;
+      panel.style.setProperty('--clave-color', data.color);
+      title.textContent = data.titulo;
+      list.innerHTML = data.items.map(function (item) { return '<li>' + item + '</li>'; }).join('');
+      panel.hidden = false;
+
+      document.querySelectorAll('#tab-pma .kpi-clickable').forEach(function (card) {
+        const abierta = card.dataset.clave === cual;
+        card.classList.toggle('abierto', abierta);
+        card.setAttribute('aria-expanded', abierta ? 'true' : 'false');
+      });
+    }
+
+    function cerrarClave() {
+      const panel = document.getElementById('kpi-clave');
+      if (panel) {
+        panel.hidden = true;
+        delete panel.dataset.clave;
+      }
+      document.querySelectorAll('#tab-pma .kpi-clickable').forEach(function (card) {
+        card.classList.remove('abierto');
+        card.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    document.querySelectorAll('#tab-pma .kpi-clickable').forEach(function (card) {
+      card.addEventListener('click', function () { toggleClave(card.dataset.clave); });
+      card.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleClave(card.dataset.clave);
+        }
+      });
+    });
+
+    const headerTitles = {
+      'tab-evaluacion': {
+        title: 'Evaluación Ambiental - Área de Desarrollo Garcero C',
+        sub: 'Escenarios sin y con proyecto · Matriz Conesa · 15 y 80 actividades',
+        status: 'Estado de Evaluación: <strong style="color:var(--accent-green);">EIA VIGENTE - ÁREA GARCERO C (PERENCO)</strong>',
+        system: 'SISTEMA DE EVALUACIÓN AMBIENTAL | AD GARCERO C'
+      },
+      'tab-pma': {
+        title: 'PMA y PSM - AD Garcero C',
+        sub: '45 fichas de manejo (Cap. 7) y 19 de seguimiento (Cap. 8) · EIA ASI S.A.S., 2026',
+        status: 'Fuente: <strong style="color:var(--accent-green);">EIA AD GARCERO C (PERENCO) · CAP. 7 Y 8</strong>',
+        system: 'SISTEMA DE SEGUIMIENTO AMBIENTAL | AD GARCERO C'
+      },
+      'tab-compensaciones': {
+        title: '1% y Compensación - AD Garcero C',
+        sub: 'Inversión forzosa del 1% (Cap. 11) y compensación biótica (Cap. 12) · EIA ASI S.A.S., 2026',
+        status: 'Fuente: <strong style="color:var(--accent-green);">EIA AD GARCERO C (PERENCO) · CAP. 11 Y 12</strong>',
+        system: 'SISTEMA DE CONTROL DE INVERSIÓN Y COMPENSACIÓN | AD GARCERO C'
+      }
+    };
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+      document.querySelectorAll('.sidebar .nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+
+      const selectedContent = document.getElementById(tabId);
+      if (selectedContent) selectedContent.classList.add('active');
+
+      const selectedSidebarItem = document.querySelector(`.sidebar .nav-item[data-tab-target="${tabId}"]`);
+      if (selectedSidebarItem) selectedSidebarItem.classList.add('active');
+
+      const info = headerTitles[tabId];
+      if (info) {
+        document.title = info.title;
+        document.getElementById('main-header-title').innerText = info.title;
+        document.getElementById('main-header-sub').innerText = info.sub;
+        document.getElementById('bottom-status').innerHTML = info.status;
+        document.getElementById('bottom-system').innerText = info.system;
+      }
+
+      window.dispatchEvent(new Event('resize'));
+
+      /* Reajustar las gráficas de la pestaña recién mostrada: garantiza el
+         tamaño correcto incluso si la pestaña estuvo oculta (display: none). */
+      if (selectedContent && window.Chart) {
+        selectedContent.querySelectorAll('canvas').forEach(function (cv) {
+          const ch = Chart.getChart ? Chart.getChart(cv) : null;
+          if (ch) { ch.stop(); ch.resize(); ch.draw(); }
+        });
+      }
+
+      /* Cada pestaña se muestra desde arriba (el contenedor tiene scroll propio). */
+      const mw = document.querySelector('.main-wrapper');
+      if (mw) mw.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    /* Al cargar, abrir la vista del hash (index6.html#tab-pma etc.) */
+    const hash = window.location.hash.replace('#', '');
+    if (hash && document.getElementById(hash)) {
+      switchTab(hash);
+    }
+    /* Si el hash cambia en la misma página (enlaces o edición manual), cambiar de pestaña. */
+    window.addEventListener('hashchange', function () {
+      const h = window.location.hash.replace('#', '');
+      if (h && document.getElementById(h)) {
+        switchTab(h);
+      }
+    });
+
+    /* Enlace directo a la vista PSM: index6.html?plan=psm#tab-pma */
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('plan') === 'psm') {
+      mostrarPlan('psm');
+    }
+    /* Enlace directo a una tarjeta de claves: index6.html?clave=pma#tab-pma */
+    if (params.get('clave') && CLAVES[params.get('clave')]) {
+      switchTab('tab-pma');
+      toggleClave(params.get('clave'));
+    }
+    /* Enlace directo a Inversión o Compensación: index6.html?comp=compensacion#tab-compensaciones */
+    const compParam = params.get('comp');
+    if (compParam === 'inversion' || compParam === 'compensacion') {
+      switchTab('tab-compensaciones');
+      mostrarComp(compParam);
+    }
+
+    /* Garantizar que las gráficas queden dibujadas al entrar a la vista:
+       algunos navegadores retrasan el primer pintado del canvas hasta una
+       interacción; aquí se fuerza el dibujo de todas las gráficas. */
+    function redibujarTodo() {
+      if (!window.Chart) return;
+      Object.values(Chart.instances || {}).forEach(function (ch) {
+        try { ch.resize(); ch.draw(); } catch (e) {}
+      });
+    }
+    redibujarTodo();
+    window.addEventListener('load', redibujarTodo);
+    window.addEventListener('load', function () {
+      const mw = document.querySelector('.main-wrapper');
+      if (mw) mw.scrollTop = 0;
+      setTimeout(function () {
+        const cont = document.querySelector('.main-wrapper');
+        if (cont) cont.scrollTop = 0;
+      }, 0);
+    });
+    window.addEventListener('focus', redibujarTodo);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) redibujarTodo();
+    });
+    if (document.fonts && document.fonts.ready && document.fonts.ready.then) {
+      document.fonts.ready.then(redibujarTodo);
+    }
+    setTimeout(redibujarTodo, 350);
+    setTimeout(redibujarTodo, 1500);
+
+    // ==========================================
+  </script>
+  <script src="ia_geo.js"></script>
+</body>
+</html>
